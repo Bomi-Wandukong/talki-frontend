@@ -1,9 +1,14 @@
 import "./css/App.css";
+import LiveFeedback from "./pages/LiveFeedback";
+import AnalysisResult from "./components/AnalysisResult";
+import FeedbackResult from "./pages/FeedbackResult";
 
 function App() {
   return (
     <>
-      <div className="fontThin text-xl">폰트 설정 완료~!</div>
+      {/* <LiveFeedback /> */}
+      {/* <AnalysisResult /> */}
+      <FeedbackResult />
     </>
   );
 }

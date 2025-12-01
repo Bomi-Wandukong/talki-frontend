@@ -27,8 +27,7 @@ const CircleProgress: React.FC<CircleProgressProps> = ({
         <svg
           height={radius * 2}
           width={radius * 2}
-          className="transform -rotate-90"
-        >
+          className="transform -rotate-90">
           {/* Background circle */}
           <circle
             stroke="#E5E7EB"
@@ -55,9 +54,9 @@ const CircleProgress: React.FC<CircleProgressProps> = ({
       </div>
 
       {/* Label and score */}
-      <div className="mt-5 text-center text-[15px] text-[#3B3B3B]">
+      <div className="mt-5 text-center text-[15px] text-[#3B3B3B] fontRegular">
         <span>{label}</span>
-        <span className="ml-2 text-[#5650FF] font-bold text-[20px]">
+        <span className="ml-2 text-[#5650FF] fontBold text-[20px]">
           {score}
         </span>
         <span>/{maxScore}</span>
