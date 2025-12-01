@@ -1,9 +1,12 @@
 import "./App.css";
+// import LiveFeedback from "./pages/LiveFeedback";
+import AnalysisResult from "./components/AnalysisResult";
 
 function App() {
   return (
     <>
-      <div className="font-bold">hello</div>
+      {/* <LiveFeedback /> */}
+      <AnalysisResult />
     </>
   );
 }
