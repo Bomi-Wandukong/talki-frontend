@@ -1,13 +1,16 @@
 import "./css/App.css";
-import LiveFeedback from "./pages/LiveFeedback";
-import FeedbackResult from "./pages/FeedbackResult";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import GuideLine from "./GuideLine";
+import Next from "./Next";
 
 function App() {
   return (
-    <>
-      {/* <LiveFeedback /> */}
-      <FeedbackResult />
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<GuideLine />} />
+        <Route path="/next" element={<Next />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
