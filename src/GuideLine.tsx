@@ -57,13 +57,13 @@ const GuideLine = () => {
             </div>
           </div>
 
-          {currentStep === 2 && (
+          {currentStep === 1 && (
             <GuideLineCam
               onStatusChange={setIsGood}
               onComplete={handleCameraComplete}
             />
           )}
-          {currentStep === 1 && <GuideLineMic onComplete={handleMicComplete} />}
+          {currentStep === 2 && <GuideLineMic onComplete={handleMicComplete} />}
         </div>
       </main>
     </div>
