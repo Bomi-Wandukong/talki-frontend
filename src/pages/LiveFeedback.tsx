@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import LiveFeedbackTracker from "../components/LiveFeedbackTracker";
 import CountdownOverlay from "../components/CountdownOverlay";
 import { FaArrowLeftLong } from "react-icons/fa6";
+import { useNavigate } from "react-router-dom";
 
 export default function LiveFeedback() {
+  const navigate = useNavigate();
+
   const [showCountdown, setShowCountdown] = useState(true);
 
   return (
@@ -39,7 +42,7 @@ export default function LiveFeedback() {
           {/* 상호작용 가능한 옵션 */}
           <div className="h-full flex flex-col justify-between p-8 text-white relative z-10">
             {/* 이전버튼 */}
-            <div>
+            <div onClick={() => navigate("/")} className="cursor-pointer">
               <FaArrowLeftLong size={30} />
             </div>
 
@@ -57,10 +60,12 @@ export default function LiveFeedback() {
                     <input type="checkbox" className="sr-only peer" />
                     <div
                       className="w-10 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer 
-                      peer-checked:bg-[#ACA9FE] transition-all"></div>
+                      peer-checked:bg-[#ACA9FE] transition-all"
+                    ></div>
                     <div
                       className="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full 
-                      transition-all peer-checked:translate-x-5"></div>
+                      transition-all peer-checked:translate-x-5"
+                    ></div>
                   </label>
                 </div>
 
@@ -71,15 +76,21 @@ export default function LiveFeedback() {
                     <input type="checkbox" className="sr-only peer" />
                     <div
                       className="w-10 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer 
-                      peer-checked:bg-[#ACA9FE] transition-all"></div>
+                      peer-checked:bg-[#ACA9FE] transition-all"
+                    ></div>
                     <div
                       className="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full 
-                      transition-all peer-checked:translate-x-5"></div>
+                      transition-all peer-checked:translate-x-5"
+                    ></div>
                   </label>
                 </div>
 
-                {/* 종료하기 */}
-                <div>종료하기</div>
+                <div
+                  onClick={() => navigate("/live")}
+                  className="cursor-pointer"
+                >
+                  종료하기
+                </div>
               </div>
             </div>
           </div>
