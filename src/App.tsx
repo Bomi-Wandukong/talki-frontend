@@ -1,10 +1,17 @@
+// App.tsx
 import "./css/App.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import GuideLine from "./GuideLine";
+import Next from "./Next";
 
 function App() {
   return (
-    <>
-      <div className="fontThin text-xl">폰트 설정 완료~!</div>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<GuideLine />} />
+        <Route path="/next" element={<Next />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
