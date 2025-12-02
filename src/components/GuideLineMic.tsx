@@ -82,8 +82,8 @@ const GuideLineMic: React.FC<GuideLineMicProps> = ({ onComplete }) => {
           onComplete();
         }
 
-        navigate("/next");
-      }, 10000);
+        navigate("/live");
+      }, 5000);
     } catch (err) {
       console.error("마이크 접근 오류:", err);
       setError("마이크 접근 권한이 필요합니다.");
@@ -144,7 +144,6 @@ const GuideLineMic: React.FC<GuideLineMicProps> = ({ onComplete }) => {
             "{testSentence}"
           </p>
         </div>
-
 
         {/* 녹음 버튼 (눌렀으면 사라짐) */}
         {showButton && (
