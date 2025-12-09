@@ -1,17 +1,48 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 export default function AnalysisResultDetail() {
+  const [visibleSections, setVisibleSections] = useState<number[]>([]);
+  const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = parseInt(
+              entry.target.getAttribute("data-index") || "0"
+            );
+            setVisibleSections((prev) => [...new Set([...prev, index])]);
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    sectionRefs.current.forEach((ref) => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => observer.disconnect();
+  }, []);
   return (
     <>
       <div className="w-screen bg-[#F7F7F8] text-[#3B3B3B]">
         {/* 전체 간격 프레임 */}
-        <div className="fontLight w-full py-20 px-[20%]">
+        <div className="fontLight leading-6 w-full py-20 px-[20%]">
           <span className="text-[25px] fontBold pb-3 border-b border-[#D7D6F1]">
             세부 분석 결과
           </span>
 
           {/* 음성 분석 결과 */}
-          <div className="mt-10 w-full bg-white rounded-2xl border border-[#D7D6F1] p-8">
+          <div
+            ref={(el) => (sectionRefs.current[0] = el)}
+            data-index="0"
+            className={`mt-10 w-full bg-white rounded-2xl border border-[#D7D6F1] px-8 pt-10 pb-15 transition-all duration-700 ${
+              visibleSections.includes(0)
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
+            }`}>
             <p className="text-[20px] fontBold">
               <span className="text-[#5650FF]">음성</span> 분석 결과
             </p>
@@ -20,15 +51,15 @@ export default function AnalysisResultDetail() {
               <div className="flex flex-col justify-center">
                 <img
                   src="./img/voiceFeedback.png"
-                  className=" px-[10%] w-auto"
+                  className="px-[10%] w-auto"
                 />
 
-                <div className="mt-8">
+                <div className="mt-12">
                   <p className="text-[#5650FF] text-[16px] fontBold">
                     파동 분석 결과(발화 속도, 높낮이 분석)
                   </p>
 
-                  <p className="text-[14px] mt-2">
+                  <p className="text-[14px] mt-6 px-8">
                     전체적으로 음성 파형의 리듬이 일정하게 유지되며, 문장 사이의
                     호흡 간격도 자연스러운 편이었어요. 발화 속도 역시 급격하게
                     흔들리는 부분 없이 비교적 안정적으로 유지되어 청자가 내용을
@@ -49,12 +80,12 @@ export default function AnalysisResultDetail() {
                 </div>
               </div>
 
-              <div className="mt-8 flex flex-col justify-center">
+              <div className="mt-12 flex flex-col justify-center">
                 <p className="text-[#5650FF] text-[16px] fontBold">
                   반복어 분석 결과
                 </p>
 
-                <p className="text-[14px] mt-2">
+                <p className="text-[14px] mt-6 px-8">
                   "음…", "어…", "그…"와 같은 생각하는 순간 나오는 습관 반복어가
                   소량 포함되어 있었어요. 하지만 대화형 발표에서는 자연스럽게
                   나타나는 부분이고, 전체 발화량 대비 과도하게 많지는 않은
@@ -79,7 +110,14 @@ export default function AnalysisResultDetail() {
           </div>
 
           {/* 시선 분석 결과 */}
-          <div className="mt-10 w-full bg-white rounded-2xl border border-[#D7D6F1] p-8">
+          <div
+            ref={(el) => (sectionRefs.current[1] = el)}
+            data-index="1"
+            className={`mt-10 w-full bg-white rounded-2xl border border-[#D7D6F1] px-8 pt-10 pb-15 transition-all duration-700 ${
+              visibleSections.includes(1)
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
+            }`}>
             <p className="text-[20px] fontBold">
               <span className="text-[#5650FF]">시선</span> 분석 결과
             </p>
@@ -95,24 +133,31 @@ export default function AnalysisResultDetail() {
               </div>
 
               {/* 오른쪽 설명 */}
-              <p className="flex-1 text-[14px] ml-5">
+              <p className="flex-1 text-[14px] ml-5 pl-4 border-l-2 border-[#D7D6F1]">
                 카메라 응시율이 72%로 비교적 높은 편에 속해요. 전체 발표
                 흐름에서 카메라를 바라보는 시간이 안정적으로 유지되어 청중과의
                 눈맞춤 효과가 잘 드러난 발표였습니다. 특히 핵심 내용을 전달할 때
                 카메라를 자연스럽게 응시하는 패턴이 나타나, 자신감 있는 인상을
-                주는 데 도움이 되었어요. 일부 구간에서는 화면 밖으로 시선이 잠시
-                흔들리거나 특정 방향으로 치우치는 모습이 보였어요. 잠깐씩 참고
-                자료를 확인하는 과정에서 나타난 것으로 보이며, 큰 문제는
-                아니지만 시선의 일관성을 조금만 더 유지하면 발표의 안정감이 더욱
-                강화될 거예요. 또한 문장 전환 시 카메라 응시가 줄어드는 경향이
-                있어, 이 지점에서만 조금 더 신경 써준다면 발표 전체가 훨씬
-                자연스럽고 단단해 보일 거예요.
+                주는 데 도움이 되었어요. <br /> <br />
+                일부 구간에서는 화면 밖으로 시선이 잠시 흔들리거나 특정 방향으로
+                치우치는 모습이 보였어요. 잠깐씩 참고 자료를 확인하는 과정에서
+                나타난 것으로 보이며, 큰 문제는 아니지만 시선의 일관성을 조금만
+                더 유지하면 발표의 안정감이 더욱 강화될 거예요. 또한 문장 전환
+                시 카메라 응시가 줄어드는 경향이 있어, 이 지점에서만 조금 더
+                신경 써준다면 발표 전체가 훨씬 자연스럽고 단단해 보일 거예요.
               </p>
             </div>
           </div>
 
           {/* 행동 분석 결과 */}
-          <div className="mt-10 w-full bg-white rounded-2xl border border-[#D7D6F1] p-8">
+          <div
+            ref={(el) => (sectionRefs.current[2] = el)}
+            data-index="2"
+            className={`mt-10 w-full bg-white rounded-2xl border border-[#D7D6F1] px-8 pt-10 pb-15 transition-all duration-700 ${
+              visibleSections.includes(2)
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
+            }`}>
             <p className="text-[20px] fontBold">
               <span className="text-[#5650FF]">행동</span> 분석 결과
             </p>
@@ -178,7 +223,7 @@ export default function AnalysisResultDetail() {
                   </div>
                 </div>
 
-                <p className="text-[14px] mt-4">
+                <p className="text-[14px] mt-7 px-8 mx-9 border-l-2 border-[#D7D6F1]">
                   전체 발표에서 안정적인 톤과 일관된 시선 처리, 그리고
                   자연스러운 제스처 사용이 꾸준히 나타나 긍정적인 인상을
                   주었습니다. 특히 중요한 내용을 전달할 때 목소리의 높낮이를
@@ -219,7 +264,7 @@ export default function AnalysisResultDetail() {
 
                   <div className="flex border-b border-[#D7D6F1]">
                     <div className="w-[80%] flex items-center justify-center py-3 px-4 text-center border-r border-[#D7D6F1]">
-                      말을 잇는 과정에서 ‘음...’, ‘어...’ 등의 반복어가 나타난
+                      말을 잇는 과정에서 '음...', '어...' 등의 반복어가 나타난
                       구간
                     </div>
                     <div className="w-[20%] flex items-center justify-center py-3 px-4 text-[#5678FF]">
@@ -247,7 +292,7 @@ export default function AnalysisResultDetail() {
                   </div>
                 </div>
 
-                <p className="text-[14px] mt-4">
+                <p className="text-[14px] mt-7 px-8 mx-9 border-l-2 border-[#D7D6F1]">
                   전반적으로 안정적으로 발표했지만, 몇몇 구간에서는 속도 변화나
                   시선 처리, 반복어 사용 등으로 인해 전달력이 조금씩 약해지는
                   모습이 관찰되었어요. 문장 시작이나 전환 시 속도가 빨라지는
@@ -266,7 +311,14 @@ export default function AnalysisResultDetail() {
           </div>
 
           {/* 발표 내용 분석 결과 */}
-          <div className="mt-10 w-full bg-white rounded-2xl border border-[#D7D6F1] p-8">
+          <div
+            ref={(el) => (sectionRefs.current[3] = el)}
+            data-index="3"
+            className={`mt-10 w-full bg-white rounded-2xl border border-[#D7D6F1] px-8 pt-10 pb-15 transition-all duration-700 ${
+              visibleSections.includes(3)
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
+            }`}>
             <p className="text-[20px] fontBold">
               <span className="text-[#5650FF]">발표 내용</span> 분석 결과
             </p>
@@ -276,7 +328,7 @@ export default function AnalysisResultDetail() {
                 src="./img/contentFeedbackGraph.png"
                 className="min-w-[200px] h-auto object-contain mx-auto"
               />
-              <p className="text-[14px] mr-3">
+              <p className="text-[14px] mt-7 px-[8%]">
                 전체적으로 질문의 핵심을 잘 파악하고 이에 맞는 방향으로 답변한
                 점이 돋보였습니다. 특히 발언 초반부에서 주제의 맥락을 정확히
                 짚고, 예시를 통해 내용을 구체화한 부분은 청중에게 명확한 이해를
@@ -289,8 +341,8 @@ export default function AnalysisResultDetail() {
                 문장 간 연결이 조금 어색하게 느껴지는 부분이 있어 청중이 다소
                 집중이 흐트러질 수 있는 여지가 있었습니다. 답변 과정에서 핵심
                 메시지–근거–예시 순으로 구조화하면 논리적 완성도가 더 높아질
-                거예요. 또한 주제에서 벗어나는 내용은 과감히 생략하거나, “이
-                부분은 추가 정보지만…”처럼 의도를 명확히 밝혀주면 발언의
+                거예요. 또한 주제에서 벗어나는 내용은 과감히 생략하거나, "이
+                부분은 추가 정보지만…"처럼 의도를 명확히 밝혀주면 발언의
                 일관성이 유지됩니다. 문장 간 전환을 조금만 더 매끄럽게
                 다듬는다면 발표 전체의 흐름이 훨씬 정돈되어 보이고, 전달력 역시
                 크게 향상될 것입니다.
@@ -299,6 +351,19 @@ export default function AnalysisResultDetail() {
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </>
   );
 }

@@ -2,31 +2,102 @@ import React, { useState } from "react";
 import AnalysisResult from "../components/AnalysisResult";
 import AnalysisResultDetail from "../components/AnalysisResultDetail";
 import FeedbackBottomBar from "../components/FeedbackBottomBar";
+import { downloadFullPDF, downloadBasicPDF } from "../utils/pdfDownload";
 
 export default function FeedbackResult() {
   const [showDetail, setShowDetail] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleBottomButton = () => {
     if (showDetail) {
-      // 상세 페이지 → 홈으로 돌아가기
-      // 예: 홈으로 이동하거나 다른 페이지로 이동
-      window.location.href = "/"; // 필요하면 변경 가능
+      window.location.href = "/";
     } else {
-      // 상세 분석 보기 클릭
       setShowDetail(true);
     }
   };
 
+  const handleDownloadPDF = async () => {
+    if (isDownloading) return;
+
+    setIsDownloading(true);
+
+    try {
+      if (showDetail) {
+        // 세부 분석까지 본 경우 - 전체 다운로드
+        await downloadFullPDF();
+        alert("전체 분석 결과 PDF 다운로드가 완료되었습니다!");
+      } else {
+        // 기본 분석만 본 경우 - 기본 분석만 다운로드
+        await downloadBasicPDF();
+        alert("기본 분석 결과 PDF 다운로드가 완료되었습니다!");
+      }
+    } catch (error) {
+      console.error("PDF 다운로드 실패:", error);
+      alert("PDF 다운로드에 실패했습니다.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
-    <>
-      {/* 처음에는 AnalysisResult만 보임 */}
-      <AnalysisResult />
+    <div className="relative">
+      {/* 전체 콘텐츠를 감싸는 div */}
+      <div id="full-analysis-content">
+        {/* 기본 분석 결과 */}
+        <div
+          id="basic-analysis-content"
+          className="animate-[fadeIn_0.6s_ease-out]">
+          <AnalysisResult />
+        </div>
 
-      {/* 상세 분석 보기 눌렀을 때만 화면 추가 */}
-      {showDetail && <AnalysisResultDetail />}
+        {/* 세부 분석 결과 */}
+        {showDetail && (
+          <div className="animate-[slideUp_0.8s_ease-out]">
+            <AnalysisResultDetail />
+          </div>
+        )}
+      </div>
 
-      {/* 버튼 상태 변경 */}
-      <FeedbackBottomBar isDetail={showDetail} onClick={handleBottomButton} />
-    </>
+      {/* 버튼 */}
+      <FeedbackBottomBar
+        isDetail={showDetail}
+        onClick={handleBottomButton}
+        onDownloadPDF={handleDownloadPDF}
+      />
+
+      {/* 다운로드 중 로딩 표시 */}
+      {isDownloading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-xl">
+            <p className="text-lg font-bold">PDF 생성 중...</p>
+            <p className="text-sm text-gray-600 mt-2">잠시만 기다려주세요...</p>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(50px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+    </div>
   );
 }

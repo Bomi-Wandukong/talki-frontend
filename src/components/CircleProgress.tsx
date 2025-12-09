@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 interface CircleProgressProps {
   label: string;
@@ -11,14 +11,41 @@ const CircleProgress: React.FC<CircleProgressProps> = ({
   score,
   maxScore = 100,
 }) => {
-  const percentage = (score / maxScore) * 100;
+  const [animatedScore, setAnimatedScore] = useState(0);
+  const [animatedPercentage, setAnimatedPercentage] = useState(0);
+
+  useEffect(() => {
+    const duration = 1500;
+    const steps = 60;
+    const stepDuration = duration / steps;
+    const scoreIncrement = score / steps;
+    const percentageIncrement = ((score / maxScore) * 100) / steps;
+
+    let currentStep = 0;
+
+    const timer = setInterval(() => {
+      currentStep++;
+
+      if (currentStep <= steps) {
+        setAnimatedScore(Math.round(scoreIncrement * currentStep));
+        setAnimatedPercentage(percentageIncrement * currentStep);
+      } else {
+        setAnimatedScore(score);
+        setAnimatedPercentage((score / maxScore) * 100);
+        clearInterval(timer);
+      }
+    }, stepDuration);
+
+    return () => clearInterval(timer);
+  }, [score, maxScore]);
+
   const radius = 60;
   const strokeWidth = 18;
   const normalizedRadius = radius - strokeWidth / 2;
   const circumference = normalizedRadius * 2 * Math.PI;
   const strokeDashoffset = -(
     circumference -
-    (percentage / 100) * circumference
+    (animatedPercentage / 100) * circumference
   );
 
   return (
@@ -48,7 +75,9 @@ const CircleProgress: React.FC<CircleProgressProps> = ({
             r={normalizedRadius}
             cx={radius}
             cy={radius}
-            className="transition-all duration-500 ease-out"
+            style={{
+              transition: "stroke-dashoffset 25ms linear",
+            }}
           />
         </svg>
       </div>
@@ -57,7 +86,7 @@ const CircleProgress: React.FC<CircleProgressProps> = ({
       <div className="mt-5 text-center text-[15px] text-[#3B3B3B] fontRegular">
         <span>{label}</span>
         <span className="ml-2 text-[#5650FF] fontBold text-[20px]">
-          {score}
+          {animatedScore}
         </span>
         <span>/{maxScore}</span>
       </div>
