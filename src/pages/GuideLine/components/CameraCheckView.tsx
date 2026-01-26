@@ -13,9 +13,9 @@ const CameraCheckView = ({ onComplete }: { onComplete: () => void }) => {
   const [isInside, setIsInside] = useState(false)
 
   const startTimeRef = useRef<number | null>(null)
-  const REQUIRED_TIME = 5000 // 5초 (밀리초 단위)
+  const REQUIRED_TIME = 5000 
 
-  // MediaPipe 모델 및 카메라 초기화 (기존 동일)
+  // MediaPipe 모델 및 카메라 초기화
   useEffect(() => {
     const init = async () => {
       try {
@@ -64,7 +64,7 @@ const CameraCheckView = ({ onComplete }: { onComplete: () => void }) => {
       if (results.faceLandmarks && results.faceLandmarks.length > 0) {
         const landmarks = results.faceLandmarks[0]
 
-        // 랜드마크 데이터가 유효한 숫자인지 한 번 더 체크 (에러 방지)
+        // 랜드마크 데이터가 유효한 숫자인지 한 번 더 체크
         if (!landmarks || landmarks.length === 0) {
           requestAnimationFrame(predictWebcam)
           return

@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import StepIndicator from './components/StepIndicator'
 import CameraCheckView from './components/CameraCheckView'
-import LightCheckView from './components/LightCheckView'
 import SpeakerCheckView from './components/SpeakerCheckView'
 
 const GuideLine = () => {
   const [step, setStep] = useState(0)
-  const TOTAL_STEPS = 3
+  const TOTAL_STEPS = 2
 
   const handleNext = () => {
     if (step < TOTAL_STEPS - 1) setStep((prev) => prev + 1)
@@ -28,8 +27,7 @@ const GuideLine = () => {
         </div>
         <div className="CheckSpace mt-10 h-[65%] w-[97%] rounded-xl bg-white p-10 flex flex-col justify-center items-center">
           {step === 0 && <CameraCheckView onComplete={handleNext} />}
-          {step === 1 && <LightCheckView onComplete={handleNext} />}
-          {step === 2 && <SpeakerCheckView onComplete={handleNext} />}
+          {step === 1 && <SpeakerCheckView onComplete={handleNext} />}
         </div>
       </div>
     </div>
