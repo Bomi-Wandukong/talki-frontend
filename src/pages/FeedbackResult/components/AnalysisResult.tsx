@@ -12,13 +12,13 @@ export default function AnalysisResult() {
   return (
     <div className="min-h-screen w-full bg-[#F7F7F8]">
       {/* 상단 분석 영역 */}
-      <div className="fontBold mx-auto w-full max-w-5xl px-6 pt-20">
-        <p className="max-w-43 mb-13 animate-[fadeIn_0.5s_ease-out] border-b-2 border-[#D7D6F1] pb-3 text-[25px] text-[#3B3B3B]">
+      <div className="mx-auto w-full max-w-5xl px-6 pt-20">
+        <p className="mb-14 max-w-2xl animate-[fadeIn_0.5s_ease-out] border-b-2 border-[#D7D6F1] pb-3 text-[25px] font-bold text-[#3B3B3B]">
           분석 결과
         </p>
 
         {/* 분석 총점 */}
-        <div className="fontRegular flex animate-[fadeIn_0.7s_ease-out_0.2s_both] flex-col items-center justify-between gap-10 md:flex-row md:gap-0">
+        <div className="flex animate-[fadeIn_0.7s_ease-out_0.2s_both] flex-col items-center justify-between gap-10 md:flex-row md:gap-0">
           <div className="text-center text-[15px] md:mr-[13%] md:text-left">
             <p>분석 총점</p>
             <p>
@@ -33,14 +33,14 @@ export default function AnalysisResult() {
           </div>
         </div>
 
-        <div className="mt-15">
+        <div className="mt-14">
           <LinearProgressBar label="돌발 질문 점수" score={51.25} maxScore={100} />
         </div>
       </div>
 
       {/* 피드백 내용 */}
-      <div className="mt-17 w-full animate-[slideUp_0.8s_ease-out_0.6s_both] rounded-t-[80px] bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-        <div className="pt-17 fontLight mx-auto w-full max-w-5xl px-6 leading-6 text-[#3B3B3B]">
+      <div className="mt-16 w-full animate-[slideUp_0.8s_ease-out_0.6s_both] rounded-t-[80px] bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <div className="mx-auto w-full max-w-5xl px-6 pb-10 pt-16 leading-6 text-[#3B3B3B]">
           {/* 좋은 점 */}
           <div className="mb-12 border-b-2 border-[#D7D6F1] pb-12">
             <p className="fontBold text-[20px]">

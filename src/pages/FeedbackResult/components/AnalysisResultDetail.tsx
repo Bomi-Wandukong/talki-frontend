@@ -84,7 +84,7 @@ export default function AnalysisResultDetail() {
 
   return (
     <div className="min-h-screen w-full bg-[#F7F7F8] text-[#3B3B3B]">
-      <div className="fontLight mx-auto w-full max-w-5xl px-6 py-20 leading-6">
+      <div className="fontLight mx-auto w-full max-w-5xl px-6 pb-36 pt-24 leading-6">
         <div className="border-b border-[#D7D6F1] pb-3">
           <span className="fontBold text-[25px]">세부 분석 결과</span>
         </div>
@@ -170,7 +170,7 @@ export default function AnalysisResultDetail() {
             sectionRefs.current[3] = el
           }}
         >
-          <div className="mt-5 flex flex-col gap-6 px-2 md:flex-row">
+          <div className="mt-14 flex flex-col gap-6 px-2 md:flex-row">
             <p className="mt-7 flex-1 pl-5 pr-10 text-[14px]">
               발표 내용이 전반적으로 주제에 잘 맞게 구성되어 있고, 핵심에서 크게 벗어나는 부분 없이
               흐름이 잘 유지되고 있어요.

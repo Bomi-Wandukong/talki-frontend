@@ -1,13 +1,13 @@
-import React, { ReactNode } from "react";
+import React, { type ReactNode } from 'react'
 
 interface FeedbackSectionProps {
-  title: string;
-  highlightText: string;
-  children: ReactNode;
-  isVisible: boolean;
-  delay?: string;
-  dataIndex?: number;
-  innerRef?: React.Ref<HTMLDivElement>;
+  title: string
+  highlightText: string
+  children: ReactNode
+  isVisible: boolean
+  delay?: string
+  dataIndex?: number
+  innerRef?: React.Ref<HTMLDivElement>
 }
 
 export default function FeedbackSection({
@@ -22,14 +22,14 @@ export default function FeedbackSection({
     <div
       ref={innerRef}
       data-index={dataIndex}
-      className={`mt-10 w-full bg-white rounded-2xl border border-[#D7D6F1] px-4 md:px-8 pt-10 pb-15 transition-all duration-700 ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+      className={`mt-10 w-full rounded-2xl border border-[#D7D6F1] bg-white px-4 pb-14 pt-10 transition-all duration-700 md:px-8 ${
+        isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
       }`}
     >
-      <p className="text-[20px] fontBold">
+      <p className="fontBold text-[20px]">
         <span className="text-[#5650FF]">{highlightText}</span> {title}
       </p>
       {children}
     </div>
-  );
+  )
 }
