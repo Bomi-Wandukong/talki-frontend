@@ -59,10 +59,14 @@ export default function HeroSection() {
         </div>
 
         {/* Right Section: Illustration & Button */}
-        <div className="mt-0 flex animate-[slideUp_1s_ease-out_0.3s_both] flex-col items-center lg:w-[50%] lg:items-end">
+        <div className="mt-0 flex animate-[slideUp_1s_ease-out_0.3s_both] flex-col items-center lg:w-[60%] lg:items-end">
           {/* Illustration */}
           <div className="relative mb-8 w-full max-w-[1000px]">
-            <img src="/img/main1.png" alt="Illustration" className="h-auto w-full object-contain" />
+            <img
+              src="/img/main1.png"
+              alt="Illustration"
+              className="animate-floating h-auto w-full object-contain"
+            />
           </div>
 
           {/* CTA Button */}
@@ -140,6 +144,18 @@ export default function HeroSection() {
             opacity: 1;
             transform: translateY(0);
           }
+        }
+        @keyframes float {
+          0%,
+          100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-20px);
+          }
+        }
+        .animate-floating {
+          animation: float 3s ease-in-out infinite;
         }
       `}</style>
     </div>
