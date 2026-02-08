@@ -1,6 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom'
 
-export default function Login() {
+const Login = () => {
   const navigate = useNavigate()
 
   return (
@@ -148,3 +148,5 @@ export default function Login() {
     </div>
   )
 }
+
+export default Login

@@ -5,6 +5,7 @@ import FeedbackResult from '@/pages/FeedbackResult/FeedbackResult'
 import LandingMain from '@/pages/LandingPage/LandingMain'
 import GuideLine from './pages/GuideLine/GuideLine'
 import Login from '@/pages/Login/Login'
+import Signup from '@/pages/Signup/Signup'
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/result" element={<FeedbackResult />} />
         <Route path="/GuideLine" element={<GuideLine />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
       </Routes>
     </BrowserRouter>
   )
