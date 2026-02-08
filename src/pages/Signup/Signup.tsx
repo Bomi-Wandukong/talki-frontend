@@ -142,7 +142,7 @@ const Signup = () => {
                       <label className="text-[2vh] font-bold text-[#575757]">닉네임</label>
                       <input
                         type="text"
-                        className="h-[6.5vh] min-h-[40px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[1.8vh] focus:border-[#5650FF] focus:outline-none"
+                        className="h-[6.5vh] min-h-[40px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2.2vh] focus:border-[#5650FF] focus:outline-none"
                       />
                     </div>
                   </div>
@@ -199,7 +199,7 @@ const Signup = () => {
                     <div className="relative flex items-center">
                       <input
                         type="text"
-                        className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-6 text-[1.6vh] focus:border-[#5650FF] focus:outline-none"
+                        className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2.2vh] focus:border-[#5650FF] focus:outline-none"
                       />
                       <button
                         type="button"
@@ -215,7 +215,7 @@ const Signup = () => {
                     <label className="text-[1.8vh] font-bold text-[#575757]">비밀번호</label>
                     <input
                       type="password"
-                      className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-6 text-[1.6vh] focus:border-[#5650FF] focus:outline-none"
+                      className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2.2vh] focus:border-[#5650FF] focus:outline-none"
                     />
                   </div>
 
@@ -224,7 +224,7 @@ const Signup = () => {
                     <label className="text-[1.8vh] font-bold text-[#575757]">비밀번호 확인</label>
                     <input
                       type="password"
-                      className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-6 text-[1.6vh] focus:border-[#5650FF] focus:outline-none"
+                      className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2.2vh] focus:border-[#5650FF] focus:outline-none"
                     />
                   </div>
 
@@ -233,7 +233,7 @@ const Signup = () => {
                     <label className="text-[1.8vh] font-bold text-[#575757]">이메일</label>
                     <input
                       type="email"
-                      className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-6 text-[1.6vh] focus:border-[#5650FF] focus:outline-none"
+                      className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2.2vh] focus:border-[#5650FF] focus:outline-none"
                     />
                   </div>
 
