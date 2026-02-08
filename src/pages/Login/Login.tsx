@@ -48,7 +48,7 @@ const Login = () => {
       </div>
 
       {/* Header Logo Area */}
-      <header className="relative z-20 px-10 py-4">
+      <header className="relative z-20 px-10 pt-4">
         <Link to="/">
           <img
             src="/img/logo/purpleLogo.png"
@@ -59,44 +59,45 @@ const Login = () => {
       </header>
 
       {/* Login Center Area */}
-      <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 pb-10">
-        <div className="w-full max-w-[650px]">
+      <main className="relative z-10 flex h-full w-full flex-col items-center px-4 pb-[5vh]">
+        <div className="flex h-full max-h-[900px] w-full max-w-[650px] flex-col justify-center">
           {/* Title Section */}
-          <div className="mb-10 text-center">
-            <h1 className="mb-2 text-5xl font-bold text-[#5650FF]">로그인</h1>
-            <p className="text-sm text-[#989898]">토키와 함께 연습해볼까요?</p>
+          <div className="mb-[4vh] text-center">
+            <h1 className="mb-[0.5vh] text-[5vh] font-bold text-[#5650FF]">로그인</h1>
+            <p className="text-[1.8vh] text-[#989898]">토키와 함께 연습해볼까요?</p>
           </div>
 
           {/* Form Card */}
           <div
-            className="w-full rounded-[24px] bg-white px-12 py-10 md:px-16 md:py-12"
+            className="flex w-full flex-col justify-center rounded-[24px] bg-white px-12 py-[7vh] md:px-16"
             style={{
               boxShadow: '0px 10px 20px rgba(0,0,0,0.1), 0px -4px 10px rgba(0,0,0,0.05)',
+              maxHeight: '90vh',
             }}
           >
-            <form className="flex flex-col gap-6">
+            <form className="flex flex-col gap-[2.5vh]">
               {/* ID Input */}
-              <div className="flex flex-col gap-2">
-                <label className="text-lg font-bold text-[#575757]">아이디</label>
+              <div className="flex flex-col gap-[1vh]">
+                <label className="text-[2vh] font-bold text-[#575757]">아이디</label>
                 <input
                   type="text"
                   placeholder=""
-                  className="h-[60px] w-full rounded-xl border-2 border-[#D7D6F2] px-6 text-lg focus:border-[#5650FF] focus:outline-none"
+                  className="h-[7.5vh] w-full rounded-xl border-2 border-[#D7D6F2] px-5 text-[2.3vh] focus:border-[#5650FF] focus:outline-none"
                 />
               </div>
 
               {/* Password Input */}
-              <div className="flex flex-col gap-1">
-                <label className="text-lg font-bold text-[#575757]">비밀번호</label>
+              <div className="flex flex-col gap-[1vh]">
+                <label className="text-[2vh] font-bold text-[#575757]">비밀번호</label>
                 <input
                   type="password"
                   placeholder=""
-                  className="h-[60px] w-full rounded-xl border-2 border-[#D7D6F2] px-6 text-lg focus:border-[#5650FF] focus:outline-none"
+                  className="h-[7.5vh] w-full rounded-xl border-2 border-[#D7D6F2] px-5 text-[2.3vh] focus:border-[#5650FF] focus:outline-none"
                 />
                 <div className="text-right">
                   <button
                     type="button"
-                    className="text-sm font-medium text-[#5650FF] hover:underline"
+                    className="text-[1.6vh] font-medium text-[#5650FF] hover:underline"
                   >
                     비밀번호가 생각이 안나요!
                   </button>
@@ -104,16 +105,16 @@ const Login = () => {
               </div>
 
               {/* Buttons */}
-              <div className="mt-2 flex flex-col items-center gap-5">
+              <div className="mt-[5vh] flex flex-col items-center gap-[2vh]">
                 <button
                   type="submit"
-                  className="h-[60px] w-[90%] rounded-xl bg-[#5650FF] text-xl text-white transition-all hover:bg-[#4a45e0] active:scale-[0.98]"
+                  className="h-[7.5vh] w-[90%] rounded-xl bg-[#5650FF] text-[2.5vh] text-white transition-all hover:bg-[#4a45e0] active:scale-[0.98]"
                 >
                   로그인
                 </button>
                 <button
                   type="button"
-                  className="h-[60px] w-[90%] rounded-xl border-2 border-[#5650FF] bg-white text-xl text-[#5650FF] transition-all hover:bg-[#f8f7ff] active:scale-[0.98]"
+                  className="h-[7.5vh] w-[90%] rounded-xl border-2 border-[#5650FF] bg-white text-[2.5vh] text-[#5650FF] transition-all hover:bg-[#f8f7ff] active:scale-[0.98]"
                   onClick={() => navigate('/signup')}
                 >
                   회원가입
