@@ -4,7 +4,7 @@ const Category = () => {
   return (
     <div className="min-h-screen bg-[#F7F7F8] pt-[72px]">
       <Nav />
-      <div>홈 화면</div>
+      <div>카테고리 화면</div>
     </div>
   )
 }

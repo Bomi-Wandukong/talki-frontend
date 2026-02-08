@@ -15,7 +15,7 @@ const GuideLine = () => {
   return (
     <div className="bg-[#F7F7F8] min-h-screen pt-[72px]"> 
       <Nav/>
-      <div className="flex h-screen flex-col items-center mt-">
+      <div className="flex h-screen flex-col items-center">
         <div className="flex h-full w-[75%] flex-col items-center">
           <div className="GuideLineTitle mt-20 flex w-full items-center justify-between">
             <div>
