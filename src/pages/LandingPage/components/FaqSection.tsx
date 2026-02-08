@@ -87,7 +87,7 @@ export default function FaqSection() {
         {/* Header */}
         <RevealOnScroll animationClass="-translate-x-10 opacity-0">
           <div className="mb-10 flex items-center gap-4">
-            <img src="/img/logo.png" alt="Logo" className="h-12 w-12" />
+            <img src="/img/logo/logo.png" alt="Logo" className="h-12 w-12" />
             <h2 className="text-2xl font-bold text-[#5650FF] md:text-3xl">자주 묻는 질문들</h2>
           </div>
         </RevealOnScroll>

@@ -14,7 +14,7 @@ const realPracticeCards: CardData[] = [
     description:
       '당신의 상황을 카테고리 설정을 통해 구체적으로 알려주세요. 비슷한 환경에서 지속적으로 노출되며, 불안을 완화하고 부족한 점을 개선할 수 있어요.',
 
-    rightContent: <img src="/img/practice1.png" alt="practice1" />,
+    rightContent: <img src="/img/landingPage/practice1.png" alt="practice1" />,
   },
   {
     title: '지금 내가 잘하고 있나?',
@@ -26,7 +26,7 @@ const realPracticeCards: CardData[] = [
         추천해요!
       </>
     ),
-    rightContent: <img src="/img/practice2.png" alt="practice2" />,
+    rightContent: <img src="/img/landingPage/practice2.png" alt="practice2" />,
   },
   {
     title: '주변 소리에 너무 \n 영향을 많이 받아요!',
@@ -38,7 +38,7 @@ const realPracticeCards: CardData[] = [
         추천해요!
       </>
     ),
-    rightContent: <img src="/img/practice3.png" alt="practice3" />,
+    rightContent: <img src="/img/landingPage/practice3.png" alt="practice3" />,
   },
   {
     title: '구체적인 개선점이 \n 필요해요.',
@@ -51,7 +51,7 @@ const realPracticeCards: CardData[] = [
         내용은 리포트를 확인해보세요!
       </>
     ),
-    rightContent: <img src="/img/practice4.png" alt="practice4" />,
+    rightContent: <img src="/img/landingPage/practice4.png" alt="practice4" />,
   },
 ]
 
@@ -155,7 +155,7 @@ function PracticeHeader({
     <div className="w-full">
       <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 pb-12 md:flex-row md:items-center">
         <div className="flex items-center gap-2">
-          <img src="/img/logo.png" className="w-[65px]" />
+          <img src="/img/logo/logo.png" className="w-[65px]" />
           <div>
             <h2 className="text-2xl font-bold text-[#5650FF] md:text-2xl">
               완벽하지 않아도 괜찮아요

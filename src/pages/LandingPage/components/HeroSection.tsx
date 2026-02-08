@@ -55,7 +55,7 @@ export default function HeroSection() {
           {/* Logo */}
           <div className="mb-6">
             <img
-              src="/img/whiteLogo.png"
+              src="/img/logo/whiteLogo.png"
               alt="TALKI Logo"
               className="w-40 object-contain lg:w-[280px]"
             />
@@ -79,7 +79,7 @@ export default function HeroSection() {
           {/* Illustration */}
           <div className="relative mb-2 w-full max-w-[1000px]">
             <img
-              src="/img/main1.png"
+              src="/img/landingPage/main1.png"
               alt="Illustration"
               className="animate-floating h-auto w-full object-contain"
             />

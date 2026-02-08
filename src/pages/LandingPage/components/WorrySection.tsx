@@ -15,56 +15,56 @@ const worryData: WorryItem[] = [
     text: '발표 실력이 나아지고 있는지 확인하고 싶어요',
     highlightText: '나아지고 있는지',
     rotation: -14,
-    image: '/img/worry1.png',
+    image: '/img/landingPage/worry1.png',
   },
   {
     id: 2,
     text: '발표만 하면 항상 머리가 새하얘져요',
     highlightText: '머리가 새하얘져요',
     rotation: 12,
-    image: '/img/worry2.png',
+    image: '/img/landingPage/worry2.png',
   },
   {
     id: 3,
     text: '면접할 때 말 속도 조절이 어려워요',
     highlightText: '말 속도 조절',
     rotation: -12,
-    image: '/img/worry3.png',
+    image: '/img/landingPage/worry3.png',
   },
   {
     id: 4,
     text: '혼자 연습하니까 제가 잘하고 있는지 모르겠어요',
     highlightText: '혼자 연습',
     rotation: 16,
-    image: '/img/worry4.png',
+    image: '/img/landingPage/worry4.png',
   },
   {
     id: 5,
     text: '남들 앞에서 말할 때 목소리가 자꾸 떨려요',
     highlightText: '목소리가 자꾸 떨려요',
     rotation: -10,
-    image: '/img/worry1.png',
+    image: '/img/landingPage/worry1.png',
   },
   {
     id: 6,
     text: '시선 처리를 어떻게 해야 할지 모르겠어요',
     highlightText: '시선 처리',
     rotation: 14,
-    image: '/img/worry2.png',
+    image: '/img/landingPage/worry2.png',
   },
   {
     id: 7,
     text: '준비한 내용을 자꾸 까먹어서 당황스러워요',
     highlightText: '자꾸 까먹어서',
     rotation: -15,
-    image: '/img/worry3.png',
+    image: '/img/landingPage/worry3.png',
   },
   {
     id: 8,
     text: '질의응답 시간에 대답을 잘 못할까 봐 무서워요',
     highlightText: '대답을 잘 못할까 봐',
     rotation: 16,
-    image: '/img/worry4.png',
+    image: '/img/landingPage/worry4.png',
   },
 ]
 
@@ -188,21 +188,21 @@ export default function WorrySection() {
       <div className="z-10 grid w-full max-w-7xl grid-cols-1 gap-6 px-6 md:grid-cols-3">
         <RevealOnScroll delay={0}>
           <FeatureBox
-            imgURL="/img/micIcon.png"
+            imgURL="/img/landingPage/micIcon.png"
             title="실제같은 상황에서 말해보기"
             desc="본인에게 맞는 디테일을 직접 설정해서 진짜처럼 함께 연습하고 개선점을 찾아봐요."
           />
         </RevealOnScroll>
         <RevealOnScroll delay={200}>
           <FeatureBox
-            imgURL="/img/reportIcon.png"
+            imgURL="/img/landingPage/reportIcon.png"
             title="리포트 및 피드백 생성"
             desc="어떤 점이 부족했고 좋았는지가 적힌 리포트를 확인하고 지속적으로 나아지는 것을 확인해요."
           />
         </RevealOnScroll>
         <RevealOnScroll delay={400}>
           <FeatureBox
-            imgURL="/img/checklistIcon.png"
+            imgURL="/img/landingPage/checklistIcon.png"
             title="맞춤형 연습 시스템"
             desc="불안을 직면하고 함께 완화하는 방법을 연습하면서 전체적인 실력을 향상시켜요."
           />

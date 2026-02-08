@@ -54,7 +54,7 @@ export default function RequirementsSection() {
         {/* Header */}
         <RevealOnScroll>
           <div className="mb-20 flex items-center gap-4">
-            <img src="/img/logo.png" alt="Talki" className="h-12 w-12" />
+            <img src="/img/logo/logo.png" alt="Talki" className="h-12 w-12" />
             <h2 className="text-2xl font-bold text-[#ACA9FE] md:text-3xl">
               TALKI를 사용할 때, <span className="text-[#5650FF]">아래의 준비물</span>이 필요해요
             </h2>
@@ -66,7 +66,11 @@ export default function RequirementsSection() {
           {/* 카메라 */}
           <RevealOnScroll delay={0} className="h-full">
             <div className="flex h-full items-center gap-8 rounded-[32px] bg-[#F7F7F8] p-10 shadow-sm md:p-12">
-              <img src="/img/camera.png" alt="Camera" className="animate-floating mr-9 h-auto" />
+              <img
+                src="/img/landingPage/camera.png"
+                alt="Camera"
+                className="animate-floating mr-9 h-auto"
+              />
               <div className="flex flex-col justify-center">
                 <h3 className="mb-4 text-2xl font-bold text-[#5650FF]">카메라</h3>
                 <p className="text-lg leading-relaxed text-gray-600">
@@ -95,7 +99,11 @@ export default function RequirementsSection() {
           {/* 마이크 */}
           <RevealOnScroll delay={400} className="h-full">
             <div className="flex h-full items-center gap-8 rounded-[32px] bg-[#F7F7F8] p-10 shadow-sm md:p-12">
-              <img src="/img/mic.png" alt="Mic" className="animate-floating-delayed h-auto" />
+              <img
+                src="/img/landingPage/mic.png"
+                alt="Mic"
+                className="animate-floating-delayed h-auto"
+              />
               <div className="flex flex-col justify-center">
                 <h3 className="mb-4 text-2xl font-bold text-[#5650FF]">마이크</h3>
                 <p className="text-lg leading-relaxed text-gray-600">
