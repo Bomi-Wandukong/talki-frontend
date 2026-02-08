@@ -29,7 +29,7 @@ const Signup = () => {
   }
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-white">
+    <div className="relative flex h-screen w-full flex-col overflow-hidden bg-white">
       {/* Background Wave */}
       <div className="pointer-events-none absolute left-0 top-0 z-0 h-full w-full overflow-hidden">
         <svg
@@ -73,7 +73,7 @@ const Signup = () => {
       </div>
 
       {/* Header Logo Area */}
-      <header className="relative z-20 px-10 py-4">
+      <header className="relative z-20 px-10 pt-4">
         <Link to="/">
           <img
             src="/img/logo/purpleLogo.png"
@@ -83,29 +83,30 @@ const Signup = () => {
         </Link>
       </header>
 
-      {/* Signup Center Area */}
-      <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-4">
-        <div className="w-full max-w-[1000px]">
-          {/* Title Section */}
-          <div className="mb-10 text-center">
-            <h1 className="mb-2 text-5xl font-bold text-[#5650FF]">회원가입</h1>
-            <p className="text-sm text-[#989898]">토키와 함께 연습해볼까요?</p>
+      {/* Signup Center Area - Remaining height */}
+      <main className="relative z-10 flex h-full w-full flex-col items-center px-4 pb-[5vh]">
+        <div className="flex h-full max-h-[900px] w-full max-w-[850px] flex-col justify-center">
+          {/* Title Section - ~10% height allocation */}
+          <div className="mb-[4vh] text-center">
+            <h1 className="mb-[0.5vh] text-[5vh] font-bold text-[#5650FF]">회원가입</h1>
+            <p className="text-[1.8vh] text-[#989898]">토키와 함께 연습해볼까요?</p>
           </div>
 
           {/* Form Card */}
           <div
-            className="w-full rounded-[24px] bg-white px-10 py-12 md:px-16"
+            className="flex w-full flex-1 flex-col justify-center rounded-[24px] bg-white px-6 py-[2.5vh] md:px-10 lg:px-16"
             style={{
               boxShadow: '0px 10px 20px rgba(0,0,0,0.1), 0px -4px 10px rgba(0,0,0,0.05)',
+              maxHeight: '70vh', // Limit card height
             }}
           >
-            <form className="flex flex-col gap-10" onSubmit={handleSubmit}>
-              <div className="flex flex-col gap-10 md:flex-row md:items-start md:gap-16">
-                {/* Left Side: Profile, Nickname & T&C */}
-                <div className="flex flex-col self-stretch md:w-[35%]">
-                  <div className="flex flex-1 flex-col items-center justify-center gap-8">
+            <form className="flex h-full flex-col justify-between" onSubmit={handleSubmit}>
+              <div className="flex h-full flex-col gap-[2.5%] md:flex-row md:items-start lg:gap-[5%]">
+                {/* Left Side: Profile, Nickname & T&C - 35% width */}
+                <div className="flex h-full flex-col justify-between md:w-[35%]">
+                  <div className="flex flex-1 flex-col items-center justify-center gap-[1.5vh]">
                     <div
-                      className="group relative h-40 w-40 cursor-pointer overflow-hidden rounded-full bg-[#E5E5E5] transition-all hover:bg-[#D9D9D9]"
+                      className="group relative h-[18vh] max-h-[160px] min-h-[100px] w-[18vh] min-w-[100px] max-w-[160px] cursor-pointer overflow-hidden rounded-full bg-[#E5E5E5] transition-all hover:bg-[#D9D9D9]"
                       onClick={handleImageClick}
                     >
                       {profileImg ? (
@@ -116,9 +117,8 @@ const Signup = () => {
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center">
-                          {/* Placeholder Icon */}
                           <svg
-                            className="h-20 w-20 text-white"
+                            className="h-[50%] w-[50%] text-white"
                             fill="currentColor"
                             viewBox="0 0 24 24"
                           >
@@ -138,21 +138,21 @@ const Signup = () => {
                       />
                     </div>
 
-                    <div className="flex w-full flex-col gap-2">
-                      <label className="text-lg font-bold text-[#575757]">닉네임</label>
+                    <div className="flex w-full flex-col gap-[0.5vh]">
+                      <label className="text-[2vh] font-bold text-[#575757]">닉네임</label>
                       <input
                         type="text"
-                        className="h-[55px] w-full rounded-xl border-2 border-[#D7D6F2] px-6 text-lg focus:border-[#5650FF] focus:outline-none"
+                        className="h-[6.5vh] min-h-[40px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[1.8vh] focus:border-[#5650FF] focus:outline-none"
                       />
                     </div>
                   </div>
 
                   {/* T&C Checkboxes at the bottom */}
-                  <div className="mt-10 flex w-full flex-col gap-3">
-                    <label className="flex cursor-pointer items-center gap-3 text-sm font-medium text-[#575757]">
+                  <div className="flex w-full flex-col gap-[1vh] pb-[4vh]">
+                    <label className="flex cursor-pointer items-center gap-2 text-[1.6vh] font-medium text-[#575757]">
                       <input
                         type="checkbox"
-                        className="h-5 w-5 rounded border-[#D7D6F2] text-[#5650FF] focus:ring-[#5650FF]"
+                        className="h-[2vh] w-[2vh] rounded border-[#D7D6F2] text-[#5650FF] focus:ring-[#5650FF]"
                       />
                       <span>
                         [필수]{' '}
@@ -162,10 +162,10 @@ const Signup = () => {
                         에 동의합니다.
                       </span>
                     </label>
-                    <label className="flex cursor-pointer items-center gap-3 text-sm font-medium text-[#575757]">
+                    <label className="flex cursor-pointer items-center gap-2 text-[1.6vh] font-medium text-[#575757]">
                       <input
                         type="checkbox"
-                        className="h-5 w-5 rounded border-[#D7D6F2] text-[#5650FF] focus:ring-[#5650FF]"
+                        className="h-[2vh] w-[2vh] rounded border-[#D7D6F2] text-[#5650FF] focus:ring-[#5650FF]"
                       />
                       <span>
                         [필수]{' '}
@@ -175,10 +175,10 @@ const Signup = () => {
                         에 동의합니다.
                       </span>
                     </label>
-                    <label className="flex cursor-pointer items-center gap-3 text-sm font-medium text-[#575757]">
+                    <label className="flex cursor-pointer items-center gap-2 text-[1.6vh] font-medium text-[#575757]">
                       <input
                         type="checkbox"
-                        className="h-5 w-5 rounded border-[#D7D6F2] text-[#5650FF] focus:ring-[#5650FF]"
+                        className="h-[2vh] w-[2vh] rounded border-[#D7D6F2] text-[#5650FF] focus:ring-[#5650FF]"
                       />
                       <span>
                         [선택]{' '}
@@ -192,18 +192,18 @@ const Signup = () => {
                 </div>
 
                 {/* Right Side: Account Info */}
-                <div className="flex flex-1 flex-col gap-6">
+                <div className="flex h-full flex-1 flex-col items-center justify-center gap-[3vh]">
                   {/* ID */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-lg font-bold text-[#575757]">아이디</label>
+                  <div className="flex w-[90%] flex-col gap-[0.5vh]">
+                    <label className="text-[1.8vh] font-bold text-[#575757]">아이디</label>
                     <div className="relative flex items-center">
                       <input
                         type="text"
-                        className="h-[55px] w-full rounded-xl border-2 border-[#D7D6F2] px-6 text-lg focus:border-[#5650FF] focus:outline-none"
+                        className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-6 text-[1.6vh] focus:border-[#5650FF] focus:outline-none"
                       />
                       <button
                         type="button"
-                        className="absolute right-2 h-[40px] rounded-lg bg-[#5650FF] px-6 text-sm text-white transition-all hover:bg-[#4a45e0]"
+                        className="absolute right-2 top-1/2 h-[4.5vh] min-h-[28px] -translate-y-1/2 rounded-lg bg-[#5650FF] px-4 text-[1.5vh] text-white transition-all hover:bg-[#4a45e0]"
                       >
                         중복 확인
                       </button>
@@ -211,41 +211,39 @@ const Signup = () => {
                   </div>
 
                   {/* Password */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-lg font-bold text-[#575757]">비밀번호</label>
+                  <div className="flex w-[90%] flex-col gap-[0.5vh]">
+                    <label className="text-[1.8vh] font-bold text-[#575757]">비밀번호</label>
                     <input
                       type="password"
-                      className="h-[55px] w-full rounded-xl border-2 border-[#D7D6F2] px-6 text-lg focus:border-[#5650FF] focus:outline-none"
+                      className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-6 text-[1.6vh] focus:border-[#5650FF] focus:outline-none"
                     />
                   </div>
 
                   {/* Password Check */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-lg font-bold text-[#575757]">비밀번호 확인</label>
+                  <div className="flex w-[90%] flex-col gap-[0.5vh]">
+                    <label className="text-[1.8vh] font-bold text-[#575757]">비밀번호 확인</label>
                     <input
                       type="password"
-                      className="h-[55px] w-full rounded-xl border-2 border-[#D7D6F2] px-6 text-lg focus:border-[#5650FF] focus:outline-none"
+                      className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-6 text-[1.6vh] focus:border-[#5650FF] focus:outline-none"
                     />
                   </div>
 
                   {/* Email */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-lg font-bold text-[#575757]">이메일</label>
+                  <div className="flex w-[90%] flex-col gap-[0.5vh]">
+                    <label className="text-[1.8vh] font-bold text-[#575757]">이메일</label>
                     <input
                       type="email"
-                      className="h-[55px] w-full rounded-xl border-2 border-[#D7D6F2] px-6 text-lg focus:border-[#5650FF] focus:outline-none"
+                      className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-6 text-[1.6vh] focus:border-[#5650FF] focus:outline-none"
                     />
                   </div>
 
-                  {/* Signup Button moved to right column bottom and centered */}
-                  <div className="mt-10 flex justify-center">
-                    <button
-                      type="submit"
-                      className="h-[60px] w-[80%] rounded-xl bg-[#5650FF] text-xl text-white transition-all hover:bg-[#4a45e0] active:scale-[0.98]"
-                    >
-                      회원가입
-                    </button>
-                  </div>
+                  {/* Signup Button */}
+                  <button
+                    type="submit"
+                    className="mt-[3vh] h-[6vh] min-h-[44px] w-[80%] rounded-xl bg-[#5650FF] text-[2vh] font-bold text-white transition-all hover:bg-[#4a45e0] active:scale-[0.98]"
+                  >
+                    회원가입
+                  </button>
                 </div>
               </div>
             </form>
