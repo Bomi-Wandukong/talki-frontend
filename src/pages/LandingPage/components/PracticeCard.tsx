@@ -1,40 +1,31 @@
 export interface PracticeCardProps {
-  title: React.ReactNode;
-  description: React.ReactNode;
-  rightContent: React.ReactNode;
-  top: string;
-  zIndex: string;
-  marginTop?: string;
-  marginBottom?: string;
+  title: React.ReactNode
+  description: React.ReactNode
+  rightContent: React.ReactNode
 }
 
-export default function PracticeCard({
-  title,
-  description,
-  rightContent,
-  top,
-  zIndex,
-  marginTop,
-  marginBottom = "mb-[100px]",
-}: PracticeCardProps) {
+export default function PracticeCard({ title, description, rightContent }: PracticeCardProps) {
   return (
     <div
-      className={`bg-white rounded-[40px] shadow-2xl overflow-hidden flex flex-col md:flex-row h-[500px] ${marginBottom}`}
+      className={`flex min-h-[550px] w-full flex-col overflow-hidden rounded-[40px] bg-white shadow-2xl md:flex-row`}
       style={{
-        marginTop: marginTop,
-        boxShadow: "0px 20px 40px rgba(0,0,0,0.1)",
-      }}>
-      <div className="w-full md:w-1/2 p-12 flex flex-col justify-center">
-        <h3 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 leading-tight">
+        boxShadow: '0px 20px 40px rgba(0,0,0,0.1)',
+      }}
+    >
+      {/* Left Content Area (2/5) */}
+      <div className="flex w-full flex-col justify-between px-16 py-16 md:w-[45%] md:py-24">
+        <h3 className="whitespace-pre-line text-2xl font-bold leading-[1.3] text-gray-900 md:text-3xl">
           {title}
         </h3>
-        <p className="text-lg text-gray-600 leading-relaxed font-light">
+        <p className="mt-8 text-lg font-light leading-relaxed text-gray-500 md:text-lg">
           {description}
         </p>
       </div>
-      <div className="w-full md:w-1/2 bg-gray-100 flex items-center justify-center relative overflow-hidden">
+
+      {/* Right Content Area (3/5) */}
+      <div className="relative flex w-full items-center justify-center overflow-hidden md:w-[55%] md:pr-8">
         {rightContent}
       </div>
     </div>
-  );
+  )
 }

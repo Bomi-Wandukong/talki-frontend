@@ -9,25 +9,13 @@ import Footer from './components/Footer'
 export default function Main() {
   return (
     <main className="h-screen w-full snap-y snap-mandatory overflow-y-auto scroll-smooth">
-      <section className="w-full snap-start">
-        <HeroSection />
-      </section>
-      <section className="w-full snap-start">
-        <WorrySection />
-      </section>
-      <section className="w-full snap-start">
-        <PracticeSection />
-      </section>
-      <section className="w-full snap-start">
-        <RequirementsSection />
-      </section>
-      <section className="w-full snap-start">
-        <FaqSection />
-      </section>
-      <section className="w-full snap-start">
-        <CtaSection />
-        <Footer />
-      </section>
+      <HeroSection />
+      <WorrySection />
+      <PracticeSection />
+      <RequirementsSection />
+      <FaqSection />
+      <CtaSection />
+      <Footer />
     </main>
   )
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface FaqItem {
   question: string
@@ -27,8 +27,55 @@ const faqs: FaqItem[] = [
   },
 ]
 
+// Reusable reveal wrapper for individual elements
+function RevealOnScroll({
+  children,
+  threshold = 0.1,
+  delay = 0,
+  animationClass = 'translate-y-10 opacity-0',
+  className = '',
+}: {
+  children: React.ReactNode
+  threshold?: number
+  delay?: number
+  animationClass?: string
+  className?: string
+}) {
+  const [isVisible, setIsVisible] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+        }
+      },
+      {
+        threshold,
+        rootMargin: '0px 0px 100px 0px',
+      }
+    )
+
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [threshold])
+
+  return (
+    <div
+      ref={ref}
+      style={{ transitionDelay: `${delay}ms` }}
+      className={`transition-all duration-700 ${
+        isVisible ? 'translate-y-0 scale-100 opacity-100' : animationClass
+      } ${className}`}
+    >
+      {children}
+    </div>
+  )
+}
+
 export default function FaqSection() {
-  const [openIndex, setOpenIndex] = useState<number | null>(2) // 3번째 질문 기본적으로 열어둠
+  const [openIndex, setOpenIndex] = useState<number | null>(null) // 초기에는 모두 닫아둠
 
   const toggleFaq = (index: number) => {
     setOpenIndex(openIndex === index ? null : index)
@@ -38,42 +85,46 @@ export default function FaqSection() {
     <div className="flex h-screen w-full flex-col items-center justify-center bg-white px-4">
       <div className="w-full max-w-[1300px]">
         {/* Header */}
-        <div className="mb-10 flex items-center gap-3">
-          <img src="/img/logo.png" alt="Logo" className="h-12 w-12" />
-          <h2 className="text-2xl font-bold text-[#5650FF] md:text-3xl">자주 묻는 질문들</h2>
-        </div>
+        <RevealOnScroll animationClass="-translate-x-10 opacity-0">
+          <div className="mb-10 flex items-center gap-4">
+            <img src="/img/logo.png" alt="Logo" className="h-12 w-12" />
+            <h2 className="text-2xl font-bold text-[#5650FF] md:text-3xl">자주 묻는 질문들</h2>
+          </div>
+        </RevealOnScroll>
 
         {/* FAQ Container */}
-        <div className="w-full rounded-3xl border border-[#9D9D9D] bg-[#F7F7F8] p-6 md:px-16">
-          <div className="flex flex-col gap-4">
-            {faqs.map((faq, index) => (
-              <div key={index} className="border-b border-[#D9D9D9] pb-4 last:border-0 last:pb-0">
-                <button
-                  onClick={() => toggleFaq(index)}
-                  className="group flex w-full items-center justify-between py-6 text-left"
-                >
-                  <span className="text-lg font-medium text-[#414147] transition-colors group-hover:text-[#5650FF] md:text-xl">
-                    {faq.question}
-                  </span>
-                  <span className="text-3xl font-light text-[#414147]">
-                    {openIndex === index ? '−' : '+'}
-                  </span>
-                </button>
+        <RevealOnScroll delay={200}>
+          <div className="mx-auto w-full max-w-[1200px] rounded-[32px] border border-[#9D9D9D] bg-[#F7F7F8] p-6 md:px-16">
+            <div className="flex flex-col gap-4">
+              {faqs.map((faq, index) => (
+                <div key={index} className="border-b border-[#D9D9D9] pb-4 last:border-0 last:pb-0">
+                  <button
+                    onClick={() => toggleFaq(index)}
+                    className="group flex w-full items-center justify-between py-6 text-left"
+                  >
+                    <span className="text-lg font-medium text-[#414147] transition-colors group-hover:text-[#5650FF] md:text-xl">
+                      {faq.question}
+                    </span>
+                    <span className="text-3xl font-light text-[#414147]">
+                      {openIndex === index ? '−' : '+'}
+                    </span>
+                  </button>
 
-                {/* Answer with Animation */}
-                <div
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    openIndex === index ? 'mb-6 max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                  }`}
-                >
-                  <div className="rounded-b-3xl border-t border-[#D9D9D9] bg-white p-8">
-                    <p className="text-lg leading-relaxed text-[#414147]">{faq.answer}</p>
+                  {/* Answer with Animation */}
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                      openIndex === index ? 'mb-6 max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <div className="rounded-2xl border-t border-[#D9D9D9] bg-white p-8">
+                      <p className="text-lg leading-relaxed text-[#414147]">{faq.answer}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        </RevealOnScroll>
       </div>
     </div>
   )
