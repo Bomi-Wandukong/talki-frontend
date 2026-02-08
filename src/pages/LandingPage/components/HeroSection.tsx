@@ -102,7 +102,7 @@ export default function HeroSection() {
                   <g className="transition-transform duration-500 group-hover:translate-x-1.5">
                     <path
                       d="M0 12H60M60 12L52 4M60 12L52 20"
-                      stroke="#5650FF"
+                      stroke="#ffffff"
                       strokeWidth="2.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"

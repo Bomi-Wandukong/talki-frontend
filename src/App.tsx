@@ -14,7 +14,7 @@ function App() {
         <Route path="/" element={<LandingMain />} />
         <Route path="/live" element={<LiveFeedback />} />
         <Route path="/result" element={<FeedbackResult />} />
-        <Route path="/GuideLine" element={<GuideLine />} />
+        <Route path="/guideline" element={<GuideLine />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>

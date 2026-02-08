@@ -49,7 +49,7 @@ function RevealOnScroll({
 
 export default function RequirementsSection() {
   return (
-    <div className="flex h-screen min-h-screen w-full flex-col items-center justify-center bg-white">
+    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-white">
       <div className="w-full max-w-[1300px] px-6">
         {/* Header */}
         <RevealOnScroll>

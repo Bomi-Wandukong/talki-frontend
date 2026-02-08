@@ -3,6 +3,13 @@ import { useNavigate, Link } from 'react-router-dom'
 const Login = () => {
   const navigate = useNavigate()
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    // 로그인 로직 처리 (예: API 호출 등)
+    console.log('로그인 시도')
+    // navigate('/')
+  }
+
   return (
     <div className="relative flex h-screen w-full flex-col overflow-hidden bg-white">
       {/* Background Wave */}
@@ -11,6 +18,8 @@ const Login = () => {
           className="h-full w-full min-w-[1000px]"
           viewBox="0 0 1000 320"
           preserveAspectRatio="none"
+          aria-hidden="true"
+          focusable="false"
         >
           <defs>
             <filter id="waveNoiseFilter" x="0%" y="0%" width="100%" height="100%">
@@ -75,12 +84,16 @@ const Login = () => {
               maxHeight: '90vh',
             }}
           >
-            <form className="flex flex-col gap-[2.5vh]">
+            <form className="flex flex-col gap-[2.5vh]" onSubmit={handleSubmit}>
               {/* ID Input */}
               <div className="flex flex-col gap-[1vh]">
-                <label className="text-[2vh] text-[#575757]">아이디</label>
+                <label htmlFor="username" className="text-[2vh] text-[#575757]">
+                  아이디
+                </label>
                 <input
                   type="text"
+                  id="username"
+                  name="username"
                   placeholder=""
                   className="h-[7.5vh] w-full rounded-xl border-2 border-[#D7D6F2] px-5 text-[2vh] focus:border-[#5650FF] focus:outline-none"
                 />
@@ -88,9 +101,13 @@ const Login = () => {
 
               {/* Password Input */}
               <div className="flex flex-col gap-[1vh]">
-                <label className="text-[2vh] text-[#575757]">비밀번호</label>
+                <label htmlFor="password" className="text-[2vh] text-[#575757]">
+                  비밀번호
+                </label>
                 <input
                   type="password"
+                  id="password"
+                  name="password"
                   placeholder=""
                   className="h-[7.5vh] w-full rounded-xl border-2 border-[#D7D6F2] px-5 text-[2vh] focus:border-[#5650FF] focus:outline-none"
                 />

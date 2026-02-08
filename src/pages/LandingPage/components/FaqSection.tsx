@@ -99,6 +99,9 @@ export default function FaqSection() {
               {faqs.map((faq, index) => (
                 <div key={index} className="border-b border-[#D9D9D9] pb-4 last:border-0 last:pb-0">
                   <button
+                    id={`faq-button-${index}`}
+                    aria-expanded={openIndex === index}
+                    aria-controls={`faq-panel-${index}`}
                     onClick={() => toggleFaq(index)}
                     className="group flex w-full items-center justify-between py-6 text-left"
                   >
@@ -112,6 +115,9 @@ export default function FaqSection() {
 
                   {/* Answer with Animation */}
                   <div
+                    id={`faq-panel-${index}`}
+                    role="region"
+                    aria-labelledby={`faq-button-${index}`}
                     className={`overflow-hidden transition-all duration-300 ease-in-out ${
                       openIndex === index ? 'mb-6 max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     }`}

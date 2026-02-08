@@ -36,7 +36,7 @@ export default function CtaSection() {
       <div className="relative z-10 w-full max-w-[510px] text-center">
         <h2
           className={`mb-12 text-3xl font-bold text-[#5650FF] transition-all delay-200 duration-700 md:text-5xl ${
-            isVisible ? 'animate-float translateY-0 opacity-100' : 'translate-y-10 opacity-0'
+            isVisible ? 'animate-float translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
           }`}
         >
           지금 토키를 시작해보세요.

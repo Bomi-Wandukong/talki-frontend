@@ -6,24 +6,61 @@ const Signup = () => {
   const [profileImg, setProfileImg] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleImageClick = () => {
-    fileInputRef.current?.click()
-  }
+  const [agreedTerms, setAgreedTerms] = useState(false)
+  const [agreedPrivacy, setAgreedPrivacy] = useState(false)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      // 1. 유효성 검사: 이미지 파일 여부 확인
+      if (!file.type.startsWith('image/')) {
+        alert('이미지 파일만 업로드 가능합니다.')
+        e.currentTarget.value = ''
+        return
+      }
+
+      // 2. 유효성 검사: 용량 제한 (5MB)
+      const maxBytes = 5 * 1024 * 1024
+      if (file.size > maxBytes) {
+        alert('파일 용량은 5MB를 초과할 수 없습니다.')
+        e.currentTarget.value = ''
+        return
+      }
+
       const reader = new FileReader()
       reader.onloadend = () => {
         setProfileImg(reader.result as string)
       }
       reader.readAsDataURL(file)
+
+      // 동일 파일 재선택 가능하도록 초기화
+      e.currentTarget.value = ''
     }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // 회원가입 로직 예시
+    const form = e.currentTarget as HTMLFormElement
+
+    if (!agreedTerms || !agreedPrivacy) {
+      alert('필수 약관에 동의해주세요.')
+      return
+    }
+
+    // 비밀번호 일치 확인
+    const password = (form.elements.namedItem('password') as HTMLInputElement)?.value
+    const passwordConfirm = (form.elements.namedItem('passwordConfirm') as HTMLInputElement)?.value
+
+    if (password !== passwordConfirm) {
+      alert('비밀번호가 일치하지 않습니다.')
+      return
+    }
+
+    if (!form.checkValidity()) {
+      form.reportValidity()
+      return
+    }
+
     alert('회원가입이 완료되었습니다!')
     navigate('/login')
   }
@@ -36,6 +73,8 @@ const Signup = () => {
           className="h-full w-full min-w-[1000px]"
           viewBox="0 0 1000 320"
           preserveAspectRatio="none"
+          aria-hidden="true"
+          focusable="false"
         >
           <defs>
             <filter id="waveNoiseFilter" x="0%" y="0%" width="100%" height="100%">
@@ -105,9 +144,9 @@ const Signup = () => {
                 {/* Left Side: Profile, Nickname & T&C - 35% width */}
                 <div className="flex h-full flex-col justify-between md:w-[35%]">
                   <div className="flex flex-1 flex-col items-center justify-center gap-[1.5vh]">
-                    <div
+                    <label
+                      htmlFor="profile-upload"
                       className="group relative h-[18vh] max-h-[160px] min-h-[100px] w-[18vh] min-w-[100px] max-w-[160px] cursor-pointer overflow-hidden rounded-full bg-[#E5E5E5] transition-all hover:bg-[#D9D9D9]"
-                      onClick={handleImageClick}
                     >
                       {profileImg ? (
                         <img
@@ -130,18 +169,23 @@ const Signup = () => {
                         <span className="text-xs font-medium text-white">이미지 선택</span>
                       </div>
                       <input
+                        id="profile-upload"
                         type="file"
                         ref={fileInputRef}
                         className="hidden"
                         accept="image/*"
                         onChange={handleFileChange}
                       />
-                    </div>
-
+                    </label>
                     <div className="flex w-full flex-col gap-[0.5vh]">
-                      <label className="text-[1.8vh] text-[#575757]">닉네임</label>
+                      <label htmlFor="nickname" className="text-[1.8vh] text-[#575757]">
+                        닉네임
+                      </label>
                       <input
                         type="text"
+                        id="nickname"
+                        name="nickname"
+                        required
                         className="h-[6.5vh] min-h-[40px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2vh] focus:border-[#5650FF] focus:outline-none"
                       />
                     </div>
@@ -149,9 +193,17 @@ const Signup = () => {
 
                   {/* T&C Checkboxes at the bottom */}
                   <div className="flex w-full flex-col gap-[1vh] pb-[4vh]">
-                    <label className="flex cursor-pointer items-center gap-2 text-[1.6vh] font-medium text-[#575757]">
+                    <label
+                      htmlFor="termsService"
+                      className="flex cursor-pointer items-center gap-2 text-[1.6vh] font-medium text-[#575757]"
+                    >
                       <input
                         type="checkbox"
+                        id="termsService"
+                        name="termsService"
+                        required
+                        checked={agreedTerms}
+                        onChange={(e) => setAgreedTerms(e.target.checked)}
                         className="h-[2vh] w-[2vh] rounded border-[#D7D6F2] text-[#5650FF] focus:ring-[#5650FF]"
                       />
                       <span>
@@ -162,9 +214,17 @@ const Signup = () => {
                         에 동의합니다.
                       </span>
                     </label>
-                    <label className="flex cursor-pointer items-center gap-2 text-[1.6vh] font-medium text-[#575757]">
+                    <label
+                      htmlFor="termsPrivacy"
+                      className="flex cursor-pointer items-center gap-2 text-[1.6vh] font-medium text-[#575757]"
+                    >
                       <input
                         type="checkbox"
+                        id="termsPrivacy"
+                        name="termsPrivacy"
+                        required
+                        checked={agreedPrivacy}
+                        onChange={(e) => setAgreedPrivacy(e.target.checked)}
                         className="h-[2vh] w-[2vh] rounded border-[#D7D6F2] text-[#5650FF] focus:ring-[#5650FF]"
                       />
                       <span>
@@ -175,9 +235,14 @@ const Signup = () => {
                         에 동의합니다.
                       </span>
                     </label>
-                    <label className="flex cursor-pointer items-center gap-2 text-[1.6vh] font-medium text-[#575757]">
+                    <label
+                      htmlFor="marketingConsent"
+                      className="flex cursor-pointer items-center gap-2 text-[1.6vh] font-medium text-[#575757]"
+                    >
                       <input
                         type="checkbox"
+                        id="marketingConsent"
+                        name="marketingConsent"
                         className="h-[2vh] w-[2vh] rounded border-[#D7D6F2] text-[#5650FF] focus:ring-[#5650FF]"
                       />
                       <span>
@@ -195,10 +260,15 @@ const Signup = () => {
                 <div className="flex h-full flex-1 flex-col items-center justify-center gap-[3vh]">
                   {/* ID */}
                   <div className="flex w-[90%] flex-col gap-[0.5vh]">
-                    <label className="text-[1.8vh] text-[#575757]">아이디</label>
+                    <label htmlFor="username" className="text-[1.8vh] text-[#575757]">
+                      아이디
+                    </label>
                     <div className="relative flex items-center">
                       <input
                         type="text"
+                        id="username"
+                        name="username"
+                        required
                         className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2vh] focus:border-[#5650FF] focus:outline-none"
                       />
                       <button
@@ -212,27 +282,42 @@ const Signup = () => {
 
                   {/* Password */}
                   <div className="flex w-[90%] flex-col gap-[0.5vh]">
-                    <label className="text-[1.8vh] text-[#575757]">비밀번호</label>
+                    <label htmlFor="password" className="text-[1.8vh] text-[#575757]">
+                      비밀번호
+                    </label>
                     <input
                       type="password"
+                      id="password"
+                      name="password"
+                      required
                       className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2vh] focus:border-[#5650FF] focus:outline-none"
                     />
                   </div>
 
                   {/* Password Check */}
                   <div className="flex w-[90%] flex-col gap-[0.5vh]">
-                    <label className="text-[1.8vh] text-[#575757]">비밀번호 확인</label>
+                    <label htmlFor="passwordConfirm" className="text-[1.8vh] text-[#575757]">
+                      비밀번호 확인
+                    </label>
                     <input
                       type="password"
+                      id="passwordConfirm"
+                      name="passwordConfirm"
+                      required
                       className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2vh] focus:border-[#5650FF] focus:outline-none"
                     />
                   </div>
 
                   {/* Email */}
                   <div className="flex w-[90%] flex-col gap-[0.5vh]">
-                    <label className="text-[1.8vh] text-[#575757]">이메일</label>
+                    <label htmlFor="email" className="text-[1.8vh] text-[#575757]">
+                      이메일
+                    </label>
                     <input
                       type="email"
+                      id="email"
+                      name="email"
+                      required
                       className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2vh] focus:border-[#5650FF] focus:outline-none"
                     />
                   </div>

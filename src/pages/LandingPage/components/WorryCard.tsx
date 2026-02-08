@@ -27,7 +27,7 @@ export default function WorryCard({ image, text, highlightText, rotation = 0 }: 
       {/* Text Content */}
       <div className="w-full text-left">
         <p className="break-keep text-[20px] font-medium leading-snug text-gray-800">
-          {text.split(highlightText || '').map((part, index, array) => (
+          {(highlightText ? text.split(highlightText) : [text]).map((part, index, array) => (
             <React.Fragment key={index}>
               {part}
               {index < array.length - 1 && (
