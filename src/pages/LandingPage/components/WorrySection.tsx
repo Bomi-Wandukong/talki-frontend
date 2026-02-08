@@ -134,7 +134,7 @@ export default function WorrySection() {
           {/* Right Fade Overlay */}
           <div className="pointer-events-none absolute right-0 top-0 z-30 h-full w-[15%] bg-gradient-to-l from-[#5650FF] to-transparent"></div>
 
-          <div className="animate-scroll flex w-max items-center gap-12 pb-8 pt-8">
+          <div className="animate-scroll flex w-max items-center gap-2 pb-8 pt-8">
             {/* First set of cards */}
             {worryData.map((item) => (
               <div
