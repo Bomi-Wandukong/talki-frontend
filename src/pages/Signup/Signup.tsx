@@ -85,16 +85,16 @@ const Signup = () => {
 
       {/* Signup Center Area - Remaining height */}
       <main className="relative z-10 flex h-full w-full flex-col items-center px-4 pb-[5vh]">
-        <div className="flex h-full max-h-[900px] w-full max-w-[850px] flex-col justify-center">
+        <div className="flex h-full max-h-[900px] w-full max-w-[1000px] flex-col justify-center">
           {/* Title Section - ~10% height allocation */}
           <div className="mb-[4vh] text-center">
             <h1 className="mb-[0.5vh] text-[5vh] font-bold text-[#5650FF]">회원가입</h1>
-            <p className="text-[1.8vh] text-[#989898]">토키와 함께 연습해볼까요?</p>
+            <p className="text-[1.7vh] text-[#989898]">토키와 함께 연습해볼까요?</p>
           </div>
 
           {/* Form Card */}
           <div
-            className="flex w-full flex-1 flex-col justify-center rounded-[24px] bg-white px-6 py-[2.5vh] md:px-10 lg:px-16"
+            className="flex w-full flex-1 flex-col justify-center rounded-[24px] bg-white px-6 py-[2.5vh] md:px-10 lg:px-12"
             style={{
               boxShadow: '0px 10px 20px rgba(0,0,0,0.1), 0px -4px 10px rgba(0,0,0,0.05)',
               maxHeight: '70vh', // Limit card height
@@ -139,10 +139,10 @@ const Signup = () => {
                     </div>
 
                     <div className="flex w-full flex-col gap-[0.5vh]">
-                      <label className="text-[2vh] font-bold text-[#575757]">닉네임</label>
+                      <label className="text-[1.8vh] text-[#575757]">닉네임</label>
                       <input
                         type="text"
-                        className="h-[6.5vh] min-h-[40px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2.2vh] focus:border-[#5650FF] focus:outline-none"
+                        className="h-[6.5vh] min-h-[40px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2vh] focus:border-[#5650FF] focus:outline-none"
                       />
                     </div>
                   </div>
@@ -195,11 +195,11 @@ const Signup = () => {
                 <div className="flex h-full flex-1 flex-col items-center justify-center gap-[3vh]">
                   {/* ID */}
                   <div className="flex w-[90%] flex-col gap-[0.5vh]">
-                    <label className="text-[1.8vh] font-bold text-[#575757]">아이디</label>
+                    <label className="text-[1.8vh] text-[#575757]">아이디</label>
                     <div className="relative flex items-center">
                       <input
                         type="text"
-                        className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2.2vh] focus:border-[#5650FF] focus:outline-none"
+                        className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2vh] focus:border-[#5650FF] focus:outline-none"
                       />
                       <button
                         type="button"
@@ -212,35 +212,35 @@ const Signup = () => {
 
                   {/* Password */}
                   <div className="flex w-[90%] flex-col gap-[0.5vh]">
-                    <label className="text-[1.8vh] font-bold text-[#575757]">비밀번호</label>
+                    <label className="text-[1.8vh] text-[#575757]">비밀번호</label>
                     <input
                       type="password"
-                      className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2.2vh] focus:border-[#5650FF] focus:outline-none"
+                      className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2vh] focus:border-[#5650FF] focus:outline-none"
                     />
                   </div>
 
                   {/* Password Check */}
                   <div className="flex w-[90%] flex-col gap-[0.5vh]">
-                    <label className="text-[1.8vh] font-bold text-[#575757]">비밀번호 확인</label>
+                    <label className="text-[1.8vh] text-[#575757]">비밀번호 확인</label>
                     <input
                       type="password"
-                      className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2.2vh] focus:border-[#5650FF] focus:outline-none"
+                      className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2vh] focus:border-[#5650FF] focus:outline-none"
                     />
                   </div>
 
                   {/* Email */}
                   <div className="flex w-[90%] flex-col gap-[0.5vh]">
-                    <label className="text-[1.8vh] font-bold text-[#575757]">이메일</label>
+                    <label className="text-[1.8vh] text-[#575757]">이메일</label>
                     <input
                       type="email"
-                      className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2.2vh] focus:border-[#5650FF] focus:outline-none"
+                      className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2vh] focus:border-[#5650FF] focus:outline-none"
                     />
                   </div>
 
                   {/* Signup Button */}
                   <button
                     type="submit"
-                    className="mt-[3vh] h-[6vh] min-h-[44px] w-[80%] rounded-xl bg-[#5650FF] text-[2vh] font-bold text-white transition-all hover:bg-[#4a45e0] active:scale-[0.98]"
+                    className="mt-[3vh] h-[6vh] min-h-[44px] w-[80%] rounded-xl bg-[#5650FF] text-[2vh] text-white transition-all hover:bg-[#4a45e0] active:scale-[0.98]"
                   >
                     회원가입
                   </button>
