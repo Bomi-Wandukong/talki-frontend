@@ -64,7 +64,7 @@ const Login = () => {
           {/* Title Section */}
           <div className="mb-[4vh] text-center">
             <h1 className="mb-[0.5vh] text-[5vh] font-bold text-[#5650FF]">로그인</h1>
-            <p className="text-[1.8vh] text-[#989898]">토키와 함께 연습해볼까요?</p>
+            <p className="text-[1.7vh] text-[#989898]">토키와 함께 연습해볼까요?</p>
           </div>
 
           {/* Form Card */}
@@ -78,21 +78,21 @@ const Login = () => {
             <form className="flex flex-col gap-[2.5vh]">
               {/* ID Input */}
               <div className="flex flex-col gap-[1vh]">
-                <label className="text-[2vh] font-bold text-[#575757]">아이디</label>
+                <label className="text-[2vh] text-[#575757]">아이디</label>
                 <input
                   type="text"
                   placeholder=""
-                  className="h-[7.5vh] w-full rounded-xl border-2 border-[#D7D6F2] px-5 text-[2.3vh] focus:border-[#5650FF] focus:outline-none"
+                  className="h-[7.5vh] w-full rounded-xl border-2 border-[#D7D6F2] px-5 text-[2vh] focus:border-[#5650FF] focus:outline-none"
                 />
               </div>
 
               {/* Password Input */}
               <div className="flex flex-col gap-[1vh]">
-                <label className="text-[2vh] font-bold text-[#575757]">비밀번호</label>
+                <label className="text-[2vh] text-[#575757]">비밀번호</label>
                 <input
                   type="password"
                   placeholder=""
-                  className="h-[7.5vh] w-full rounded-xl border-2 border-[#D7D6F2] px-5 text-[2.3vh] focus:border-[#5650FF] focus:outline-none"
+                  className="h-[7.5vh] w-full rounded-xl border-2 border-[#D7D6F2] px-5 text-[2vh] focus:border-[#5650FF] focus:outline-none"
                 />
                 <div className="text-right">
                   <button
@@ -108,13 +108,13 @@ const Login = () => {
               <div className="mt-[5vh] flex flex-col items-center gap-[2vh]">
                 <button
                   type="submit"
-                  className="h-[7.5vh] w-[90%] rounded-xl bg-[#5650FF] text-[2.5vh] text-white transition-all hover:bg-[#4a45e0] active:scale-[0.98]"
+                  className="h-[7.5vh] w-[90%] rounded-xl bg-[#5650FF] text-[2.2vh] text-white transition-all hover:bg-[#4a45e0] active:scale-[0.98]"
                 >
                   로그인
                 </button>
                 <button
                   type="button"
-                  className="h-[7.5vh] w-[90%] rounded-xl border-2 border-[#5650FF] bg-white text-[2.5vh] text-[#5650FF] transition-all hover:bg-[#f8f7ff] active:scale-[0.98]"
+                  className="h-[7.5vh] w-[90%] rounded-xl border-2 border-[#5650FF] bg-white text-[2.2vh] text-[#5650FF] transition-all hover:bg-[#f8f7ff] active:scale-[0.98]"
                   onClick={() => navigate('/signup')}
                 >
                   회원가입
