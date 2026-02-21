@@ -5,16 +5,27 @@ interface WorryCardProps {
   text: string
   highlightText?: string
   rotation?: number
+  altText?: string
 }
 
-export default function WorryCard({ image, text, highlightText, rotation = 0 }: WorryCardProps) {
+export default function WorryCard({
+  image,
+  text,
+  highlightText,
+  rotation = 0,
+  altText,
+}: WorryCardProps) {
   return (
     <div className="shrink-0 transition-transform" style={{ transform: `rotate(${rotation}deg)` }}>
       <div className="flex h-[330px] w-[270px] flex-col items-center justify-between rounded-[30px] bg-white px-9 py-10 shadow-[0_15px_30px_rgba(0,0,0,0.25)] transition-transform hover:scale-105">
         {/* Avatar Image */}
         <div className="flex h-[70%] w-full items-center justify-center overflow-hidden">
           {image ? (
-            <img src={image} alt="User Avatar" className="h-full w-full object-contain" />
+            <img
+              src={image}
+              alt={altText ?? `${text} illustration`}
+              className="h-full w-full object-contain"
+            />
           ) : (
             <div className="flex h-32 w-32 items-center justify-center rounded-full bg-gray-200 text-gray-400">
               No Image
