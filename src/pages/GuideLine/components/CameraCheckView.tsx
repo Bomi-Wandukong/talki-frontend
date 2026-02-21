@@ -13,7 +13,7 @@ const CameraCheckView = ({ onComplete }: { onComplete: () => void }) => {
   const [isInside, setIsInside] = useState(false)
 
   const startTimeRef = useRef<number | null>(null)
-  const REQUIRED_TIME = 5000 
+  const REQUIRED_TIME = 5000
 
   // MediaPipe 모델 및 카메라 초기화
   useEffect(() => {
@@ -179,9 +179,9 @@ const CameraCheckView = ({ onComplete }: { onComplete: () => void }) => {
 
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <img
-            src={isInside ? "/img/guidelineSuccess.png" : "/img/guideline.png"}
+            src={isInside ? '/img/guidelineSuccess.png' : '/img/guideline.png'}
             alt="가이드라인"
-            className={`h-[75%] w-auto transition-all duration-300 mt-10`}
+            className={`mt-10 h-[75%] w-auto transition-all duration-300`}
           />
         </div>
       </div>
