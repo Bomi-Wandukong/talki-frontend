@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import RepeatWordChart from './RepeatWordChart'
 import FeedbackSection from './FeedbackSection'
 import VideoPlayerWithPoints from './VideoPlayerWithPoints'
+import { IMAGES } from '@/utils/images'
 
 export default function AnalysisResultDetail() {
   const [visibleSections, setVisibleSections] = useState<number[]>([])
@@ -184,7 +185,7 @@ export default function AnalysisResultDetail() {
             </p>
 
             <img
-              src="/img/contentFeedbackGraph.png"
+              src={IMAGES.graph}
               className="mx-auto h-auto min-w-[280px] object-contain"
               alt="내용 피드백 그래프"
             />

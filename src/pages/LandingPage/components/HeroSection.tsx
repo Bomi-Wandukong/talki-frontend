@@ -1,5 +1,5 @@
-import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { IMAGES } from '@/utils/images'
 
 export default function HeroSection() {
   const navigate = useNavigate()
@@ -55,7 +55,7 @@ export default function HeroSection() {
           {/* Logo */}
           <div className="mb-6">
             <img
-              src="/img/logo/whiteLogo.png"
+              src={IMAGES.whitelogo}
               alt="TALKI Logo"
               className="w-40 object-contain lg:w-[280px]"
             />
@@ -79,7 +79,7 @@ export default function HeroSection() {
           {/* Illustration */}
           <div className="relative mb-2 w-full max-w-[1000px]">
             <img
-              src="/img/landingPage/main1.png"
+              src={IMAGES.landing.hero}
               alt="Illustration"
               className="animate-floating h-auto w-full object-contain"
             />
@@ -87,7 +87,7 @@ export default function HeroSection() {
 
           {/* CTA Button */}
           <button
-            onClick={() => navigate('/guideline')}
+            onClick={() => navigate('/home')}
             className="group flex w-full max-w-[400px] items-center justify-between rounded-xl bg-white px-8 py-3.5 text-[18px] font-bold text-[#5650FF] shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.6)] lg:mr-20"
           >
             <span>토키 체험해보기</span>

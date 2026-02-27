@@ -1,5 +1,6 @@
 import CircleProgress from '@/components/CircleProgress/CircleProgress'
 import LinearProgressBar from '@/components/LinearProgressBar/LinearProgressBar'
+import { IMAGES } from '@/utils/images'
 
 export default function AnalysisResult() {
   const progressData = [
@@ -81,7 +82,7 @@ export default function AnalysisResult() {
               <div className="mt-10 flex flex-col gap-10 md:flex-row">
                 <div className="hover:scale-103 flex h-40 w-full cursor-pointer items-center rounded-3xl border-2 border-[#FFA956]/[.56] bg-white px-6 transition-all duration-300 hover:shadow-lg md:w-[50%]">
                   <div className="flex basis-[30%] justify-end">
-                    <img src="/img/speakPractice.png" className="h-30 w-30 object-contain" />
+                    <img src={IMAGES.speakPractice} className="h-30 w-30 object-contain" />
                   </div>
 
                   <div className="basis-[70%] pl-[6%]">
@@ -94,7 +95,7 @@ export default function AnalysisResult() {
 
                 <div className="hover:scale-103 flex h-40 w-full cursor-pointer items-center rounded-3xl border-2 border-[#FFA956]/[.56] bg-[#FFA956] px-6 transition-all duration-300 hover:shadow-lg md:w-[50%]">
                   <div className="flex basis-[30%] justify-end">
-                    <img src="/img/speakPractice.png" className="h-30 w-30 object-contain" />
+                    <img src={IMAGES.speakPractice} className="h-30 w-30 object-contain" />
                   </div>
 
                   <div className="basis-[70%] pl-[6%] text-white">

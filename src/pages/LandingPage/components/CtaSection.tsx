@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function CtaSection() {
   const [isVisible, setIsVisible] = useState(false)
   const sectionRef = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -43,6 +45,7 @@ export default function CtaSection() {
         </h2>
 
         <button
+          onClick={() => navigate('/home')}
           className={`group relative flex w-full items-center justify-between rounded-2xl bg-[#5650FF] px-10 py-5 text-xl font-semibold text-white shadow-[0_20px_40px_rgba(86,80,255,0.3)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_25px_50px_rgba(86,80,255,0.4)] ${
             isVisible ? 'scale-100 opacity-100' : 'scale-90 opacity-0'
           }`}
