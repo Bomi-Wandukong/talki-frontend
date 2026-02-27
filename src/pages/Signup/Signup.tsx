@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { IMAGES } from '@/utils/images'
 
 const Signup = () => {
   const navigate = useNavigate()
@@ -115,7 +116,7 @@ const Signup = () => {
       <header className="relative z-20 px-10 pt-4">
         <Link to="/">
           <img
-            src="/img/logo/purpleLogo.png"
+            src={IMAGES.purplelogo}
             alt="TALKI Logo"
             className="w-[120px] transition-transform hover:scale-105"
           />

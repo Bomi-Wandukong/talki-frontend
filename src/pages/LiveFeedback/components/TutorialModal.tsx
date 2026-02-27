@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { IoClose } from 'react-icons/io5'
+import { IMAGES } from '@/utils/images'
 
 interface TutorialModalProps {
   onClose: () => void
@@ -30,11 +31,7 @@ export default function TutorialModal({ onClose }: TutorialModalProps) {
 
         {/* 콘텐츠 영역 */}
         <div className="flex items-center justify-center pt-10">
-          <img
-            src="/img/liveFeedbackTutorial.png"
-            alt="튜토리얼 이미지"
-            className="max-h-full max-w-full"
-          />
+          <img src={IMAGES.tutorial} alt="튜토리얼 이미지" className="max-h-full max-w-full" />
         </div>
 
         {/* 하단 영역 */}

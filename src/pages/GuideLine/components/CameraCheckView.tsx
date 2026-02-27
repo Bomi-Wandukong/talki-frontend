@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { FaceLandmarker, FilesetResolver } from '@mediapipe/tasks-vision'
+import { IMAGES } from '@/utils/images'
 
 type FaceStatus = 'OK' | 'TOO_FAR' | 'NOT_FRONT' | 'WRONG_POSITION'
 
@@ -179,7 +180,7 @@ const CameraCheckView = ({ onComplete }: { onComplete: () => void }) => {
 
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <img
-            src={isInside ? '/img/guidelineSuccess.png' : '/img/guideline.png'}
+            src={isInside ? IMAGES.guidelineSuccess : IMAGES.guideline}
             alt="가이드라인"
             className={`mt-10 h-[75%] w-auto transition-all duration-300`}
           />
