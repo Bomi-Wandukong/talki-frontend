@@ -144,14 +144,15 @@ const Category = () => {
               ) : (
                 <div className="mt-8 flex h-12 justify-end">
                   <button
-                    onClick={() => {
-                      setStep(1)
-                      setTopic('')
-                    }}
-                    className="h-12 w-28 rounded-xl bg-[#868686] text-[17px] text-white transition-all hover:bg-[#707070]"
-                  >
-                    다시하기
-                  </button>
+                      onClick={() => setStep(1)}
+                      className="flex h-12 w-28 items-center justify-center overflow-hidden rounded-xl bg-[#868686] text-white transition-all duration-300 hover:bg-[#707070]"
+                    >
+                      <span
+                        className="whitespace-nowrap text-[17px] transition-opacity duration-200"
+                      >
+                        다시하기
+                      </span>
+                    </button>
                 </div>
               )}
             </div>
@@ -203,7 +204,7 @@ const Category = () => {
                             hashInput
                               .trim()
                               .split(/\s+/)
-                              .filter((v) => v.startsWith('#')).length > 3
+                              .filter((v) => v.startsWith('#') && v.length > 1).length > 3
                               ? 'text-red-500'
                               : 'text-[#AEAEB2]'
                           }`}
@@ -247,19 +248,26 @@ const Category = () => {
                   {step === 2 ? (
                     <button
                       onClick={() => setStep(3)}
-                      disabled={!topic || !description || hashInput.split(/\s+/).filter((v) => v.startsWith('#') && v.length > 1).length < 1 }
+                      disabled={
+                        !topic ||
+                        !description ||
+                        hashInput.split(/\s+/).filter((v) => v.startsWith('#') && v.length > 1)
+                          .length < 1
+                      }
                       className="animate-in zoom-in-95 flex h-12 w-12 items-center justify-center rounded-xl bg-[#5650FF] text-white transition-all duration-200 disabled:bg-[#ACA9FE]"
                     >
                       <span className="mb-1 text-3xl">✓</span>
                     </button>
                   ) : (
                     <button
-                      onClick={() => {
-                        setStep(2)
-                      }}
-                      className="h-12 w-28 rounded-xl bg-[#868686] text-[17px] text-white transition-all hover:bg-[#707070]"
+                      onClick={() => setStep(2)}
+                      className="flex h-12 w-28 items-center justify-center overflow-hidden rounded-xl bg-[#868686] text-white transition-all duration-300 hover:bg-[#707070]"
                     >
-                      다시하기
+                      <span
+                        className="whitespace-nowrap text-[17px] transition-opacity duration-200"
+                      >
+                        다시하기
+                      </span>
                     </button>
                   )}
                 </div>
@@ -279,7 +287,7 @@ const Category = () => {
                     </span>
                   </div>
                   <div className="flex w-full items-center">
-                    <div className="mr-8 h-[90%] mb-4 w-[2px] bg-[#D7D6F1]"></div>
+                    <div className="mb-4 mr-8 h-[90%] w-[2px] bg-[#D7D6F1]"></div>
                     <div className="flex w-full flex-col gap-6">
                       {/*돌발상황 발생*/}
                       <div className="flex items-center justify-between">

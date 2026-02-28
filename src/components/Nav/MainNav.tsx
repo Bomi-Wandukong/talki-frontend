@@ -12,7 +12,7 @@ interface MenuItem {
 const MainNav: React.FC = () => {
   const menuItems: MenuItem[] = [
     { name: '홈', linkTo: '/home', activePath: '/home', isReady: true },
-    { name: '실전', linkTo: '/actual/guideline', activePath: '/actual', isReady: true },
+    { name: '실전', linkTo: '/actual/category', activePath: '/actual', isReady: true },
     { name: '연습', linkTo: '/practice', activePath: '/practice', isReady: false },
   ]
 
