@@ -26,6 +26,13 @@ export const IMAGES = {
     },
   },
 
+  // 홈페이지
+  home: {
+    calenderCheck: '/img/home/check.png',
+    real: '/img/home/real.png',
+    practice: '/img/home/practice.png',
+  },
+
   // 공통 및 기타
   check: '/img/checkimg.svg',
   graph: '/img/contentFeedbackGraph.png',

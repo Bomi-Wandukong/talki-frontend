@@ -1,44 +1,44 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { IMAGES } from '@/utils/images';
+import React from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import { IMAGES } from '@/utils/images'
 
 interface MenuItem {
-  name: string;
-  linkTo: string;
-  activePath: string;
-  isReady: boolean;
+  name: string
+  linkTo: string
+  activePath: string
+  isReady: boolean
 }
 
 const Nav: React.FC = () => {
-  const location = useLocation();
+  const location = useLocation()
 
   const menuItems: MenuItem[] = [
     { name: '홈', linkTo: '/home', activePath: '/home', isReady: true },
     { name: '실전', linkTo: '/actual/category', activePath: '/actual', isReady: true },
     { name: '연습', linkTo: '/practice', activePath: '/practice', isReady: false },
-  ];
-
+  ]
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, item: MenuItem) => {
     if (!item.isReady) {
-      e.preventDefault(); 
-      alert("준비 중이에요!");
+      e.preventDefault()
+      alert('준비 중이에요!')
     }
-  };
+  }
 
   return (
-    <div className="fixed left-0 top-0 z-50 w-full">
+    <div className="fixed left-0 top-0 z-[100] w-full">
       <header className="flex items-center justify-between border-b border-gray-200 bg-white px-12 py-3">
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
-            <img src={IMAGES.purplelogo} alt="Logo" className="w-[90px] my-2 mb-3" />
+            <img src={IMAGES.purplelogo} alt="Logo" className="my-2 mb-3 w-[90px]" />
           </Link>
 
           <nav className="ml-12 flex items-center gap-10">
             {menuItems.map((item) => {
-              const isActive = item.activePath === '/' 
-                ? location.pathname === '/' 
-                : location.pathname.startsWith(item.activePath);
+              const isActive =
+                item.activePath === '/'
+                  ? location.pathname === '/'
+                  : location.pathname.startsWith(item.activePath)
               return (
                 <Link
                   key={item.activePath}
@@ -47,18 +47,18 @@ const Nav: React.FC = () => {
                   className="relative flex flex-col items-center py-2 pt-4"
                 >
                   <span
-                    className={`text-[17px] fontRegular transition-colors ${
+                    className={`fontRegular text-[17px] transition-colors ${
                       isActive ? 'text-[#5650FF]' : 'text-[#ACA9FE]'
                     }`}
                   >
                     {item.name}
                   </span>
-                  
+
                   {isActive && (
                     <div className="absolute -bottom-[1px] h-[2px] w-full bg-[#5650FF]" />
                   )}
                 </Link>
-              );
+              )
             })}
           </nav>
         </div>
@@ -69,7 +69,7 @@ const Nav: React.FC = () => {
         </div>
       </header>
     </div>
-  );
-};
+  )
+}
 
-export default Nav;
+export default Nav
