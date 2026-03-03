@@ -37,7 +37,7 @@ export default function CtaSection() {
 
       <div className="relative z-10 w-full max-w-[510px] text-center">
         <h2
-          className={`mb-12 text-3xl font-bold text-[#5650FF] transition-all delay-200 duration-700 md:text-5xl ${
+          className={`mb-10 text-2xl font-bold text-[#5650FF] transition-all delay-200 duration-700 md:mb-12 md:text-5xl ${
             isVisible ? 'animate-float translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
           }`}
         >
@@ -46,7 +46,7 @@ export default function CtaSection() {
 
         <button
           onClick={() => navigate('/home')}
-          className={`group relative flex w-full items-center justify-between rounded-2xl bg-[#5650FF] px-10 py-5 text-xl font-semibold text-white shadow-[0_20px_40px_rgba(86,80,255,0.3)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_25px_50px_rgba(86,80,255,0.4)] ${
+          className={`group relative mx-auto flex w-full max-w-[280px] items-center justify-between rounded-xl bg-[#5650FF] px-7 py-3.5 text-base font-semibold text-white shadow-[0_20px_40px_rgba(86,80,255,0.3)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_25px_50px_rgba(86,80,255,0.4)] md:max-w-none md:rounded-2xl md:px-10 md:py-5 md:text-xl ${
             isVisible ? 'scale-100 opacity-100' : 'scale-90 opacity-0'
           }`}
           style={{ transitionDelay: '500ms' }}

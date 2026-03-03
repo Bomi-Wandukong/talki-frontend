@@ -49,35 +49,92 @@ export default function HeroSection() {
       </div>
 
       {/* Content Container */}
-      <div className="relative z-10 mx-auto flex h-full w-full max-w-[1600px] flex-col items-center justify-center gap-10 px-8 md:px-40 lg:flex-row lg:items-end lg:pb-[10%]">
-        {/* Left Section: Text */}
-        <div className="flex animate-[fadeIn_1s_ease-out] flex-col items-start text-white lg:mb-2 lg:w-[45%]">
+      <div className="relative z-10 mx-auto flex h-full w-full max-w-[1600px] flex-col items-center justify-center gap-6 px-6 pt-20 md:px-20 lg:flex-row lg:items-end lg:gap-10 lg:pb-[10%] lg:pt-0">
+        {/* Text Section (Logo, H2, P) - Middle on mobile, Left on desktop */}
+        <div className="order-2 flex animate-[fadeIn_1s_ease-out] flex-col items-start px-2 text-left text-white lg:order-1 lg:mb-2 lg:w-[45%] lg:px-0">
           {/* Logo */}
-          <div className="mb-6">
+          <div className="mb-4 lg:mb-6">
             <img
               src={IMAGES.whitelogo}
               alt="TALKI Logo"
-              className="w-40 object-contain lg:w-[280px]"
+              className="w-40 object-contain lg:w-[240px]"
             />
           </div>
 
-          <h2 className="mb-6 text-[20px] font-bold leading-tight md:text-[24px]">
+          <h2 className="mb-4 text-lg font-bold leading-tight md:text-xl lg:mb-6 lg:text-[22px]">
             불안한 순간을 함께 연습하는 서비스
           </h2>
 
-          <p className="text-[15px] font-light leading-relaxed text-white/90 md:text-[16px]">
+          <p className="text-[13px] font-light leading-relaxed text-white/90 md:max-w-none md:text-[15px] lg:text-[15px]">
             사회불안이 있더라도, 발표와 면접이 두렵지 않도록.
-            <br />
+            <br className="hidden md:block" />
             인지행동치료 기반의 훈련으로 불안을 완화할 수 있도록 도와드려요.
-            <br />
+            <br className="hidden md:block" />
             혼자서는 어렵던 연습, 이제는 <span className="font-bold">토키TALKI</span>와 함께해요.
           </p>
+
+          {/* CTA Button - Appears below text on mobile only */}
+          <div className="mt-8 flex w-full animate-[slideUp_1s_ease-out_0.5s_both] lg:hidden">
+            <button
+              onClick={() => navigate('/home')}
+              className="group flex w-full max-w-[340px] items-center justify-between rounded-xl bg-white px-8 py-3.5 text-[18px] font-bold text-[#5650FF] shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.6)]"
+            >
+              <span>토키 체험해보기</span>
+              <svg
+                className="h-6 w-16 overflow-visible"
+                viewBox="0 0 64 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <defs>
+                  <mask id="hero-arrow-mask-mobile">
+                    <g className="transition-transform duration-500 group-hover:translate-x-1.5">
+                      <path
+                        d="M0 12H60M60 12L52 4M60 12L52 20"
+                        stroke="#ffffff"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </g>
+                  </mask>
+                  <linearGradient id="hero-flow-gradient-mobile" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#5650FF" stopOpacity="0" />
+                    <stop offset="50%" stopColor="#5650FF" stopOpacity="1" />
+                    <stop offset="100%" stopColor="#5650FF" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <g className="transition-transform duration-500 group-hover:translate-x-1.5">
+                  <path
+                    d="M0 12H60M60 12L52 4M60 12L52 20"
+                    stroke="#5650FF"
+                    strokeWidth="2.5"
+                    strokeOpacity="0.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </g>
+                <g
+                  mask="url(#hero-arrow-mask-mobile)"
+                  className="opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                >
+                  <rect
+                    x="-80"
+                    y="0"
+                    width="80"
+                    height="24"
+                    fill="url(#hero-flow-gradient-mobile)"
+                    className="animate-[arrow-flow_2s_infinite_linear]"
+                  />
+                </g>
+              </svg>
+            </button>
+          </div>
         </div>
 
-        {/* Right Section: Illustration & Button */}
-        <div className="mt-0 flex animate-[slideUp_1s_ease-out_0.3s_both] flex-col items-center lg:w-[60%] lg:items-end">
+        <div className="order-1 flex w-full animate-[slideUp_1s_ease-out_0.3s_both] flex-col items-center lg:order-2 lg:w-[60%] lg:items-end">
           {/* Illustration */}
-          <div className="relative mb-2 w-full max-w-[1000px]">
+          <div className="relative mb-2 w-full max-w-[500px] lg:max-w-[1000px]">
             <img
               src={IMAGES.landing.hero}
               alt="Illustration"
@@ -85,63 +142,63 @@ export default function HeroSection() {
             />
           </div>
 
-          {/* CTA Button */}
-          <button
-            onClick={() => navigate('/home')}
-            className="group flex w-full max-w-[400px] items-center justify-between rounded-xl bg-white px-8 py-3.5 text-[18px] font-bold text-[#5650FF] shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.6)] lg:mr-20"
-          >
-            <span>토키 체험해보기</span>
-            <svg
-              className="h-6 w-16 overflow-visible"
-              viewBox="0 0 64 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+          {/* CTA Button - Desktop only, original position */}
+          <div className="mt-0 hidden w-full lg:flex lg:justify-end">
+            <button
+              onClick={() => navigate('/home')}
+              className="group flex w-full max-w-[400px] items-center justify-between rounded-xl bg-white px-8 py-3.5 text-[18px] font-bold text-[#5650FF] shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.6)] lg:mr-20"
             >
-              <defs>
-                <mask id="hero-arrow-mask">
-                  <g className="transition-transform duration-500 group-hover:translate-x-1.5">
-                    <path
-                      d="M0 12H60M60 12L52 4M60 12L52 20"
-                      stroke="#ffffff"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </g>
-                </mask>
-                <linearGradient id="hero-flow-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#5650FF" stopOpacity="0" />
-                  <stop offset="50%" stopColor="#5650FF" stopOpacity="1" />
-                  <stop offset="100%" stopColor="#5650FF" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              {/* Base Arrow (Faded) */}
-              <g className="transition-transform duration-500 group-hover:translate-x-1.5">
-                <path
-                  d="M0 12H60M60 12L52 4M60 12L52 20"
-                  stroke="#5650FF"
-                  strokeWidth="2.5"
-                  strokeOpacity="0.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </g>
-              {/* Animated Flow Light */}
-              <g
-                mask="url(#hero-arrow-mask)"
-                className="opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+              <span>토키 체험해보기</span>
+              <svg
+                className="h-6 w-16 overflow-visible"
+                viewBox="0 0 64 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <rect
-                  x="-80"
-                  y="0"
-                  width="80"
-                  height="24"
-                  fill="url(#hero-flow-gradient)"
-                  className="animate-[arrow-flow_2s_infinite_linear]"
-                />
-              </g>
-            </svg>
-          </button>
+                <defs>
+                  <mask id="hero-arrow-mask-desktop">
+                    <g className="transition-transform duration-500 group-hover:translate-x-1.5">
+                      <path
+                        d="M0 12H60M60 12L52 4M60 12L52 20"
+                        stroke="#ffffff"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </g>
+                  </mask>
+                  <linearGradient id="hero-flow-gradient-desktop" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#5650FF" stopOpacity="0" />
+                    <stop offset="50%" stopColor="#5650FF" stopOpacity="1" />
+                    <stop offset="100%" stopColor="#5650FF" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <g className="transition-transform duration-500 group-hover:translate-x-1.5">
+                  <path
+                    d="M0 12H60M60 12L52 4M60 12L52 20"
+                    stroke="#5650FF"
+                    strokeWidth="2.5"
+                    strokeOpacity="0.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </g>
+                <g
+                  mask="url(#hero-arrow-mask-desktop)"
+                  className="opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                >
+                  <rect
+                    x="-80"
+                    y="0"
+                    width="80"
+                    height="24"
+                    fill="url(#hero-flow-gradient-desktop)"
+                    className="animate-[arrow-flow_2s_infinite_linear]"
+                  />
+                </g>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 

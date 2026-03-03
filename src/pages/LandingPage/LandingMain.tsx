@@ -11,6 +11,7 @@ export default function Main() {
   return (
     <main className="h-screen w-full snap-y snap-mandatory overflow-y-auto scroll-smooth">
       <MainNav />
+
       <HeroSection />
       <WorrySection />
       <PracticeSection />
