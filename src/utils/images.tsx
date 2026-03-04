@@ -32,6 +32,12 @@ export const IMAGES = {
     real: '/img/home/real.png',
     practice: '/img/home/practice.png',
   },
+  //실전 : 튜토리얼
+  bg1: '/img/tutorial/bg1.png',
+  bg2: '/img/tutorial/bg2.png',
+  bg3: '/img/tutorial/bg3.png',
+  mic: '/img/tutorial/mic.png',
+  speechBubble: '/img/tutorial/speechBubble.png',
 
   // 공통 및 기타
   check: '/img/checkimg.svg',

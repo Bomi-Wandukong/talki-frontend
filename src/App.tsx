@@ -10,6 +10,7 @@ import Category from '@/pages/Category/Category'
 import Home from '@/pages/HomePage/Home'
 import ProtectedRoute from '@/components/ProtectedRoute/ProtectedRoute'
 import MainLayout from '@/components/Layout/MainLayout'
+import Tutorial from './pages/Tutorial/Tutorial'
 
 function App() {
   return (
@@ -27,8 +28,9 @@ function App() {
             <Route path="/live" element={<LiveFeedback />} />
             <Route path="/result" element={<FeedbackResult />} />
 
-            {/* Nested Actual Routes */}
+            {/* 실전 루트 */}
             <Route path="/actual">
+              <Route path="tutorial" element={<Tutorial/>}/>
               <Route path="guideline" element={<GuideLine />} />
               <Route path="category" element={<Category />} />
             </Route>
