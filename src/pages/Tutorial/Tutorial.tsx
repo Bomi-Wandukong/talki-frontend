@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import Nav from '@/components/Nav/Nav'
 import { IMAGES } from '@/utils/images'
+import { useNavigate } from 'react-router-dom'
 
 const Tutorial = () => {
+  const navigate = useNavigate()
   const [isVisible, setIsVisible] = useState(false) 
   const [isNoShowChecked, setIsNoShowChecked] = useState(false)
 
@@ -11,12 +13,12 @@ const Tutorial = () => {
 
     if (hideTutorial === 'true') {
       // 로컬에 값이 있으면 바로 카테고리 페이지로 이동
-      window.location.href = '/actual/category'
+      navigate('/actual/category', { replace: true })
     } else {
       // 로컬에 값이 없으면 튜토리얼 페이지 표시
       setIsVisible(true)
     }
-  }, [])
+  }, [navigate])
 
   const handleStart = () => {
     // '다시 보지 않기'가 체크되어 있다면 로컬 스토리지에 저장
@@ -24,7 +26,7 @@ const Tutorial = () => {
       localStorage.setItem('hideTutorial', 'true')
     }
 
-    window.location.href = '/actual/category'
+    navigate('/actual/category')
   }
   if (!isVisible) return null
 
