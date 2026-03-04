@@ -154,33 +154,38 @@ function PracticeHeader({
 }) {
   return (
     <div className="w-full">
-      <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 pb-12 md:flex-row md:items-center">
+      <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 pb-10 md:flex-row md:items-center md:pb-12">
+        {/* Text Area */}
         <div className="flex items-center gap-2">
-          <img src={IMAGES.logo} className="w-[65px]" />
+          <img src={IMAGES.logo} className="w-[45px] md:w-[65px]" />
           <div>
-            <h2 className="text-2xl font-bold text-[#5650FF] md:text-2xl">
+            <h2 className="text-[20px] font-bold text-[#5650FF] md:text-2xl">
               완벽하지 않아도 괜찮아요
             </h2>
-            <p className="mt-1 text-[#414147]">당신의 속도에 맞춰, 천천히 연습해보세요.</p>
+            <p className="mt-1 text-sm text-[#414147] md:text-base">
+              당신의 속도에 맞춰, 천천히 연습해보세요.
+            </p>
           </div>
         </div>
-        <div className="flex gap-6">
+
+        {/* Action Buttons */}
+        <div className="mt-6 flex w-full gap-4 md:mt-0 md:w-auto md:gap-6">
           <button
             onClick={() => setActiveTab('실전')}
-            className={`rounded-xl px-11 py-2 font-medium transition-all ${
+            className={`flex-1 rounded-xl py-2 text-base font-medium transition-all duration-300 md:flex-none md:px-11 ${
               activeTab === '실전'
-                ? 'bg-[#5650FF] text-white'
-                : 'cursor-pointer bg-[#D7D6F1] text-white'
+                ? 'bg-gradient-to-r from-[#5650FF] to-[#7C77FF] text-white shadow-lg md:bg-[#5650FF] md:bg-none md:shadow-none'
+                : 'bg-[#F0F0F5] text-[#9EA1B1] hover:bg-[#E5E5ED] md:cursor-pointer md:bg-[#D7D6F1] md:text-white'
             }`}
           >
             실전
           </button>
           <button
             onClick={() => setActiveTab('연습')}
-            className={`rounded-xl px-11 py-2 font-medium transition-all ${
+            className={`flex-1 rounded-xl py-2 text-base font-medium transition-all duration-300 md:flex-none md:px-11 ${
               activeTab === '연습'
-                ? 'bg-[#5650FF] text-white'
-                : 'cursor-pointer bg-[#D7D6F1] text-white'
+                ? 'bg-gradient-to-r from-[#5650FF] to-[#7C77FF] text-white shadow-lg md:bg-[#5650FF] md:bg-none md:shadow-none'
+                : 'bg-[#F0F0F5] text-[#9EA1B1] hover:bg-[#E5E5ED] md:cursor-pointer md:bg-[#D7D6F1] md:text-white'
             }`}
           >
             연습
@@ -208,7 +213,7 @@ export default function PracticeSection() {
       </div>
 
       {/* Content Area: Light Grey background */}
-      <div className="bg-[#F5F5F7] pb-24 pt-16">
+      <div className="bg-[#F5F5F7] pb-20 pt-12 md:pb-24 md:pt-16">
         <div className="mx-auto max-w-6xl px-6">
           {/* Feature Cards - 탭에 따라 다른 카드 표시 */}
           <div className="flex flex-col gap-12">

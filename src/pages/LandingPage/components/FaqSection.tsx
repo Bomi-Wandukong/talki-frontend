@@ -76,40 +76,40 @@ function RevealOnScroll({
 }
 
 export default function FaqSection() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null) // 초기에는 모두 닫아둠
+  const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   const toggleFaq = (index: number) => {
     setOpenIndex(openIndex === index ? null : index)
   }
 
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-center bg-white px-4">
-      <div className="w-full max-w-[1300px]">
+    <div className="flex w-full flex-col items-center bg-white py-16 md:h-screen md:justify-center md:py-0">
+      <div className="w-full max-w-[1300px] px-4">
         {/* Header */}
         <RevealOnScroll animationClass="-translate-x-10 opacity-0">
-          <div className="mb-10 flex items-center gap-4">
-            <img src={IMAGES.logo} alt="Logo" className="h-12 w-12" />
-            <h2 className="text-2xl font-bold text-[#5650FF] md:text-3xl">자주 묻는 질문들</h2>
+          <div className="mb-8 flex flex-row items-center gap-2 md:mb-10 md:gap-4">
+            <img src={IMAGES.logo} alt="Logo" className="h-8 w-8 md:h-12 md:w-12" />
+            <h2 className="text-[22px] font-bold text-[#5650FF] md:text-3xl">자주 묻는 질문들</h2>
           </div>
         </RevealOnScroll>
 
         {/* FAQ Container */}
         <RevealOnScroll delay={200}>
-          <div className="mx-auto w-full max-w-[1200px] rounded-[32px] border border-[#9D9D9D] bg-[#F7F7F8] p-6 md:px-16">
-            <div className="flex flex-col gap-4">
+          <div className="mx-auto w-full max-w-[1200px] rounded-[24px] border border-[#9D9D9D] bg-[#F7F7F8] p-5 md:rounded-[32px] md:px-16 md:py-6">
+            <div className="flex flex-col gap-2 md:gap-4">
               {faqs.map((faq, index) => (
-                <div key={index} className="border-b border-[#D9D9D9] pb-4 last:border-0 last:pb-0">
+                <div key={index} className="border-b border-[#D9D9D9] last:border-0">
                   <button
                     id={`faq-button-${index}`}
                     aria-expanded={openIndex === index}
                     aria-controls={`faq-panel-${index}`}
                     onClick={() => toggleFaq(index)}
-                    className="group flex w-full items-center justify-between py-6 text-left"
+                    className="group flex w-full items-center justify-between py-5 text-left md:py-6"
                   >
-                    <span className="text-lg font-medium text-[#414147] transition-colors group-hover:text-[#5650FF] md:text-xl">
+                    <span className="pr-4 text-base font-medium text-[#414147] transition-colors group-hover:text-[#5650FF] md:text-xl">
                       {faq.question}
                     </span>
-                    <span className="text-3xl font-light text-[#414147]">
+                    <span className="text-2xl font-light text-[#414147] md:text-3xl">
                       {openIndex === index ? '−' : '+'}
                     </span>
                   </button>
@@ -120,11 +120,15 @@ export default function FaqSection() {
                     role="region"
                     aria-labelledby={`faq-button-${index}`}
                     className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      openIndex === index ? 'mb-6 max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                      openIndex === index
+                        ? 'mb-5 max-h-96 opacity-100 md:mb-6'
+                        : 'max-h-0 opacity-0'
                     }`}
                   >
-                    <div className="rounded-2xl border-t border-[#D9D9D9] bg-white p-8">
-                      <p className="text-lg leading-relaxed text-[#414147]">{faq.answer}</p>
+                    <div className="rounded-xl border-t border-[#D9D9D9] bg-white p-5 md:rounded-2xl md:p-8">
+                      <p className="text-sm leading-relaxed text-[#414147] md:text-lg">
+                        {faq.answer}
+                      </p>
                     </div>
                   </div>
                 </div>
