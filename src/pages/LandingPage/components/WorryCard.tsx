@@ -17,7 +17,7 @@ export default function WorryCard({
 }: WorryCardProps) {
   return (
     <div className="shrink-0 transition-transform" style={{ transform: `rotate(${rotation}deg)` }}>
-      <div className="flex h-[330px] w-[270px] flex-col items-center justify-between rounded-[30px] bg-white px-9 py-10 shadow-[0_15px_30px_rgba(0,0,0,0.25)] transition-transform hover:scale-105">
+      <div className="flex h-[240px] w-[180px] flex-col items-center justify-between rounded-[25px] bg-white px-5 py-6 shadow-[0_12px_25px_rgba(0,0,0,0.2)] transition-transform hover:scale-105 md:h-[330px] md:w-[270px] md:px-9 md:py-10">
         {/* Avatar Image */}
         <div className="flex h-[70%] w-full items-center justify-center overflow-hidden">
           {image ? (
@@ -27,7 +27,7 @@ export default function WorryCard({
               className="h-full w-full object-contain"
             />
           ) : (
-            <div className="flex h-32 w-32 items-center justify-center rounded-full bg-gray-200 text-gray-400">
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-200 text-gray-400 md:h-32 md:w-32">
               No Image
             </div>
           )}
@@ -35,7 +35,7 @@ export default function WorryCard({
 
         {/* Text Content */}
         <div className="w-full text-left">
-          <p className="break-keep text-[20px] font-medium leading-snug text-gray-800">
+          <p className="break-keep text-[16px] font-medium leading-snug text-gray-800 md:text-[20px]">
             {(highlightText ? text.split(highlightText) : [text]).map((part, index, array) => (
               <React.Fragment key={index}>
                 {part}

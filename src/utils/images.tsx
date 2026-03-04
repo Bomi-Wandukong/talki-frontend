@@ -26,6 +26,12 @@ export const IMAGES = {
     },
   },
 
+  // 홈페이지
+  home: {
+    calenderCheck: '/img/home/check.png',
+    real: '/img/home/real.png',
+    practice: '/img/home/practice.png',
+  },
   //실전 : 튜토리얼
   bg1: '/img/tutorial/bg1.png',
   bg2: '/img/tutorial/bg2.png',

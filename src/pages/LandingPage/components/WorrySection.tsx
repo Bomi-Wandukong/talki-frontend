@@ -115,14 +115,16 @@ export default function WorrySection() {
   return (
     <div className="relative flex w-full flex-col items-center overflow-hidden bg-[#5650FF] pt-20">
       {/* Header Text */}
-      <div className="z-10 mb-16 px-6 text-center text-white">
+      <div className="z-10 mb-12 px-6 text-center text-white lg:mb-20">
         <RevealOnScroll>
-          <p className="mb-7 text-lg font-medium opacity-90 md:text-xl">
+          <p className="mb-4 text-base font-medium opacity-90 md:text-xl lg:mb-7">
             발표, 면접...내가 지금 잘 하고 있나?
           </p>
-          <h2 className="text-2xl font-bold md:text-4xl">
+          <h2 className="text-[22px] font-bold leading-[1.4] md:text-4xl">
             말하는 순간이 두렵다면,{' '}
-            <span className="bg-white px-2 py-1 text-[#5650FF]">TALKI가 함께해요.</span>
+            <span className="mt-2 inline-block bg-white px-2 py-0.5 text-[#5650FF] md:mt-0">
+              TALKI가 함께해요.
+            </span>
           </h2>
         </RevealOnScroll>
       </div>
@@ -186,7 +188,7 @@ export default function WorrySection() {
       </div>
 
       {/* Bottom Features */}
-      <div className="z-10 grid w-full max-w-7xl grid-cols-1 gap-6 px-6 md:grid-cols-3">
+      <div className="z-10 flex w-full max-w-[600px] flex-col gap-4 px-6 md:grid md:max-w-7xl md:grid-cols-3 md:gap-6">
         <RevealOnScroll delay={0}>
           <FeatureBox
             imgURL={IMAGES.landing.micIcon}
@@ -211,11 +213,12 @@ export default function WorrySection() {
       </div>
 
       {/* Tagline with Rounded Bottom */}
-      <div className="mt-20 w-full bg-white">
-        <div className="w-full bg-[#5650FF] pb-20 pt-28">
+      <div className="mt-12 w-full bg-white lg:mt-24">
+        <div className="w-full bg-[#5650FF] pb-16 pt-20 lg:pb-24 lg:pt-28">
           <RevealOnScroll threshold={0.4}>
-            <p className="text-center text-lg text-white md:text-2xl">
-              실전 같은 환경, AI 피드백으로{' '}
+            <p className="px-6 text-center text-[20px] font-medium leading-relaxed text-white md:text-2xl">
+              실전 같은 환경, AI 피드백으로
+              <br className="md:hidden" />{' '}
               <span className="font-bold">지금 말하기 실력을 성장시키세요</span>
             </p>
           </RevealOnScroll>
@@ -241,11 +244,11 @@ export default function WorrySection() {
 
 function FeatureBox({ imgURL, title, desc }: { imgURL: string; title: string; desc: string }) {
   return (
-    <div className="flex items-center gap-6 rounded-xl bg-white/10 p-6 text-white backdrop-blur-sm transition-colors hover:bg-white/20">
-      <img src={imgURL} alt="icon" />
+    <div className="flex items-center gap-5 rounded-2xl bg-white/20 p-6 text-white backdrop-blur-md transition-all hover:bg-white/30 md:gap-6 lg:p-8">
+      <img src={imgURL} alt="icon" className="h-10 w-10 md:h-12 md:w-12" />
       <div>
-        <h3 className="mb-1 text-lg font-bold">{title}</h3>
-        <p className="text-sm font-light leading-relaxed opacity-80">{desc}</p>
+        <h3 className="mb-1 text-[17px] font-bold lg:text-xl">{title}</h3>
+        <p className="text-[13px] font-light leading-relaxed opacity-90 lg:text-sm">{desc}</p>
       </div>
     </div>
   )
