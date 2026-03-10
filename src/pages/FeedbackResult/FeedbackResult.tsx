@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import AnalysisResult from './components/AnalysisResult'
 import AnalysisResultDetail from './components/AnalysisResultDetail'
 import FeedbackBottomBar from './components/FeedbackBottomBar'
-// import { downloadFullPDF, downloadBasicPDF } from "../../utils/pdfDownload";
+import { downloadFullPDF, downloadBasicPDF } from '../../utils/pdfDownload'
 
 export default function FeedbackResult() {
   const [showDetail, setShowDetail] = useState(false)
@@ -24,11 +24,11 @@ export default function FeedbackResult() {
     try {
       if (showDetail) {
         // 세부 분석까지 본 경우 - 전체 다운로드
-        // await downloadFullPDF()
+        await downloadFullPDF()
         alert('전체 분석 결과 PDF 다운로드가 완료되었습니다!')
       } else {
         // 기본 분석만 본 경우 - 기본 분석만 다운로드
-        // await downloadBasicPDF()
+        await downloadBasicPDF()
         alert('기본 분석 결과 PDF 다운로드가 완료되었습니다!')
       }
     } catch (error) {
