@@ -11,6 +11,9 @@ import Home from '@/pages/HomePage/Home'
 import ProtectedRoute from '@/components/ProtectedRoute/ProtectedRoute'
 import MainLayout from '@/components/Layout/MainLayout'
 import Tutorial from './pages/Tutorial/Tutorial'
+import ImpromptuPractice from '@/pages/Practice/ImpromptuPractice'
+import KeywordPractice from '@/pages/Practice/KeywordPractice'
+import CoreUnderstandingPractice from '@/pages/Practice/CoreUnderstandingPractice'
 
 function App() {
   return (
@@ -30,9 +33,15 @@ function App() {
 
             {/* 실전 루트 */}
             <Route path="/actual">
-              <Route path="tutorial" element={<Tutorial/>}/>
+              <Route path="tutorial" element={<Tutorial />} />
               <Route path="guideline" element={<GuideLine />} />
               <Route path="category" element={<Category />} />
+            </Route>
+
+            <Route path="/practice">
+              <Route path="impromptu" element={<ImpromptuPractice />} />
+              <Route path="keyword" element={<KeywordPractice />} />
+              <Route path="core" element={<CoreUnderstandingPractice />} />
             </Route>
           </Route>
         </Route>

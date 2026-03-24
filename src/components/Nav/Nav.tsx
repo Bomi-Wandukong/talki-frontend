@@ -15,7 +15,7 @@ const Nav: React.FC = () => {
   const menuItems: MenuItem[] = [
     { name: '홈', linkTo: '/home', activePath: '/home', isReady: true },
     { name: '실전', linkTo: '/actual/tutorial', activePath: '/actual', isReady: true },
-    { name: '연습', linkTo: '/practice', activePath: '/practice', isReady: false },
+    { name: '연습', linkTo: '/practice/impromptu', activePath: '/practice', isReady: true },
   ]
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, item: MenuItem) => {
