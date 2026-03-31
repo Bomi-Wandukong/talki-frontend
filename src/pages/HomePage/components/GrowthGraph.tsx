@@ -41,10 +41,10 @@ const GrowthGraph = () => {
   return (
     <div className="flex h-full flex-col">
       {/* Tabs */}
-      <div className="mb-5 flex items-center justify-center gap-3">
+      <div className="mb-[1.5vh] flex items-center justify-center gap-3">
         <button
           onClick={() => setActiveTab('week')}
-          className="rounded-full px-6 py-1.5 text-sm font-semibold transition-all"
+          className="rounded-full px-4 py-1 text-xs font-semibold transition-all"
           style={
             activeTab === 'week'
               ? { backgroundColor: '#FF9500', color: 'white' }
@@ -55,7 +55,7 @@ const GrowthGraph = () => {
         </button>
         <button
           onClick={() => setActiveTab('month')}
-          className="px-4 py-1.5 text-sm font-semibold transition-all"
+          className="px-4 py-1 text-xs font-semibold transition-all"
           style={
             activeTab === 'month'
               ? { backgroundColor: '#FF9500', color: 'white', borderRadius: '999px' }
@@ -80,7 +80,7 @@ const GrowthGraph = () => {
               dataKey="name"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: '#AFAFC0', fontSize: 13 }}
+              tick={{ fill: '#AFAFC0', fontSize: 10 }}
               dy={8}
             />
             <YAxis
@@ -88,7 +88,7 @@ const GrowthGraph = () => {
               ticks={[0, 50, 100]}
               axisLine={false}
               tickLine={false}
-              tick={{ fill: '#AFAFC0', fontSize: 13 }}
+              tick={{ fill: '#AFAFC0', fontSize: 10 }}
               width={36}
             />
             <Tooltip
@@ -96,7 +96,7 @@ const GrowthGraph = () => {
                 border: 'none',
                 borderRadius: '12px',
                 boxShadow: '0 4px 20px rgba(0,0,0,0.10)',
-                fontSize: '12px',
+                fontSize: '10px',
                 color: '#FF9500',
               }}
               itemStyle={{ color: '#FF9500' }}
@@ -106,8 +106,8 @@ const GrowthGraph = () => {
               type="monotone"
               dataKey="score"
               stroke="#FF9500"
-              strokeWidth={2.5}
-              dot={{ fill: '#FF9500', r: 5, strokeWidth: 0 }}
+              strokeWidth={2}
+              dot={{ fill: '#FF9500', r: 4, strokeWidth: 0 }}
               activeDot={{ r: 7, fill: '#FF9500', stroke: 'white', strokeWidth: 2 }}
             />
           </LineChart>

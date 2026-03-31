@@ -27,7 +27,7 @@ const Nav: React.FC = () => {
 
   return (
     <div className="fixed left-0 top-0 z-[100] w-full">
-      <header className="flex items-center justify-between border-b border-gray-200 bg-white px-12 py-3">
+      <header className="flex h-20 items-center justify-between border-b border-gray-200 bg-white px-12">
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
             <img src={IMAGES.purplelogo} alt="Logo" className="my-2 mb-3 w-[90px]" />

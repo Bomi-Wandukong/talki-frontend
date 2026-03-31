@@ -172,11 +172,11 @@ const CalendarView = ({
 
                   {/* Check icon — centered overlay */}
                   {practiced && (
-                    <div className="absolute inset-x-0 bottom-3.5 flex items-center justify-center lg:bottom-6">
+                    <div className="absolute inset-x-0 bottom-0 top-[25%] flex items-center justify-center">
                       <img
                         src={IMAGES.home.calenderCheck}
                         alt="Check"
-                        className="h-7 w-7 object-contain lg:h-12 lg:w-12"
+                        className="h-[60%] w-auto object-contain"
                       />
                     </div>
                   )}
