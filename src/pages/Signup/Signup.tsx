@@ -58,7 +58,7 @@ const Signup = () => {
     }
 
     if (!form.checkValidity()) {
-      form.reportValidity()
+      alert('모든 필수 항목을 입력해주세요.')
       return
     }
 
@@ -140,7 +140,11 @@ const Signup = () => {
               maxHeight: '70vh', // Limit card height
             }}
           >
-            <form className="flex h-full flex-col justify-between" onSubmit={handleSubmit}>
+            <form
+              className="flex h-full flex-col justify-between"
+              onSubmit={handleSubmit}
+              noValidate
+            >
               <div className="flex h-full flex-col gap-[2.5%] md:flex-row md:items-start lg:gap-[5%]">
                 {/* Left Side: Profile, Nickname & T&C - 35% width */}
                 <div className="flex h-full flex-col justify-between md:w-[35%]">

@@ -35,21 +35,20 @@ const LeftPanel = ({ streak, today, practicedDates, rightView, onArrowClick }: L
 
   return (
     <div className="flex h-full flex-col py-10 lg:justify-center lg:py-0">
-      {/* Welcome */}
-      <div className="mb-8 lg:mb-16">
-        <h1 className="mb-2 text-xl font-bold text-[#5650FF] lg:text-3xl">
+      <div className="mb-[4vh] lg:mb-[6vh]">
+        <h1 className="mb-1 text-lg font-bold text-[#5650FF] lg:text-[1.6rem]">
           <span className="text-[#FF9500]">김톡희</span>님, 반가워요!
         </h1>
-        <p className="text-sm text-[#ACA9FE] lg:text-lg">
+        <p className="text-xs text-[#ACA9FE] lg:text-base">
           작은 시작이라도 괜찮아요. 토키가 함께 할게요!
         </p>
       </div>
 
       {/* Streak Section */}
-      <div className="mb-8 lg:mb-14">
-        <div className="mb-3 flex items-center justify-between">
-          <span className="text-base font-semibold text-[#716FA4]">
-            연속 연습 <span className="text-xl text-[#5650FF]">{streak}</span>일
+      <div className="mb-[4vh] lg:mb-[5vh]">
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-sm font-semibold text-[#716FA4] lg:text-base">
+            연속 연습 <span className="text-lg text-[#5650FF]">{streak}</span>일
           </span>
           <button
             onClick={onArrowClick}
@@ -65,7 +64,7 @@ const LeftPanel = ({ streak, today, practicedDates, rightView, onArrowClick }: L
 
         {/* Week circles card */}
         <div
-          className="rounded-xl px-4 py-4 lg:rounded-3xl lg:py-10 min-[1500px]:px-10"
+          className="rounded-xl px-4 py-3 lg:rounded-3xl lg:py-[3.5vh] min-[1500px]:px-10"
           style={{
             border: '1px solid #F0F0F5',
             backgroundColor: '#ffffff',
@@ -81,7 +80,7 @@ const LeftPanel = ({ streak, today, practicedDates, rightView, onArrowClick }: L
                 <div key={idx} className="flex flex-col items-center">
                   {practiced ? (
                     <div
-                      className="flex h-8 w-8 items-center justify-center rounded-full min-[1200px]:h-10 min-[1200px]:w-10 xl:h-11 xl:w-11"
+                      className="flex h-7 w-7 items-center justify-center rounded-full min-[1200px]:h-8 min-[1200px]:w-8 xl:h-9 xl:w-9"
                       style={{ backgroundColor: '#6C63FF' }}
                     >
                       <svg
@@ -99,7 +98,7 @@ const LeftPanel = ({ streak, today, practicedDates, rightView, onArrowClick }: L
                       </svg>
                     </div>
                   ) : (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F5F5FA] text-xs font-medium text-[#3B3B3B] min-[1200px]:h-10 min-[1200px]:w-10 min-[1200px]:text-sm xl:h-11 xl:w-11 xl:text-base">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#F5F5FA] text-[10px] font-medium text-[#3B3B3B] min-[1200px]:h-8 min-[1200px]:w-8 min-[1200px]:text-xs xl:h-9 xl:w-9 xl:text-sm">
                       {dayLetter}
                     </div>
                   )}
@@ -111,12 +110,12 @@ const LeftPanel = ({ streak, today, practicedDates, rightView, onArrowClick }: L
       </div>
 
       {/* Today's Recommendation */}
-      <div className="mb-8 lg:mb-14">
-        <h2 className="mb-3 text-base font-semibold text-[#716FA4]">
+      <div className="mb-[4vh] lg:mb-[5vh]">
+        <h2 className="mb-2 text-sm font-semibold text-[#716FA4] lg:text-base">
           오늘의 <span className="text-[#5650FF]">추천 연습</span>
         </h2>
         <div
-          className="group flex cursor-pointer items-center justify-between rounded-xl border px-5 py-8 transition-all hover:shadow-md lg:rounded-3xl"
+          className="group flex cursor-pointer items-center justify-between rounded-xl border px-5 py-[2.5vh] transition-all hover:shadow-md lg:rounded-3xl"
           style={{ border: '1px solid #F0F0F5', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}
         >
           <div>
@@ -131,11 +130,11 @@ const LeftPanel = ({ streak, today, practicedDates, rightView, onArrowClick }: L
 
       {/* Recent Report */}
       <div>
-        <h2 className="mb-3 text-base font-semibold text-[#716FA4]">
+        <h2 className="mb-2 text-sm font-semibold text-[#716FA4] lg:text-base">
           최근 <span className="text-[#5650FF]">실전 리포트 결과</span>
         </h2>
         <div
-          className="group flex cursor-pointer items-center justify-between rounded-xl border px-5 py-8 transition-all hover:shadow-md lg:rounded-3xl"
+          className="group flex cursor-pointer items-center justify-between rounded-xl border px-5 py-[2.5vh] transition-all hover:shadow-md lg:rounded-3xl"
           style={{ border: '1px solid #F0F0F5', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}
         >
           <div className="min-w-0 flex-1">

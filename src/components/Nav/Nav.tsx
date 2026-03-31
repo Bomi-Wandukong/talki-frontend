@@ -15,7 +15,7 @@ const Nav: React.FC = () => {
   const menuItems: MenuItem[] = [
     { name: '홈', linkTo: '/home', activePath: '/home', isReady: true },
     { name: '실전', linkTo: '/actual/tutorial', activePath: '/actual', isReady: true },
-    { name: '연습', linkTo: '/practice', activePath: '/practice', isReady: false },
+    { name: '연습', linkTo: '/practice/impromptu', activePath: '/practice', isReady: true },
   ]
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, item: MenuItem) => {
@@ -27,7 +27,7 @@ const Nav: React.FC = () => {
 
   return (
     <div className="fixed left-0 top-0 z-[100] w-full">
-      <header className="flex items-center justify-between border-b border-gray-200 bg-white px-12 py-3">
+      <header className="flex h-20 items-center justify-between border-b border-gray-200 bg-white px-12">
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
             <img src={IMAGES.purplelogo} alt="Logo" className="my-2 mb-3 w-[90px]" />
