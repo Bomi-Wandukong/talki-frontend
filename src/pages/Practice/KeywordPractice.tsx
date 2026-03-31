@@ -68,11 +68,9 @@ const KeywordPractice = () => {
       mediaRecorderRef.current.stop()
     }
     setStep('finished')
-    
+
     // 모의 결과: 키워드 1, 3을 사용됨으로 변경 (협업, 성장)
-    setKeywords((prev) => 
-      prev.map((kw, i) => (i === 0 || i === 2) ? { ...kw, isUsed: true } : kw)
-    )
+    setKeywords((prev) => prev.map((kw, i) => (i === 0 || i === 2 ? { ...kw, isUsed: true } : kw)))
   }
 
   useEffect(() => {
@@ -116,8 +114,8 @@ const KeywordPractice = () => {
           step === 'idle'
             ? '건너뛰려면 다음 버튼 클릭'
             : step !== 'finished'
-            ? '연습을 완료하면 다음으로 넘어갈 수 있어요.'
-            : undefined
+              ? '연습을 완료하면 다음으로 넘어갈 수 있어요.'
+              : undefined
         }
       >
         <TitleSection
@@ -131,23 +129,25 @@ const KeywordPractice = () => {
         {step !== 'finished' ? (
           <TimerSection step={step} prepTimeLeft={prepTimeLeft} recordTimeLeft={recordTimeLeft} />
         ) : (
-          <KeywordAnalysis 
-            usedCount={keywords.filter((k) => k.isUsed).length} 
-            totalCount={keywords.length} 
-            evaluation="양호" 
-            detail="연결 자연스러움" 
+          <KeywordAnalysis
+            usedCount={keywords.filter((k) => k.isUsed).length}
+            totalCount={keywords.length}
+            evaluation="양호"
+            detail="연결 자연스러움"
           />
         )}
 
         {/* 하단 영역: 마이크 버튼 & 툴팁 */}
-        <div className="relative mt-12 flex w-full items-center justify-between">
+        <div className="relative flex w-full items-center justify-between">
           <div className="flex w-[120px] shrink-0 justify-center">
             <MicButton step={step} onStart={startPractice} onStop={stopPractice} />
           </div>
 
           <div className="mb-auto pb-4">
             {step !== 'finished' ? (
-              <CoachBubble>키워드를 억지로 넣기보다는{'\n'}자연스러운 흐름을 만들어보세요.</CoachBubble>
+              <CoachBubble>
+                키워드를 억지로 넣기보다는{'\n'}자연스러운 흐름을 만들어보세요.
+              </CoachBubble>
             ) : (
               <CoachBubble>
                 <span className="mb-3 block font-bold text-[#4E4AC7]">TALKI의 간단 피드백</span>

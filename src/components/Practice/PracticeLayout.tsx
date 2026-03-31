@@ -34,7 +34,7 @@ const PracticeLayout: React.FC<PracticeLayoutProps> = ({
 
       {/* 메인 영역 */}
       <main className="relative flex flex-1 flex-col overflow-y-auto pt-20">
-        <div className="relative mx-auto w-full max-w-5xl flex-1 pt-10">{children}</div>
+        <div className="relative mx-auto w-full max-w-5xl flex-1">{children}</div>
 
         {/* 하단 네비게이션 */}
         {!hideNavigation && (

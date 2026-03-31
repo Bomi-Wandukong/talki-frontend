@@ -30,7 +30,7 @@ const CoreUnderstandingPractice = () => {
   const [step, setStep] = useState<PracticeStep>('idle')
   const [prepTimeLeft, setPrepTimeLeft] = useState(10)
   const [recordTimeLeft, setRecordTimeLeft] = useState(30)
-  
+
   // 랜덤 선택 로직 (현시점에서는 1개 데이터 사용)
   const [currentData] = useState(TEXT_DATA[0])
   const [keywords, setKeywords] = useState<CoreKeyword[]>(currentData.keywords)
@@ -78,11 +78,9 @@ const CoreUnderstandingPractice = () => {
       mediaRecorderRef.current.stop()
     }
     setStep('finished')
-    
+
     // 모의 결과: 키워드 1, 2를 사용됨으로 변경 (의사소통, 경청)
-    setKeywords((prev) => 
-      prev.map((kw, i) => (i === 0 || i === 1) ? { ...kw, isUsed: true } : kw)
-    )
+    setKeywords((prev) => prev.map((kw, i) => (i === 0 || i === 1 ? { ...kw, isUsed: true } : kw)))
   }
 
   useEffect(() => {
@@ -134,18 +132,23 @@ const CoreUnderstandingPractice = () => {
         <CoreTextCard originalText={currentData.text} keywords={keywords} />
 
         {step !== 'finished' ? (
-          <TimerSection step={step} prepTimeLeft={prepTimeLeft} recordTimeLeft={recordTimeLeft} isCompact={true} />
+          <TimerSection
+            step={step}
+            prepTimeLeft={prepTimeLeft}
+            recordTimeLeft={recordTimeLeft}
+            isCompact={true}
+          />
         ) : (
-          <KeywordAnalysis 
-            usedCount={keywords.filter((k) => k.isUsed).length} 
-            totalCount={keywords.length} 
-            evaluation="양호" 
-            detail="연결 자연스러움" 
+          <KeywordAnalysis
+            usedCount={keywords.filter((k) => k.isUsed).length}
+            totalCount={keywords.length}
+            evaluation="양호"
+            detail="연결 자연스러움"
           />
         )}
 
         {/* 하단 영역: 마이크 버튼 & 툴팁 */}
-        <div className="relative mt-12 flex w-full items-center justify-between">
+        <div className="relative flex w-full items-center justify-between">
           <div className="flex w-[120px] shrink-0 justify-center">
             <MicButton step={step} onStart={startPractice} onStop={stopPractice} />
           </div>

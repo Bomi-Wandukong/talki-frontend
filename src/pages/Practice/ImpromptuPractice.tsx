@@ -146,7 +146,7 @@ const ImpromptuPractice = () => {
         )}
 
         {/* 하단 영역: 마이크 버튼 & 툴팁 */}
-        <div className="relative mt-12 flex w-full items-center justify-between">
+        <div className="relative flex w-full items-center justify-between">
           <div className="flex w-[120px] shrink-0 justify-center">
             <MicButton step={step} onStart={startPractice} onStop={stopPractice} />
           </div>
