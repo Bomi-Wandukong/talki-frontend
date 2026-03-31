@@ -30,14 +30,14 @@ export default function CtaSection() {
     >
       {/* Subtle Background Decoration */}
       <div
-        className={`absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#5650FF]/10 blur-[120px] transition-all duration-1000 ${
+        className={`absolute left-1/2 top-1/2 h-[480px] w-[480px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#5650FF]/10 blur-[100px] transition-all duration-1000 ${
           isVisible ? 'scale-100 opacity-100' : 'scale-50 opacity-0'
         }`}
       />
 
-      <div className="relative z-10 w-full max-w-[510px] text-center">
+      <div className="relative z-10 w-full max-w-[400px] text-center">
         <h2
-          className={`mb-10 text-2xl font-bold text-[#5650FF] transition-all delay-200 duration-700 md:mb-12 md:text-5xl ${
+          className={`mb-8 text-xl font-bold text-[#5650FF] transition-all delay-200 duration-700 md:mb-10 md:text-4xl ${
             isVisible ? 'animate-float translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
           }`}
         >
@@ -46,7 +46,7 @@ export default function CtaSection() {
 
         <button
           onClick={() => navigate('/home')}
-          className={`group relative mx-auto flex w-full max-w-[280px] items-center justify-between rounded-xl bg-[#5650FF] px-7 py-3.5 text-base font-semibold text-white shadow-[0_20px_40px_rgba(86,80,255,0.3)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_25px_50px_rgba(86,80,255,0.4)] md:max-w-none md:rounded-2xl md:px-10 md:py-5 md:text-xl ${
+          className={`group relative mx-auto flex w-full max-w-[220px] items-center justify-between rounded-xl bg-[#5650FF] px-6 py-3 text-sm font-semibold text-white shadow-[0_16px_32px_rgba(86,80,255,0.3)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(86,80,255,0.4)] md:max-w-none md:rounded-2xl md:px-8 md:py-4 md:text-lg ${
             isVisible ? 'scale-100 opacity-100' : 'scale-90 opacity-0'
           }`}
           style={{ transitionDelay: '500ms' }}
