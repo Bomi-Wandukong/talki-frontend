@@ -1,14 +1,33 @@
+import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import axiosInstance from '@/api/axios'
 import { IMAGES } from '@/utils/images'
 
 const Login = () => {
   const navigate = useNavigate()
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // 로그인 로직 처리 (예: API 호출 등)
-    console.log('로그인 시도')
-    // navigate('/')
+    setErrorMessage('') // 에러 메시지 초기화
+
+    try {
+      const response = await axiosInstance.post('/auth/login', {
+        userId: username,
+        password: password,
+      })
+
+      if (response.status === 200) {
+        localStorage.setItem('accessToken', response.data.access)
+        localStorage.setItem('refreshToken', response.data.refresh)
+        navigate('/home')
+      }
+    } catch (error) {
+      console.error('로그인 에러:', error)
+      setErrorMessage('아이디 또는 비밀번호를 다시 확인해주세요.')
+    }
   }
 
   return (
@@ -96,6 +115,8 @@ const Login = () => {
                   id="username"
                   name="username"
                   placeholder=""
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="h-[7.5vh] w-full rounded-xl border-2 border-[#D7D6F2] px-5 text-[2vh] focus:border-[#5650FF] focus:outline-none"
                 />
               </div>
@@ -110,6 +131,8 @@ const Login = () => {
                   id="password"
                   name="password"
                   placeholder=""
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="h-[7.5vh] w-full rounded-xl border-2 border-[#D7D6F2] px-5 text-[2vh] focus:border-[#5650FF] focus:outline-none"
                 />
                 <div className="text-right">
@@ -121,6 +144,11 @@ const Login = () => {
                   </button>
                 </div>
               </div>
+
+              {/* Error Message */}
+              {errorMessage && (
+                <div className="text-center text-[1.8vh] text-red-500">{errorMessage}</div>
+              )}
 
               {/* Buttons */}
               <div className="mt-[5vh] flex flex-col items-center gap-[2vh]">

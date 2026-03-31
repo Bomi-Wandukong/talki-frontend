@@ -49,35 +49,35 @@ export default function HeroSection() {
       </div>
 
       {/* Content Container */}
-      <div className="relative z-10 mx-auto flex h-full w-full max-w-[1600px] flex-col items-center justify-center gap-6 px-6 pt-20 md:px-20 lg:flex-row lg:items-end lg:gap-10 lg:pb-[10%] lg:pt-0">
+      <div className="relative z-10 mx-auto flex h-full w-full max-w-[1280px] flex-col items-center justify-center gap-4 px-6 pb-40 pt-20 md:px-16 lg:flex-row lg:items-end lg:gap-6 lg:pb-[20vh] lg:pt-0">
         {/* Text Section (Logo, H2, P) - Middle on mobile, Left on desktop */}
-        <div className="order-2 flex animate-[fadeIn_1s_ease-out] flex-col items-start px-2 text-left text-white lg:order-1 lg:mb-2 lg:w-[45%] lg:px-0">
+        <div className="order-2 flex -mt-4 animate-[fadeIn_1s_ease-out] flex-col items-start px-2 text-left text-white lg:order-1 lg:mt-0 lg:mb-2 lg:w-[45%] lg:px-0">
           {/* Logo */}
-          <div className="mb-4 lg:mb-6">
+          <div className="mb-2 lg:mb-6">
             <img
               src={IMAGES.whitelogo}
               alt="TALKI Logo"
-              className="w-40 object-contain lg:w-[240px]"
+              className="w-32 object-contain lg:w-[192px]"
             />
           </div>
 
-          <h2 className="mb-4 text-lg font-bold leading-tight md:text-xl lg:mb-6 lg:text-[22px]">
+          <h2 className="mb-3 text-base font-bold leading-tight md:text-lg lg:mb-5 lg:text-[18px]">
             불안한 순간을 함께 연습하는 서비스
           </h2>
 
-          <p className="text-[13px] font-light leading-relaxed text-white/90 md:max-w-none md:text-[15px] lg:text-[15px]">
+          <p className="text-[11px] font-light leading-relaxed text-white/90 md:text-[13px] lg:text-[13px]">
             사회불안이 있더라도, 발표와 면접이 두렵지 않도록.
-            <br className="hidden md:block" />
-            인지행동치료 기반의 훈련으로 불안을 완화할 수 있도록 도와드려요.
-            <br className="hidden md:block" />
+            <br />
+            인지행동치료 기반의 훈련으로 불안을 완화할 수 도와드려요.
+            <br />
             혼자서는 어렵던 연습, 이제는 <span className="font-bold">토키TALKI</span>와 함께해요.
           </p>
 
           {/* CTA Button - Appears below text on mobile only */}
-          <div className="mt-8 flex w-full animate-[slideUp_1s_ease-out_0.5s_both] lg:hidden">
+          <div className="mt-4 flex w-full animate-[slideUp_1s_ease-out_0.5s_both] lg:hidden">
             <button
               onClick={() => navigate('/home')}
-              className="group flex w-full max-w-[340px] items-center justify-between rounded-xl bg-white px-8 py-3.5 text-[18px] font-bold text-[#5650FF] shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.6)]"
+              className="group flex w-full max-w-[270px] items-center justify-between rounded-xl bg-white px-6 py-2.5 text-[15px] font-bold text-[#5650FF] shadow-[0_0_24px_rgba(255,255,255,0.4)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_32px_rgba(255,255,255,0.6)]"
             >
               <span>토키 체험해보기</span>
               <svg
@@ -134,7 +134,7 @@ export default function HeroSection() {
 
         <div className="order-1 flex w-full animate-[slideUp_1s_ease-out_0.3s_both] flex-col items-center lg:order-2 lg:w-[60%] lg:items-end">
           {/* Illustration */}
-          <div className="relative mb-2 w-full max-w-[500px] lg:max-w-[1000px]">
+          <div className="relative mb-0 w-full max-w-[320px] lg:max-w-[800px]">
             <img
               src={IMAGES.landing.hero}
               alt="Illustration"
@@ -143,10 +143,10 @@ export default function HeroSection() {
           </div>
 
           {/* CTA Button - Desktop only, original position */}
-          <div className="mt-0 hidden w-full lg:flex lg:justify-end">
+          <div className="hidden w-full lg:-mt-10 lg:flex lg:justify-end">
             <button
               onClick={() => navigate('/home')}
-              className="group flex w-full max-w-[400px] items-center justify-between rounded-xl bg-white px-8 py-3.5 text-[18px] font-bold text-[#5650FF] shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.6)] lg:mr-20"
+              className="group flex w-full max-w-[320px] items-center justify-between rounded-xl bg-white px-6 py-2.5 text-[15px] font-bold text-[#5650FF] shadow-[0_0_24px_rgba(255,255,255,0.4)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_32px_rgba(255,255,255,0.6)] lg:mr-16"
             >
               <span>토키 체험해보기</span>
               <svg

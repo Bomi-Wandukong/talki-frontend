@@ -53,9 +53,9 @@ const Home = () => {
     )
 
   return (
-    <div className="min-h-screen bg-[#F7F7F8] pt-[80px]">
+    <div className="h-screen overflow-hidden bg-[#F7F7F8] pt-[80px]">
       <Nav />
-      <div className="flex flex-col lg:h-[calc(100vh-80px)] lg:flex-row">
+      <div className="flex h-full flex-col lg:flex-row">
         {/* ─── Left Panel: bottom on mobile, left on desktop ─── */}
         <div className="order-2 w-full rounded-t-3xl bg-white px-6 lg:order-1 lg:h-full lg:w-1/3 lg:overflow-y-auto lg:rounded-none min-[1500px]:px-16">
           <LeftPanel

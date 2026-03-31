@@ -113,14 +113,14 @@ function RevealOnScroll({
 
 export default function WorrySection() {
   return (
-    <div className="relative flex w-full flex-col items-center overflow-hidden bg-[#5650FF] pt-20">
+    <div className="relative flex w-full flex-col items-center overflow-hidden bg-[#5650FF] pt-14">
       {/* Header Text */}
-      <div className="z-10 mb-12 px-6 text-center text-white lg:mb-20">
+      <div className="z-10 mb-9 px-6 text-center text-white lg:mb-14">
         <RevealOnScroll>
-          <p className="mb-4 text-base font-medium opacity-90 md:text-xl lg:mb-7">
+          <p className="mb-4 text-xs font-medium opacity-90 md:text-base lg:mb-6">
             발표, 면접...내가 지금 잘 하고 있나?
           </p>
-          <h2 className="text-[22px] font-bold leading-[1.4] md:text-4xl">
+          <h2 className="text-[16px] font-bold leading-[1.4] md:text-2xl">
             말하는 순간이 두렵다면,{' '}
             <span className="mt-2 inline-block bg-white px-2 py-0.5 text-[#5650FF] md:mt-0">
               TALKI가 함께해요.
@@ -130,14 +130,14 @@ export default function WorrySection() {
       </div>
 
       {/* Infinite Card Slider */}
-      <div className="relative mb-20 w-full overflow-hidden">
+      <div className="relative mb-16 w-full overflow-hidden">
         <RevealOnScroll threshold={0.1} animationClass="scale-95 opacity-0">
           {/* Left Fade Overlay */}
           <div className="pointer-events-none absolute left-0 top-0 z-30 h-full w-[15%] bg-gradient-to-r from-[#5650FF] to-transparent"></div>
           {/* Right Fade Overlay */}
           <div className="pointer-events-none absolute right-0 top-0 z-30 h-full w-[15%] bg-gradient-to-l from-[#5650FF] to-transparent"></div>
 
-          <div className="animate-scroll flex w-max items-center gap-2 pb-8 pt-8">
+          <div className="animate-scroll flex w-max items-center gap-2 pb-5 pt-5">
             {/* First set of cards */}
             {worryData.map((item) => (
               <div
@@ -188,7 +188,7 @@ export default function WorrySection() {
       </div>
 
       {/* Bottom Features */}
-      <div className="z-10 flex w-full max-w-[600px] flex-col gap-4 px-6 md:grid md:max-w-7xl md:grid-cols-3 md:gap-6">
+      <div className="z-10 flex w-full max-w-[480px] flex-col gap-4 px-6 md:grid md:max-w-6xl md:grid-cols-3 md:gap-6">
         <RevealOnScroll delay={0}>
           <FeatureBox
             imgURL={IMAGES.landing.micIcon}
@@ -213,10 +213,10 @@ export default function WorrySection() {
       </div>
 
       {/* Tagline with Rounded Bottom */}
-      <div className="mt-12 w-full bg-white lg:mt-24">
-        <div className="w-full bg-[#5650FF] pb-16 pt-20 lg:pb-24 lg:pt-28">
+      <div className="lg:mt-18 mt-9 w-full bg-white">
+        <div className="w-full bg-[#5650FF] pb-16 pt-14 lg:pb-16 lg:pt-20">
           <RevealOnScroll threshold={0.4}>
-            <p className="px-6 text-center text-[20px] font-medium leading-relaxed text-white md:text-2xl">
+            <p className="px-6 text-center text-[14.5px] font-medium leading-relaxed text-white md:text-lg">
               실전 같은 환경, AI 피드백으로
               <br className="md:hidden" />{' '}
               <span className="font-bold">지금 말하기 실력을 성장시키세요</span>
@@ -244,11 +244,11 @@ export default function WorrySection() {
 
 function FeatureBox({ imgURL, title, desc }: { imgURL: string; title: string; desc: string }) {
   return (
-    <div className="flex items-center gap-5 rounded-2xl bg-white/20 p-6 text-white backdrop-blur-md transition-all hover:bg-white/30 md:gap-6 lg:p-8">
-      <img src={imgURL} alt="icon" className="h-10 w-10 md:h-12 md:w-12" />
+    <div className="flex items-center gap-4 rounded-2xl bg-white/20 p-4 text-white backdrop-blur-md transition-all hover:bg-white/30 md:gap-5 lg:p-5">
+      <img src={imgURL} alt="icon" className="h-8 w-8 md:h-10 md:w-10" />
       <div>
-        <h3 className="mb-1 text-[17px] font-bold lg:text-xl">{title}</h3>
-        <p className="text-[13px] font-light leading-relaxed opacity-90 lg:text-sm">{desc}</p>
+        <h3 className="mb-1 text-[12.5px] font-bold lg:text-base">{title}</h3>
+        <p className="text-[10px] font-light leading-relaxed opacity-90 lg:text-[11.5px]">{desc}</p>
       </div>
     </div>
   )

@@ -83,20 +83,20 @@ export default function FaqSection() {
   }
 
   return (
-    <div className="flex w-full flex-col items-center bg-white py-16 md:h-screen md:justify-center md:py-0">
-      <div className="w-full max-w-[1300px] px-4">
+    <div className="flex w-full flex-col items-center bg-white py-12 md:h-screen md:justify-center md:py-0">
+      <div className="w-full max-w-[1040px] px-4">
         {/* Header */}
         <RevealOnScroll animationClass="-translate-x-10 opacity-0">
-          <div className="mb-8 flex flex-row items-center gap-2 md:mb-10 md:gap-4">
-            <img src={IMAGES.logo} alt="Logo" className="h-8 w-8 md:h-12 md:w-12" />
-            <h2 className="text-[22px] font-bold text-[#5650FF] md:text-3xl">자주 묻는 질문들</h2>
+          <div className="mb-6 flex flex-row items-center gap-2 md:mb-8 md:gap-4">
+            <img src={IMAGES.logo} alt="Logo" className="h-6 w-6 md:h-10 md:w-10" />
+            <h2 className="text-[18px] font-bold text-[#5650FF] md:text-2xl">자주 묻는 질문들</h2>
           </div>
         </RevealOnScroll>
 
         {/* FAQ Container */}
         <RevealOnScroll delay={200}>
-          <div className="mx-auto w-full max-w-[1200px] rounded-[24px] border border-[#9D9D9D] bg-[#F7F7F8] p-5 md:rounded-[32px] md:px-16 md:py-6">
-            <div className="flex flex-col gap-2 md:gap-4">
+          <div className="mx-auto w-full max-w-[960px] rounded-[20px] border border-[#9D9D9D] bg-[#F7F7F8] p-4 md:rounded-[24px] md:px-12 md:py-5">
+            <div className="flex flex-col">
               {faqs.map((faq, index) => (
                 <div key={index} className="border-b border-[#D9D9D9] last:border-0">
                   <button
@@ -104,12 +104,12 @@ export default function FaqSection() {
                     aria-expanded={openIndex === index}
                     aria-controls={`faq-panel-${index}`}
                     onClick={() => toggleFaq(index)}
-                    className="group flex w-full items-center justify-between py-5 text-left md:py-6"
+                    className="group flex w-full items-center justify-between py-4 text-left md:py-5"
                   >
-                    <span className="pr-4 text-base font-medium text-[#414147] transition-colors group-hover:text-[#5650FF] md:text-xl">
+                    <span className="pr-4 text-sm font-medium text-[#414147] transition-colors group-hover:text-[#5650FF] md:text-lg">
                       {faq.question}
                     </span>
-                    <span className="text-2xl font-light text-[#414147] md:text-3xl">
+                    <span className="text-xl font-light text-[#414147] md:text-2xl">
                       {openIndex === index ? '−' : '+'}
                     </span>
                   </button>
@@ -125,8 +125,8 @@ export default function FaqSection() {
                         : 'max-h-0 opacity-0'
                     }`}
                   >
-                    <div className="rounded-xl border-t border-[#D9D9D9] bg-white p-5 md:rounded-2xl md:p-8">
-                      <p className="text-sm leading-relaxed text-[#414147] md:text-lg">
+                    <div className="rounded-xl border-t border-[#D9D9D9] bg-white p-4 md:rounded-2xl md:p-6">
+                      <p className="text-[13px] leading-relaxed text-[#414147] md:text-base">
                         {faq.answer}
                       </p>
                     </div>
