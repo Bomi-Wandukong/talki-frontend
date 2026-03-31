@@ -113,14 +113,14 @@ function RevealOnScroll({
 
 export default function WorrySection() {
   return (
-    <div className="relative flex w-full flex-col items-center overflow-hidden bg-[#5650FF] pt-16">
+    <div className="relative flex w-full flex-col items-center overflow-hidden bg-[#5650FF] pt-14">
       {/* Header Text */}
-      <div className="z-10 mb-10 px-6 text-center text-white lg:mb-16">
+      <div className="z-10 mb-9 px-6 text-center text-white lg:mb-14">
         <RevealOnScroll>
-          <p className="mb-4 text-sm font-medium opacity-90 md:text-lg lg:mb-6">
+          <p className="mb-4 text-xs font-medium opacity-90 md:text-base lg:mb-6">
             발표, 면접...내가 지금 잘 하고 있나?
           </p>
-          <h2 className="text-[18px] font-bold leading-[1.4] md:text-3xl">
+          <h2 className="text-[16px] font-bold leading-[1.4] md:text-2xl">
             말하는 순간이 두렵다면,{' '}
             <span className="mt-2 inline-block bg-white px-2 py-0.5 text-[#5650FF] md:mt-0">
               TALKI가 함께해요.
@@ -137,7 +137,7 @@ export default function WorrySection() {
           {/* Right Fade Overlay */}
           <div className="pointer-events-none absolute right-0 top-0 z-30 h-full w-[15%] bg-gradient-to-l from-[#5650FF] to-transparent"></div>
 
-          <div className="animate-scroll flex w-max items-center gap-2 pb-6 pt-6">
+          <div className="animate-scroll flex w-max items-center gap-2 pb-5 pt-5">
             {/* First set of cards */}
             {worryData.map((item) => (
               <div
@@ -213,10 +213,10 @@ export default function WorrySection() {
       </div>
 
       {/* Tagline with Rounded Bottom */}
-      <div className="mt-10 w-full bg-white lg:mt-20">
-        <div className="w-full bg-[#5650FF] pb-12 pt-16 lg:pb-20 lg:pt-22">
+      <div className="lg:mt-18 mt-9 w-full bg-white">
+        <div className="w-full bg-[#5650FF] pb-16 pt-14 lg:pb-16 lg:pt-20">
           <RevealOnScroll threshold={0.4}>
-            <p className="px-6 text-center text-[16px] font-medium leading-relaxed text-white md:text-xl">
+            <p className="px-6 text-center text-[14.5px] font-medium leading-relaxed text-white md:text-lg">
               실전 같은 환경, AI 피드백으로
               <br className="md:hidden" />{' '}
               <span className="font-bold">지금 말하기 실력을 성장시키세요</span>
@@ -244,11 +244,11 @@ export default function WorrySection() {
 
 function FeatureBox({ imgURL, title, desc }: { imgURL: string; title: string; desc: string }) {
   return (
-    <div className="flex items-center gap-4 rounded-2xl bg-white/20 p-5 text-white backdrop-blur-md transition-all hover:bg-white/30 md:gap-5 lg:p-6">
+    <div className="flex items-center gap-4 rounded-2xl bg-white/20 p-4 text-white backdrop-blur-md transition-all hover:bg-white/30 md:gap-5 lg:p-5">
       <img src={imgURL} alt="icon" className="h-8 w-8 md:h-10 md:w-10" />
       <div>
-        <h3 className="mb-1 text-[14px] font-bold lg:text-lg">{title}</h3>
-        <p className="text-[11px] font-light leading-relaxed opacity-90 lg:text-[13px]">{desc}</p>
+        <h3 className="mb-1 text-[12.5px] font-bold lg:text-base">{title}</h3>
+        <p className="text-[10px] font-light leading-relaxed opacity-90 lg:text-[11.5px]">{desc}</p>
       </div>
     </div>
   )
