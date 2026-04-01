@@ -11,9 +11,16 @@ import Home from '@/pages/HomePage/Home'
 import ProtectedRoute from '@/components/ProtectedRoute/ProtectedRoute'
 import MainLayout from '@/components/Layout/MainLayout'
 import Tutorial from './pages/Tutorial/Tutorial'
+import PracticeTutorial from './pages/Practice/PracticeTutorial/PracticeTutorial'
+import PracticeStart from './pages/Practice/PracticeStart/PracticeStart'
+import BreathingPractice from './pages/Practice/PracticeStart/BreathingPractice'
 import ImpromptuPractice from '@/pages/Practice/ImpromptuPractice'
 import KeywordPractice from '@/pages/Practice/KeywordPractice'
 import CoreUnderstandingPractice from '@/pages/Practice/CoreUnderstandingPractice'
+import PracticeSelect from './pages/Practice/PracticeStart/PracticeSelect'
+import PracticeScript from './pages/Practice/PracticeScript/PracticeScript'
+import EyeContactPractice from './pages/Practice/PracticeScript/EyeContactPractice'
+import PracticeFeel from './pages/Practice/PracticeResult/PracticeFeel'
 
 function App() {
   return (
@@ -42,6 +49,13 @@ function App() {
               <Route path="impromptu" element={<ImpromptuPractice />} />
               <Route path="keyword" element={<KeywordPractice />} />
               <Route path="core" element={<CoreUnderstandingPractice />} />
+              <Route path="tutorial" element={<PracticeTutorial/>}/>
+              <Route path="start" element={<PracticeStart/>}/>
+              <Route path="breathing" element={<BreathingPractice/>}/>
+              <Route path="select" element={<PracticeSelect/>}/>
+              <Route path="script" element={<PracticeScript/>}/>
+              <Route path="eyecontact" element={<EyeContactPractice/>}/>
+              <Route path="feelresult" element={<PracticeFeel/>}/>
             </Route>
           </Route>
         </Route>

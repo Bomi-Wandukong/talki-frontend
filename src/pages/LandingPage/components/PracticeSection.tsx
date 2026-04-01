@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import PracticeCard from './PracticeCard'
 import { IMAGES } from '@/utils/images'
 
@@ -7,14 +7,12 @@ interface CardData {
   description: React.ReactNode
   rightContent: React.ReactNode
 }
-
 // 실전 탭 카드 데이터
 const realPracticeCards: CardData[] = [
   {
     title: '보다 사실적인 환경에서 \n 실전을 대비해요.',
     description:
       '당신의 상황을 카테고리 설정을 통해 구체적으로 알려주세요. 비슷한 환경에서 지속적으로 노출되며, 불안을 완화하고 부족한 점을 개선할 수 있어요.',
-
     rightContent: <img src={IMAGES.landing.practice.p1} alt="practice1" />,
   },
   {
@@ -55,7 +53,6 @@ const realPracticeCards: CardData[] = [
     rightContent: <img src={IMAGES.landing.practice.p4} alt="practice4" />,
   },
 ]
-
 // 연습 탭 카드 데이터
 const practiceCards: CardData[] = [
   {
@@ -97,54 +94,6 @@ const practiceCards: CardData[] = [
   },
 ]
 
-// Reusable reveal wrapper for individual elements
-function RevealOnScroll({
-  children,
-  threshold = 0.1,
-  delay = 0,
-  animationClass = 'translate-y-10 opacity-0',
-  className = '',
-}: {
-  children: React.ReactNode
-  threshold?: number
-  delay?: number
-  animationClass?: string
-  className?: string
-}) {
-  const [isVisible, setIsVisible] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-        }
-      },
-      {
-        threshold,
-        rootMargin: '0px 0px 100px 0px', // 화면 하단 아래 100px 지점에서 미리 트리거
-      }
-    )
-
-    if (ref.current) observer.observe(ref.current)
-    return () => observer.disconnect()
-  }, [threshold])
-
-  return (
-    <div
-      ref={ref}
-      style={{ transitionDelay: `${delay}ms` }}
-      className={`transition-all duration-1000 ${
-        isVisible ? 'translate-y-0 scale-100 opacity-100' : animationClass
-      } ${className}`}
-    >
-      {children}
-    </div>
-  )
-}
-
-// 헤더 컴포넌트
 function PracticeHeader({
   activeTab,
   setActiveTab,
@@ -155,7 +104,6 @@ function PracticeHeader({
   return (
     <div className="w-full">
       <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 pb-10 md:flex-row md:items-center md:pb-12">
-        {/* Text Area */}
         <div className="flex items-center gap-2">
           <img src={IMAGES.logo} className="w-[45px] md:w-[65px]" />
           <div>
@@ -167,8 +115,6 @@ function PracticeHeader({
             </p>
           </div>
         </div>
-
-        {/* Action Buttons */}
         <div className="mt-6 flex w-full gap-4 md:mt-0 md:w-auto md:gap-6">
           <button
             onClick={() => setActiveTab('실전')}
@@ -196,41 +142,129 @@ function PracticeHeader({
   )
 }
 
+function easeOutCubic(t: number): number {
+  return 1 - Math.pow(1 - t, 3)
+}
+
+const PEEK_OFFSET = 48 // stacked 상태에서 카드가 삐져나오는 px
+const GAP = 48
+
 export default function PracticeSection() {
   const [activeTab, setActiveTab] = useState<'실전' | '연습'>('실전')
+  const cardsContainerRef = useRef<HTMLDivElement>(null)
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
+  const [naturalPositions, setNaturalPositions] = useState<number[]>([])
+  const [naturalHeight, setNaturalHeight] = useState(2400)
+  const [scrollProgress, setScrollProgress] = useState(0)
 
   const currentCards = activeTab === '실전' ? realPracticeCards : practiceCards
 
+  // 카드 높이 측정 → spread 위치 계산
+  useLayoutEffect(() => {
+    const heights = cardRefs.current.map((ref) => ref?.offsetHeight ?? 0)
+    if (heights.some((h) => h === 0)) return
+
+    const positions: number[] = []
+    let y = 0
+    heights.forEach((h) => {
+      positions.push(y)
+      y += h + GAP
+    })
+    setNaturalPositions(positions)
+    setNaturalHeight(y - GAP)
+  }, [currentCards])
+
+  // 섹션이 뷰포트를 통과하는 동안 scrollProgress (0→1) 업데이트
+  // progress = (뷰포트 아래에서 섹션 top까지의 거리) / naturalHeight
+  // → 섹션이 화면에 진입할 때 0, 화면을 완전히 통과할 때 1
+  useEffect(() => {
+    const scrollParent = cardsContainerRef.current?.closest(
+      '[class*="overflow-y"]'
+    ) as HTMLElement | null
+    if (!scrollParent) return
+
+    const update = () => {
+      if (!cardsContainerRef.current) return
+      const { top } = cardsContainerRef.current.getBoundingClientRect()
+      const vh = scrollParent.clientHeight
+      // top = 0:               섹션 top이 뷰포트 top에 닿음 → p=0 (stacked)
+      // top = -(nh - vh):      섹션 bottom이 뷰포트 bottom에 닿음 → p=1 (fully spread)
+      const scrolled = -top
+      const total = Math.max(1, naturalHeight - vh)
+      setScrollProgress(Math.max(0, Math.min(1, scrolled / total)))
+    }
+
+    scrollParent.addEventListener('scroll', update, { passive: true })
+    update()
+    return () => scrollParent.removeEventListener('scroll', update)
+  }, [naturalHeight])
+
+  // 카드 i의 현재 top 위치 (스크롤 progress에 비례)
+  const getCardStyle = (index: number) => {
+    const n = currentCards.length - 1
+
+    // 카드를 하나씩 순서대로 펼침: 카드 i는 progress의 [(i-1)/n ~ i/n] 구간에서 이동
+    const cardP =
+      index === 0
+        ? 1
+        : Math.max(0, Math.min(1, (scrollProgress - (index - 1) / n) * n))
+
+    const eased = easeOutCubic(cardP)
+
+    const fromTop = index * PEEK_OFFSET
+    const toTop = naturalPositions[index] ?? index * 650
+    const top = fromTop + (toTop - fromTop) * eased
+
+    const scale = 1 - (1 - eased) * index * 0.02
+    const opacity = index === 0 ? 1 : 0.65 + 0.35 * eased
+
+    return { top, scale, opacity }
+  }
+
   return (
     <div className="w-full">
-      {/* Header Area: White background */}
+      {/* 헤더 */}
       <div className="bg-white pt-12">
         <div className="mx-auto max-w-6xl px-6">
-          <RevealOnScroll animationClass="-translate-x-10 opacity-0">
-            <PracticeHeader activeTab={activeTab} setActiveTab={setActiveTab} />
-          </RevealOnScroll>
+          <PracticeHeader activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
       </div>
 
-      {/* Content Area: Light Grey background */}
-      <div className="bg-[#F5F5F7] pb-20 pt-12 md:pb-24 md:pt-16">
-        <div className="mx-auto max-w-6xl px-6">
-          {/* Feature Cards - 탭에 따라 다른 카드 표시 */}
-          <div className="flex flex-col gap-12">
-            {currentCards.map((card, index) => (
-              <RevealOnScroll
+      {/* 카드 영역: naturalHeight 높이의 컨테이너 안에서 absolute 포지션으로 애니메이션 */}
+      <div className="bg-[#F5F5F7] pt-12 pb-24">
+        <div
+          ref={cardsContainerRef}
+          className="relative mx-auto max-w-6xl px-6"
+          style={{ height: naturalHeight }}
+        >
+          {currentCards.map((card, index) => {
+            const { top, scale, opacity } = getCardStyle(index)
+            return (
+              <div
                 key={`${activeTab}-${index}`}
-                delay={index * 100}
-                animationClass="opacity-0"
+                ref={(el) => {
+                  cardRefs.current[index] = el
+                }}
+                style={{
+                  position: 'absolute',
+                  top,
+                  left: 0,
+                  right: 0,
+                  zIndex: currentCards.length - index,
+                  transform: `scale(${scale})`,
+                  transformOrigin: 'top center',
+                  opacity,
+                  willChange: 'top, transform, opacity',
+                }}
               >
                 <PracticeCard
                   title={card.title}
                   description={card.description}
                   rightContent={card.rightContent}
                 />
-              </RevealOnScroll>
-            ))}
-          </div>
+              </div>
+            )
+          })}
         </div>
       </div>
     </div>

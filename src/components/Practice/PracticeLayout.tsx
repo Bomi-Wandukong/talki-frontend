@@ -5,6 +5,7 @@ import NavigationArrows from './NavigationArrows'
 interface PracticeLayoutProps {
   currentStepIndex: number
   children: React.ReactNode
+  coachBubble?: React.ReactNode
 
   // Navigation props
   canGoPrev?: boolean
@@ -19,6 +20,7 @@ interface PracticeLayoutProps {
 const PracticeLayout: React.FC<PracticeLayoutProps> = ({
   currentStepIndex,
   children,
+  coachBubble,
   canGoPrev = true,
   canGoNext = true,
   isLocked = false,
@@ -38,7 +40,8 @@ const PracticeLayout: React.FC<PracticeLayoutProps> = ({
 
         {/* 하단 네비게이션 */}
         {!hideNavigation && (
-          <div className="z-50 mt-auto flex w-full shrink-0 justify-end pb-8 pr-24">
+          <div className="z-50 mt-auto flex w-full shrink-0 flex-col items-end pb-8 pr-24">
+            {coachBubble}
             <NavigationArrows
               canGoPrev={canGoPrev}
               canGoNext={canGoNext}
