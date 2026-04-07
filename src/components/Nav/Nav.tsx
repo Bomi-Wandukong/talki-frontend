@@ -52,6 +52,7 @@ const Nav: React.FC = () => {
     const fetchProfile = async () => {
       try {
         const data = await api.get('/profile/get')
+        //콘솔로그는 이후에 삭제 예정
         console.log('profile data:', data)
         setProfile({ userName: data.userName ?? data.userId })
         //username없으면 id라도 띄워주기. 그냥 제대로 받아오는지 확인하기 위해 넣은 부분. 이후 수정 예정.
@@ -69,10 +70,20 @@ const Nav: React.FC = () => {
     { name: '연습', linkTo: '/practice/tutorial', activePath: '/practice', isReady: true },
   ]
 
+  const requiresAuth = ['/home', '/practice']
+
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, item: MenuItem) => {
     if (!item.isReady) {
       e.preventDefault()
       alert('준비 중이에요!')
+      return
+    }
+    if (requiresAuth.some((path) => item.activePath.startsWith(path))) {
+      const token = localStorage.getItem('accessToken')
+      if (!token) {
+        e.preventDefault()
+        navigate('/login')
+      }
     }
   }
 
@@ -117,7 +128,7 @@ const Nav: React.FC = () => {
         <div className="relative flex items-center gap-3" ref={dropdownRef}>
           <button
             className="flex items-center gap-3 cursor-pointer"
-            onMouseEnter={() => setShowDropdown((prev) => !prev)}
+            onMouseEnter={() => setShowDropdown(true)}
           >
             <div className="h-8 w-8 rounded-full bg-gray-300" />
             {profile && (
@@ -145,7 +156,10 @@ const Nav: React.FC = () => {
       </header>
 
       {showProfileModal && (
-        <ProfileModal onClose={() => setShowProfileModal(false)} />
+        <ProfileModal
+          onClose={() => setShowProfileModal(false)}
+          onSaved={(userName) => setProfile({ userName })}
+        />
       )}
     </div>
   )

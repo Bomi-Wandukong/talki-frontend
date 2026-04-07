@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { IMAGES } from '@/utils/images'
 import api from '@/api/fetchClient'
 
@@ -15,6 +15,7 @@ interface ProfileData {
 }
 
 const MainNav: React.FC = () => {
+  const navigate = useNavigate()
   const [profile, setProfile] = useState<ProfileData | null>(null)
 
   useEffect(() => {
@@ -24,6 +25,7 @@ const MainNav: React.FC = () => {
     const fetchProfile = async () => {
       try {
         const data = await api.get('/profile/get')
+        //콘솔로그는 이후에 삭제 예정
         console.log('profile data:', data)
         setProfile({ userName: data.userName ?? data.userId })
       } catch (err) {
@@ -40,10 +42,20 @@ const MainNav: React.FC = () => {
     { name: '연습', linkTo: '/practice/tutorial', activePath: '/practice', isReady: true },
   ]
 
+  const requiresAuth = ['/home', '/practice']
+
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, item: MenuItem) => {
     if (!item.isReady) {
       e.preventDefault()
       alert('준비 중이에요!')
+      return
+    }
+    if (requiresAuth.some((path) => item.activePath.startsWith(path))) {
+      const token = localStorage.getItem('accessToken')
+      if (!token) {
+        e.preventDefault()
+        navigate('/login')
+      }
     }
   }
 

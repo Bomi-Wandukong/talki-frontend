@@ -3,6 +3,7 @@ import api from '@/api/fetchClient'
 
 interface ProfileModalProps {
   onClose: () => void
+  onSaved?: (userName: string) => void
 }
 
 interface ProfileForm {
@@ -14,7 +15,7 @@ interface ProfileForm {
   userType: string
 }
 
-const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
+const ProfileModal: React.FC<ProfileModalProps> = ({ onClose, onSaved }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [form, setForm] = useState<ProfileForm>({
     userName: '',
@@ -51,14 +52,24 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
       })
 
       if (form.newPassword) {
-        await api.patch('/profile/password/update', {
-          oldPassword: form.oldPassword,
-          newPassword: form.newPassword,
-        })
+        if (!form.oldPassword) {
+          alert('기존 비밀번호가 누락되거나 맞지 않습니다.')
+          return
+        }
+        try {
+          await api.patch('/profile/password/update', {
+            oldPassword: form.oldPassword,
+            newPassword: form.newPassword,
+          })
+        } catch {
+          alert('기존 비밀번호가 누락되거나 맞지 않습니다.')
+          return
+        }
       }
 
       setForm((prev) => ({ ...prev, oldPassword: '', newPassword: '' }))
       setIsEditing(false)
+      onSaved?.(form.userName)
     } catch (err) {
       console.error('프로필 수정 실패:', err)
     }
