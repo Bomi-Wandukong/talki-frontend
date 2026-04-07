@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Nav from '@/components/Nav/Nav'
 import PracticeLayout from '@/components/Practice/PracticeLayout'
@@ -40,6 +40,12 @@ const BreathingPractice = () => {
     timeoutsRef.current = []
     runCycle(0)
   }
+
+  useEffect(() => {
+    return () => {
+      timeoutsRef.current.forEach(clearTimeout)
+    }
+  }, [])
 
   const isRunning = status === 'inhale' || status === 'exhale'
 

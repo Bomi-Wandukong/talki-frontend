@@ -15,7 +15,7 @@ const PracticeSidebar: React.FC<PracticeSidebarProps> = ({ currentStepIndex }) =
   const activeGroupIndex = Math.floor(currentStepIndex / 2)
 
   return (
-    <aside className="w-[300px] flex flex-col flex-shrink-0 border-r border-[#EBEBEB] bg-white py-10 h-screen relative z-20">
+    <aside className="w-[300px] flex flex-col flex-shrink-0 border-r border-[`#EBEBEB`] bg-white py-10 h-full relative z-20">
       <div className="w-full pt-5">
         <div className="pl-10 pr-6 mb-8">
         <h2 className="text-[20px] font-bold text-[#3B3B3B]">
