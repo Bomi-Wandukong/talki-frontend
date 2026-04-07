@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import api from '@/api/fetchClient'
 import { IMAGES } from '@/utils/images'
 
 const Signup = () => {
@@ -9,6 +10,25 @@ const Signup = () => {
 
   const [agreedTerms, setAgreedTerms] = useState(false)
   const [agreedPrivacy, setAgreedPrivacy] = useState(false)
+
+  const [username, setUsername] = useState('')
+  const [isUsernameValid, setIsUsernameValid] = useState(false)
+
+  const checkUsernameDuplicate = async () => {
+    if (!username) {
+      alert('아이디를 입력해주세요.')
+      return
+    }
+    try {
+      await api.get(`/auth/check-userId?id=${username}`)
+      alert('사용 가능한 아이디입니다.')
+      setIsUsernameValid(true)
+    } catch (error) {
+      console.error('중복 확인 에러:', error)
+      alert('이미 사용중인 아이디입니다.')
+      setIsUsernameValid(false)
+    }
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -39,12 +59,17 @@ const Signup = () => {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const form = e.currentTarget as HTMLFormElement
 
     if (!agreedTerms || !agreedPrivacy) {
       alert('필수 약관에 동의해주세요.')
+      return
+    }
+
+    if (!isUsernameValid) {
+      alert('아이디 중복 확인을 해주세요.')
       return
     }
 
@@ -62,8 +87,23 @@ const Signup = () => {
       return
     }
 
-    alert('회원가입이 완료되었습니다!')
-    navigate('/login')
+    const nickname = (form.elements.namedItem('nickname') as HTMLInputElement)?.value
+    const email = (form.elements.namedItem('email') as HTMLInputElement)?.value
+
+    try {
+      await api.post('/auth/signup', {
+        nickname,
+        userId: username,
+        password,
+        email,
+        profileImage: profileImg || null,
+      })
+      alert('회원가입이 완료되었습니다!')
+      navigate('/login')
+    } catch (error) {
+      console.error('회원가입 에러:', error)
+      alert('회원가입 중 오류가 발생했습니다.')
+    }
   }
 
   return (
@@ -274,10 +314,16 @@ const Signup = () => {
                         id="username"
                         name="username"
                         required
+                        value={username}
+                        onChange={(e) => {
+                          setUsername(e.target.value)
+                          setIsUsernameValid(false)
+                        }}
                         className="h-[6.5vh] min-h-[36px] w-full rounded-xl border-2 border-[#D7D6F2] px-4 text-[2vh] focus:border-[#5650FF] focus:outline-none"
                       />
                       <button
                         type="button"
+                        onClick={checkUsernameDuplicate}
                         className="absolute right-2 top-1/2 h-[4.5vh] min-h-[28px] -translate-y-1/2 rounded-lg bg-[#5650FF] px-4 text-[1.5vh] text-white transition-all hover:bg-[#4a45e0]"
                       >
                         중복 확인
