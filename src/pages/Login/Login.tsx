@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import axiosInstance from '@/api/axios'
+import api from '@/api/fetchClient'
 import { IMAGES } from '@/utils/images'
 
 const Login = () => {
@@ -14,14 +14,14 @@ const Login = () => {
     setErrorMessage('') // 에러 메시지 초기화
 
     try {
-      const response = await axiosInstance.post('/auth/login', {
+      const data = await api.post('/auth/login', {
         userId: username,
         password: password,
       })
 
-      if (response.status === 200) {
-        localStorage.setItem('accessToken', response.data.access)
-        localStorage.setItem('refreshToken', response.data.refresh)
+      if (data) {
+        localStorage.setItem('accessToken', data.access)
+        localStorage.setItem('refreshToken', data.refresh)
         navigate('/home')
       }
     } catch (error) {
