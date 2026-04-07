@@ -15,7 +15,7 @@ const Nav: React.FC = () => {
   const menuItems: MenuItem[] = [
     { name: '홈', linkTo: '/home', activePath: '/home', isReady: true },
     { name: '실전', linkTo: '/actual/tutorial', activePath: '/actual', isReady: true },
-    { name: '연습', linkTo: '/practice/impromptu', activePath: '/practice', isReady: true },
+    { name: '연습', linkTo: '/practice/tutorial', activePath: '/practice', isReady: true },
   ]
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, item: MenuItem) => {
@@ -30,7 +30,7 @@ const Nav: React.FC = () => {
       <header className="flex h-20 items-center justify-between border-b border-gray-200 bg-white px-12">
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
-            <img src={IMAGES.purplelogo} alt="Logo" className="my-2 mb-3 w-[90px]" />
+            <img src={IMAGES.purplelogo} alt="Logo" className="my-2 mb-3 w-[75px]" />
           </Link>
 
           <nav className="ml-12 flex items-center gap-10">
@@ -44,10 +44,10 @@ const Nav: React.FC = () => {
                   key={item.activePath}
                   to={item.linkTo}
                   onClick={(e) => handleLinkClick(e, item)}
-                  className="relative flex flex-col items-center py-2 pt-4"
+                  className="relative flex flex-col items-center py-2 pt-3"
                 >
                   <span
-                    className={`fontRegular text-[17px] transition-colors ${
+                    className={`fontRegular text-[14px] transition-colors ${
                       isActive ? 'text-[#5650FF]' : 'text-[#ACA9FE]'
                     }`}
                   >
@@ -63,9 +63,9 @@ const Nav: React.FC = () => {
           </nav>
         </div>
 
-        <div className="flex items-center gap-3 pt-2">
-          <div className="h-8 w-8 rounded-full bg-gray-300" />
-          <span className="text-[16px] font-medium text-[#3B3B3B]">김톡희</span>
+        <div className="flex items-center gap-3">
+          <div className="h-7 w-7 rounded-full bg-gray-300" />
+          <span className="text-[13px] font-medium text-[#3B3B3B]">김톡희</span>
         </div>
       </header>
     </div>

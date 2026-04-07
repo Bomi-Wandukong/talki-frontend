@@ -46,4 +46,10 @@ export const IMAGES = {
   guidelineSuccess: '/img/guidelineSuccess.png',
   tutorial: '/img/liveFeedbackTutorial.png',
   speakPractice: '/img/speakPractice.png',
+
+  //연습 튜토리얼
+  PT1 : '/img/PracticeTutorial/PT1.png',
+  PT2 : '/img/PracticeTutorial/PT2.png',
+  PT3 : '/img/PracticeTutorial/PT3.png',
+  PT4 : '/img/PracticeTutorial/PT4.png',
 } as const

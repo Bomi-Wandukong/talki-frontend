@@ -15,16 +15,16 @@ const PracticeSidebar: React.FC<PracticeSidebarProps> = ({ currentStepIndex }) =
   const activeGroupIndex = Math.floor(currentStepIndex / 2)
 
   return (
-    <aside className="w-[300px] flex flex-col justify-center flex-shrink-0 border-r border-[#EBEBEB] bg-white py-10 h-full relative z-20">
-      <div className="w-full">
-        <div className="pl-10 pr-6 mb-12">
+    <aside className="w-[300px] flex flex-col flex-shrink-0 border-r border-[#EBEBEB] bg-white py-10 h-full relative z-20">
+      <div className="w-full pt-5">
+        <div className="pl-10 pr-6 mb-8">
         <h2 className="text-[20px] font-bold text-[#3B3B3B]">
           <span className="text-[#EE8A29]">발표/면접</span> 불안 훈련
         </h2>
-        <p className="text-[12px] text-[#EE8A29] mt-2 font-medium">인지행동치료(CBT) 기반 연습 프로그램</p>
+        <p className="text-[13px] text-[#EE8A29] mt-2 font-medium">인지행동치료(CBT) 기반 연습 프로그램</p>
       </div>
 
-        <div className="relative pl-10 pr-6 flex flex-col gap-10">
+        <div className="relative pl-10 pr-6 flex flex-col gap-5 short:gap-3 tall:gap-10">
           {/* 뒤를 이어주는 세로 타임라인 */}
           <div className="absolute left-[56px] top-6 bottom-6 w-[1px] bg-[#EBEBEB] z-0"></div>
 
@@ -46,17 +46,17 @@ const PracticeSidebar: React.FC<PracticeSidebarProps> = ({ currentStepIndex }) =
                 // 상태에 따른 컬러 변수 세팅
                 let circleBg = '#D9D9D9'
                 let circleText = '#868686'
-                let labelStyle = 'text-[#868686] font-normal'
+                let labelStyle = 'text-[#868686] fontMedium'
 
                 if (isActiveGroup) {
                   if (isCurrentStep) {
                     circleBg = '#FFA956'
                     circleText = '#FFFFFF'
-                    labelStyle = 'text-[#E17100] font-semibold'
+                    labelStyle = 'text-[#E17100] fontBold'
                   } else {
                     circleBg = '#FFD6AF'
-                    circleText = '#52525C'
-                    labelStyle = 'text-[#52525C] font-normal'
+                    circleText = '#FFFFFF'
+                    labelStyle = 'text-[#52525C] fontSB'
                   }
                 }
 
