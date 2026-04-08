@@ -85,7 +85,9 @@ export const api = {
     fetchClient(endpoint, { ...options, method: 'POST', data }),
   put: (endpoint: string, data?: any, options?: FetchClientOptions) => 
     fetchClient(endpoint, { ...options, method: 'PUT', data }),
-  delete: (endpoint: string, options?: FetchClientOptions) => 
+  patch: (endpoint: string, data?: any, options?: FetchClientOptions) =>
+    fetchClient(endpoint, { ...options, method: 'PATCH', data }),
+  delete: (endpoint: string, options?: FetchClientOptions) =>
     fetchClient(endpoint, { ...options, method: 'DELETE' }),
 };
 

@@ -1,6 +1,8 @@
-import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import React, { useState, useEffect, useRef } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { IMAGES } from '@/utils/images'
+import api from '@/api/fetchClient'
+import ProfileModal from './ProfileModal'
 
 interface MenuItem {
   name: string
@@ -9,8 +11,58 @@ interface MenuItem {
   isReady: boolean
 }
 
+interface ProfileData {
+  userName: string
+}
+
 const Nav: React.FC = () => {
   const location = useLocation()
+  const navigate = useNavigate()
+  const [profile, setProfile] = useState<ProfileData | null>(null)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [showProfileModal, setShowProfileModal] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleLogout = async () => {
+    try {
+      await api.post('/auth/logout')
+    } catch {
+      // 로그아웃 실패해도 로컬 처리
+    } finally {
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
+      navigate('/')
+    }
+  }
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken')
+    if (!token) return
+
+    const fetchProfile = async () => {
+      try {
+        const data = await api.get('/profile/get')
+        //콘솔로그는 이후에 삭제 예정
+        console.log('profile data:', data)
+        setProfile({ userName: data.userName ?? data.userId })
+        //username없으면 id라도 띄워주기. 그냥 제대로 받아오는지 확인하기 위해 넣은 부분. 이후 수정 예정.
+      } catch (err) {
+        console.error('프로필 조회 실패:', err)
+      }
+    }
+
+    fetchProfile()
+  }, [])
 
   const menuItems: MenuItem[] = [
     { name: '홈', linkTo: '/home', activePath: '/home', isReady: true },
@@ -18,10 +70,20 @@ const Nav: React.FC = () => {
     { name: '연습', linkTo: '/practice/tutorial', activePath: '/practice', isReady: true },
   ]
 
+  const requiresAuth = ['/home', '/practice']
+
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, item: MenuItem) => {
     if (!item.isReady) {
       e.preventDefault()
       alert('준비 중이에요!')
+      return
+    }
+    if (requiresAuth.some((path) => item.activePath.startsWith(path))) {
+      const token = localStorage.getItem('accessToken')
+      if (!token) {
+        e.preventDefault()
+        navigate('/login')
+      }
     }
   }
 
@@ -63,11 +125,42 @@ const Nav: React.FC = () => {
           </nav>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="h-7 w-7 rounded-full bg-gray-300" />
-          <span className="text-[13px] font-medium text-[#3B3B3B]">김톡희</span>
+        <div className="relative flex items-center gap-3" ref={dropdownRef}>
+          <button
+            className="flex items-center gap-3 cursor-pointer"
+            onMouseEnter={() => setShowDropdown(true)}
+          >
+            <div className="h-8 w-8 rounded-full bg-gray-300" />
+            {profile && (
+              <span className="text-[13px] z-100 font-medium text-[#3B3B3B]">{profile.userName}</span>
+            )}
+          </button>
+
+          {showDropdown && (
+            <div className="absolute right-0 top-10 z-50 min-w-[120px] overflow-hidden rounded-xl bg-black/60 shadow-lg">
+              <button
+                className="w-full px-5 py-2 pt-4 text-left text-[14px] text-white hover:bg-white/10"
+                onClick={handleLogout}
+              >
+                로그아웃
+              </button>
+              <button
+                className="w-full px-5 py-2 pb-4 text-left text-[14px] text-white hover:bg-white/10"
+                onClick={() => { setShowDropdown(false); setShowProfileModal(true) }}
+              >
+                내 정보
+              </button>
+            </div>
+          )}
         </div>
       </header>
+
+      {showProfileModal && (
+        <ProfileModal
+          onClose={() => setShowProfileModal(false)}
+          onSaved={(userName) => setProfile({ userName })}
+        />
+      )}
     </div>
   )
 }
