@@ -73,7 +73,7 @@ const Home = () => {
       <Nav />
       <div className="flex h-full flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
         {/* ─── Left Panel: bottom on mobile, left on desktop ─── */}
-        <div className="min-[1500px]:px-16 order-2 w-full rounded-t-3xl bg-white px-10 lg:order-1 lg:h-full lg:w-1/3 lg:overflow-y-auto lg:rounded-none">
+        <div className="order-2 w-full rounded-t-3xl bg-white lg:order-1 lg:h-full lg:w-1/3 lg:overflow-y-auto lg:rounded-none">
           <LeftPanel
             streak={streak}
             today={today}

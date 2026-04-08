@@ -56,7 +56,7 @@ const LeftPanel = ({
   const isPracticed = (date: Date) => practicedDates.some((pd) => isSameDay(pd, date))
 
   return (
-    <div className="flex h-full flex-col py-10 lg:justify-center lg:py-0">
+    <div className="flex h-full flex-col px-[4vw] py-10 lg:justify-center lg:py-0">
       <div className="mb-[4vh] lg:mb-[6vh]">
         <h1 className="mb-1 text-lg font-bold text-[#5650FF] lg:text-[1.6rem]">
           <span className="text-[#FF9500]">{userName}</span>님, 반가워요!
