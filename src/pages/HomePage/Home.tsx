@@ -1,28 +1,44 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Nav from '@/components/Nav/Nav'
 import LeftPanel from './components/LeftPanel'
 import CalendarView from './components/CalendarView'
 import DashboardView from './components/DashboardView'
 import DateDetailModal from './components/DateDetailModal'
 
-const today = new Date()
-
-const PRACTICED_DATES: Date[] = []
-for (let i = 1; i <= 2; i++) {
-  const d = new Date(today)
-  d.setDate(today.getDate() - i)
-  PRACTICED_DATES.push(d)
-}
-
-const STREAK = 2
+import { getPersonalHome } from '@/api/personal'
+import type { PersonalHomeResponse } from '@/api/personal'
 
 const Home = () => {
+  const [today] = useState(new Date())
   const [rightView, setRightView] = useState<'calendar' | 'dashboard'>('dashboard')
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [currentMonth, setCurrentMonth] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1)
   )
+
+  const [homeData, setHomeData] = useState<PersonalHomeResponse | null>(null)
+  const [practicedDates, setPracticedDates] = useState<Date[]>([])
+  const [streak, setStreak] = useState(0)
+
+  useEffect(() => {
+    const fetchHomeData = async () => {
+      try {
+        const data = await getPersonalHome()
+        console.log('Home.tsx Fetched data:', data)
+        setHomeData(data)
+
+        if (data.practiceDays) {
+          setStreak(data.practiceDays.streakDays || 0)
+          const dates = (data.practiceDays.practiceDays || []).map((d: string) => new Date(d))
+          setPracticedDates(dates)
+        }
+      } catch (err) {
+        console.error('Failed to fetch home data:', err)
+      }
+    }
+    fetchHomeData()
+  }, [])
 
   const toggleRightView = () => {
     setRightView((prev) => (prev === 'calendar' ? 'dashboard' : 'calendar'))
@@ -44,7 +60,7 @@ const Home = () => {
       <CalendarView
         currentMonth={currentMonth}
         today={today}
-        practicedDates={PRACTICED_DATES}
+        practicedDates={practicedDates}
         onMonthChange={setCurrentMonth}
         onDateClick={handleDateClick}
       />
@@ -55,15 +71,18 @@ const Home = () => {
   return (
     <div className="h-screen overflow-hidden bg-[#F7F7F8] pt-[80px]">
       <Nav />
-      <div className="flex h-full flex-col lg:flex-row">
+      <div className="flex h-full flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
         {/* ─── Left Panel: bottom on mobile, left on desktop ─── */}
-        <div className="order-2 w-full rounded-t-3xl bg-white px-6 lg:order-1 lg:h-full lg:w-1/3 lg:overflow-y-auto lg:rounded-none min-[1500px]:px-16">
+        <div className="min-[1500px]:px-16 order-2 w-full rounded-t-3xl bg-white px-10 lg:order-1 lg:h-full lg:w-1/3 lg:overflow-y-auto lg:rounded-none">
           <LeftPanel
-            streak={STREAK}
+            streak={streak}
             today={today}
-            practicedDates={PRACTICED_DATES}
+            practicedDates={practicedDates}
             rightView={rightView}
             onArrowClick={toggleRightView}
+            userName={homeData?.userName}
+            mindSetting={homeData?.mindSetting}
+            recentReport={homeData?.recentPresentationReport}
           />
         </div>
 
