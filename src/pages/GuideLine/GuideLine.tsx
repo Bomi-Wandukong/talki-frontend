@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import StepIndicator from './components/StepIndicator'
 import CameraCheckView from './components/CameraCheckView'
 import SpeakerCheckView from './components/SpeakerCheckView'
@@ -7,13 +8,15 @@ import Nav from '@/components/Nav/Nav'
 const GuideLine = () => {
   const [step, setStep] = useState(0)
   const TOTAL_STEPS = 2
+  const location = useLocation()
+  const sessionData = location.state
 
   const handleNext = () => {
     if (step < TOTAL_STEPS - 1) setStep((prev) => prev + 1)
   }
 
   return (
-    <div className="bg-[#F7F7F8] min-h-screen pt-[72px]"> 
+    <div className="bg-[#F7F7F8] min-h-screen pt-[72px]">
       <Nav/>
       <div className="flex h-screen flex-col items-center">
         <div className="flex h-full w-[75%] flex-col items-center">
@@ -30,7 +33,7 @@ const GuideLine = () => {
           </div>
           <div className="CheckSpace mt-10 flex h-[65%] w-[97%] flex-col items-center justify-center rounded-xl bg-white p-10">
             {step === 0 && <CameraCheckView onComplete={handleNext} />}
-            {step === 1 && <SpeakerCheckView onComplete={handleNext} />}
+            {step === 1 && <SpeakerCheckView onComplete={handleNext} sessionData={sessionData} />}
           </div>
         </div>
       </div>

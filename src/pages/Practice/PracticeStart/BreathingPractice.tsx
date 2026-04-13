@@ -55,7 +55,7 @@ const BreathingPractice = () => {
       <PracticeLayout
         currentStepIndex={1}
         canGoPrev={!isRunning}
-        canGoNext={status === 'done'}
+        canGoNext={!isRunning}
         onPrev={() => navigate('/practice/start')}
         onNext={() => navigate('/practice/select')}
       >

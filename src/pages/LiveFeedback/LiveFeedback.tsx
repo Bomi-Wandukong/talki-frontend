@@ -5,21 +5,33 @@ import CountdownOverlay from './components/CountdownOverlay'
 import TutorialModal from './components/TutorialModal'
 import VoiceWaveIndicator from './components/VoiceWaveIndicator'
 import { FaArrowLeftLong } from 'react-icons/fa6'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 const TUTORIAL_HIDE_KEY = 'hideLiveTutorial'
 
 export default function LiveFeedback() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const sessionData = location.state as {
+    presentationType?: string
+    topic_summary?: string
+    topic_desc?: string
+    topic_tags?: string[]
+    isUnexpectedEvent?: boolean
+    isRealtimeFeedback?: boolean
+  } | null
+
+  console.log(sessionData)
+
   const trackerRef = useRef<LiveFeedbackTrackerRef>(null)
 
   const [showTutorial, setShowTutorial] = useState(false)
   const [showCountdown, setShowCountdown] = useState(false)
   const videoRef = useRef<HTMLVideoElement | null>(null)
 
-  // 토글 상태
-  const [isLiveFeedbackOn, setIsLiveFeedbackOn] = useState(true)
-  const [isEmergencyOn, setIsEmergencyOn] = useState(false)
+  // 토글 상태 (Category에서 설정한 값으로 초기화)
+  const [isLiveFeedbackOn, setIsLiveFeedbackOn] = useState(sessionData?.isRealtimeFeedback ?? true)
+  const [isEmergencyOn, setIsEmergencyOn] = useState(sessionData?.isUnexpectedEvent ?? false)
 
   const [isVoiceActive, setIsVoiceActive] = useState(false)
 

@@ -87,12 +87,12 @@ const Signup = () => {
       return
     }
 
-    const nickname = (form.elements.namedItem('nickname') as HTMLInputElement)?.value
+    const name = (form.elements.namedItem('nickname') as HTMLInputElement)?.value
     const email = (form.elements.namedItem('email') as HTMLInputElement)?.value
 
     try {
       await api.post('/auth/signup', {
-        nickname,
+        name,
         userId: username,
         password,
         email,
