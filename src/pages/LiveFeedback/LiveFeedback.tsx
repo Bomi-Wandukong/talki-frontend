@@ -31,7 +31,7 @@ export default function LiveFeedback() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
 
   // 토글 상태 (Category에서 설정한 값으로 초기화)
-  const [isLiveFeedbackOn, setIsLiveFeedbackOn] = useState(sessionData?.isRealtimeFeedback ?? true)
+  const [isLiveFeedbackOn, setIsLiveFeedbackOn] = useState(sessionData?.isRealtimeFeedback ?? false)
   const [isEmergencyOn, setIsEmergencyOn] = useState(sessionData?.isUnexpectedEvent ?? false)
 
   const [isVoiceActive, setIsVoiceActive] = useState(false)

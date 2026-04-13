@@ -5,7 +5,7 @@ import Nav from '@/components/Nav/Nav'
 const Category = () => {
   const navigate = useNavigate()
   const [step, setStep] = useState(1)
-  const [presentationType, setPresentationType] = useState('화상 발표')
+  const [presentationType, setPresentationType] = useState('')
   const [topic_summary, setTopic_summary] = useState('')
   const [topic_desc, setTopic_desc] = useState('')
   const [hashInput, setHashInput] = useState('')
@@ -28,6 +28,7 @@ const Category = () => {
       .trim()
       .split(/\s+/)
       .filter((v) => v.startsWith('#') && v.length > 1)
+    if (topic_tags.length < 1 || topic_tags.length > 3) return
     navigate('/actual/guideline', {
       state: {
         presentationType: getMappedType(presentationType),
@@ -232,7 +233,9 @@ const Category = () => {
                         !topic_summary ||
                         !topic_desc ||
                         hashInput.split(/\s+/).filter((v) => v.startsWith('#') && v.length > 1)
-                          .length < 1
+                          .length < 1 ||
+                        hashInput.split(/\s+/).filter((v) => v.startsWith('#') && v.length > 1)
+                          .length > 3
                       }
                       className="animate-in zoom-in-95 flex h-12 w-12 items-center justify-center rounded-xl bg-[#5650FF] text-white transition-all duration-200 disabled:bg-[#ACA9FE]"
                     >
