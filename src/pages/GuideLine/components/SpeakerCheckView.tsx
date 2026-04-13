@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-const SpeakerCheckView = ({ onComplete }: { onComplete: () => void }) => {
-  const navigate = useNavigate() 
+const SpeakerCheckView = ({ onComplete, sessionData }: { onComplete: () => void; sessionData?: unknown }) => {
+  const navigate = useNavigate()
   const [isRecording, setIsRecording] = useState(false)
   const [audioLevel, setAudioLevel] = useState(0)
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
@@ -132,7 +132,7 @@ const SpeakerCheckView = ({ onComplete }: { onComplete: () => void }) => {
       setAudioLevel(0)
     } else if (sttResult === 'success') {
       onComplete()
-      navigate('/live')
+      navigate('/live', { state: sessionData })
     }
   }
 

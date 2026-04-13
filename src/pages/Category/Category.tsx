@@ -5,29 +5,53 @@ import Nav from '@/components/Nav/Nav'
 const Category = () => {
   const navigate = useNavigate()
   const [step, setStep] = useState(1)
-  const [category, setCategory] = useState<'presentation' | 'interview' | null>(null)
-  const [subCategory, setSubCategory] = useState('')
-  const [topic, setTopic] = useState('')
-  const [description, setDescription] = useState('')
+  const [presentationType, setPresentationType] = useState('')
+  const [topic_summary, setTopic_summary] = useState('')
+  const [topic_desc, setTopic_desc] = useState('')
   const [hashInput, setHashInput] = useState('')
 
   const [isUnexpectedEvent, setIsUnexpectedEvent] = useState(false)
   const [isRealtimeFeedback, setIsRealtimeFeedback] = useState(false)
 
+  const getMappedType = (type:string) => {
+    const mapping = {
+      '화상 발표': 'online_small',
+      '소규모 발표': 'small',
+      '강당 발표': 'large',
+      '강의실 발표': 'large',
+    }as const;
+    return mapping[type as keyof typeof mapping] || 'online_small';
+  }
+
   const handleComplete = () => {
-    navigate('/actual/guideline')
+    const topic_tags = hashInput
+      .trim()
+      .split(/\s+/)
+      .filter((v) => v.startsWith('#') && v.length > 1)
+    if (topic_tags.length < 1 || topic_tags.length > 3) return
+    navigate('/actual/guideline', {
+      state: {
+        presentationType: getMappedType(presentationType),
+        originalType: presentationType,
+        topic_summary,
+        topic_desc,
+        topic_tags,
+        isUnexpectedEvent,
+        isRealtimeFeedback,
+      },
+    })
   }
 
   return (
     <div className="min-h-screen bg-[#F7F7F8] pb-20 pt-[100px]">
       <Nav />
 
-      <div className="mx-auto flex w-[1000px] flex-col items-center pt-20">
+      <div className="mx-auto flex w-[75%] flex-col items-center pt-20">
         <div className="mb-10 w-full">
-          <h1 className="text-[28px] font-bold text-[#3B3B3B]">
+          <h1 className="text-[24px] font-bold text-[#3B3B3B]">
             어떤 <span className="text-[#5650FF]">실전</span>을 준비하고 있나요?
           </h1>
-          <p className="mt-2 text-[#716FA4]">
+          <p className="mt-2 text-[15px] text-[#716FA4]">
             시작하기 전, 보다 정확한 검사를 위해 상황을 정해 주세요!
           </p>
 
@@ -52,107 +76,62 @@ const Category = () => {
               STEP 1
             </div>
             <div className="flex w-full flex-col justify-between">
-              <div className="flex w-full items-center justify-between">
-                <span
-                  className={`fontSB text-[17px] transition-colors ${step > 1 ? 'text-[#868686]' : 'text-[#3B3B3B]'}`}
+              <div
+                className={`flex w-full justify-between ${step > 1 ? 'pointer-events-none' : ''}`}
+              >
+                <p
+                  className={`fontSB text-[16px] transition-colors ${step > 1 ? 'text-[#868686]' : 'text-[#3B3B3B]'}`}
                 >
-                  원하는{' '}
-                  <span className={step > 1 ? 'text-[#868686]' : 'text-[#5650FF]'}>카테고리</span>를
-                  선택해 주세요.
-                </span>
-                <div>
-                  <div
-                    className={`transition-all duration-300 ${step > 1 ? 'pointer-events-none' : 'opacity-100'}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`mr-6 h-8 w-[2px] transition-colors ${step > 1 ? 'bg-[#E5E5EC]' : 'bg-[#D7D6F1]'}`}
-                      ></div>
-                      <button
-                        onClick={() => setCategory('presentation')}
-                        className={`fontRegular rounded-lg border px-10 py-2 text-[15px] transition-all ${
-                          category === 'presentation'
-                            ? step > 1
-                              ? 'border-[#868686] bg-[#868686] text-white' // 완료 후: 진회색 배경 + 화이트 글자 유지
-                              : 'border-[#5650FF] bg-[#5650FF] text-white'
-                            : 'border-[#D7D6F1] text-[#716FA4]'
+                  <span className={step > 1 ? 'text-[#868686]' : 'text-[#5650FF]'}>어떤 발표</span>{' '}
+                  인가요?
+                </p>
+                <div className="fontRegular grid w-[70%] grid-cols-2 gap-y-6">
+                  {['화상 발표', '강당 발표', '소규모 발표', '강의실 발표'].map((item) => (
+                    <label key={item} className="group flex cursor-pointer items-center gap-3">
+                      <input
+                        type="radio"
+                        name="sub"
+                        checked={presentationType === item}
+                        onChange={() => setPresentationType(item)}
+                        className={`h-5 w-5 transition-all ${step > 1 ? 'accent-[#868686] opacity-50' : 'accent-[#5650FF]'}`}
+                      />
+                      <span
+                        className={`transition-colors ${
+                          presentationType === item
+                            ? `fontRegular ${step > 1 ? 'text-[#868686]' : 'text-[#5650FF]'}`
+                            : step > 1
+                              ? 'text-[#D1D1D1]'
+                              : 'text-[#716FA4]'
                         }`}
                       >
-                        발표
-                      </button>
-                      <button className="cursor-not-allowed rounded-lg border border-[#F1F1F5] bg-[#F8F8FA] px-10 py-2 text-[15px] text-[#D1D1D1]">
-                        면접
-                      </button>
-                    </div>
-                  </div>
+                        {item}
+                      </span>
+                    </label>
+                  ))}
                 </div>
               </div>
 
-              {category === 'presentation' && (
-                <div
-                  className={`animate-in fade-in flex w-full justify-between pt-10 duration-500 ${step > 1 ? 'pointer-events-none' : ''}`}
-                >
-                  <p
-                    className={`fontSB mb-6 text-[16px] transition-colors ${step > 1 ? 'text-[#868686]' : 'text-[#3B3B3B]'}`}
-                  >
-                    <span className={step > 1 ? 'text-[#868686]' : 'text-[#5650FF]'}>
-                      어떤 발표
-                    </span>{' '}
-                    인가요?
-                  </p>
-                  <div className="fontRegular grid w-[70%] grid-cols-2 gap-y-6">
-                    {['화상 발표', '강당 발표', '소규모 발표', '강의실 발표'].map((item) => (
-                      <label key={item} className="group flex cursor-pointer items-center gap-3">
-                        <input
-                          type="radio"
-                          name="sub"
-                          checked={subCategory === item}
-                          onChange={() => setSubCategory(item)}
-                          className={`h-5 w-5 transition-all ${step > 1 ? 'accent-[#868686] opacity-50' : 'accent-[#5650FF]'}`}
-                        />
-                        <span
-                          className={`transition-colors ${
-                            subCategory === item
-                              ? `fontRegular ${step > 1 ? 'text-[#868686]' : 'text-[#5650FF]'}`
-                              : step > 1
-                                ? 'text-[#D1D1D1]'
-                                : 'text-[#716FA4]'
-                          }`}
-                        >
-                          {item}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* 하단 버튼 영역 */}
-
               {step === 1 ? (
-                category && (
-                  <div className="mt-8 flex h-12 justify-end">
-                    <button
-                      onClick={() => setStep(2)}
-                      disabled={!subCategory}
-                      className="animate-in zoom-in-95 flex h-12 w-12 items-center justify-center rounded-xl bg-[#5650FF] text-white transition-all duration-200 disabled:bg-[#ACA9FE]"
-                    >
-                      <span className="mb-1 text-3xl">✓</span>
-                    </button>
-                  </div>
-                )
+                <div className="mt-8 flex h-12 justify-end">
+                  <button
+                    onClick={() => setStep(2)}
+                    disabled={!setPresentationType}
+                    className="animate-in zoom-in-95 flex h-12 w-12 items-center justify-center rounded-xl bg-[#5650FF] text-white transition-all duration-200 disabled:bg-[#ACA9FE]"
+                  >
+                    <span className="mb-1 text-3xl">✓</span>
+                  </button>
+                </div>
               ) : (
                 <div className="mt-8 flex h-12 justify-end">
                   <button
-                      onClick={() => setStep(1)}
-                      className="flex h-12 w-28 items-center justify-center overflow-hidden rounded-xl bg-[#868686] text-white transition-all duration-300 hover:bg-[#707070]"
-                    >
-                      <span
-                        className="whitespace-nowrap text-[17px] transition-opacity duration-200"
-                      >
-                        다시하기
-                      </span>
-                    </button>
+                    onClick={() => setStep(1)}
+                    className="flex h-12 w-28 items-center justify-center overflow-hidden rounded-xl bg-[#868686] text-white transition-all duration-300 hover:bg-[#707070]"
+                  >
+                    <span className="whitespace-nowrap text-[17px] transition-opacity duration-200">
+                      다시하기
+                    </span>
+                  </button>
                 </div>
               )}
             </div>
@@ -185,13 +164,15 @@ const Category = () => {
                     <div className="flex flex-col gap-3">
                       <div className="flex items-center justify-between border-l-2 border-[#D7D6F1] pl-3">
                         <span className="fontSB text-[15px] text-[#3B3B3B]">주제 요약</span>
-                        <span className="text-[12px] text-[#AEAEB2]">{topic.length}/50</span>
+                        <span className="text-[12px] text-[#AEAEB2]">
+                          {topic_summary.length}/50
+                        </span>
                       </div>
                       <input
                         type="text"
                         placeholder="발표 주제를 한 줄로 요약해 주세요"
-                        value={topic}
-                        onChange={(e) => setTopic(e.target.value.slice(0, 50))}
+                        value={topic_summary}
+                        onChange={(e) => setTopic_summary(e.target.value.slice(0, 50))}
                         className="w-full rounded-xl border border-[#E5E5EC] p-4 text-[15px] outline-none focus:border-[#5650FF]"
                       />
                     </div>
@@ -232,12 +213,12 @@ const Category = () => {
                   <div className="flex flex-1 flex-col gap-3">
                     <div className="flex items-center justify-between border-l-2 border-[#D7D6F1] pl-3">
                       <span className="fontSB text-[15px] text-[#3B3B3B]">주제 설명</span>
-                      <span className="text-[12px] text-[#AEAEB2]">{description.length}/200</span>
+                      <span className="text-[12px] text-[#AEAEB2]">{topic_desc.length}/200</span>
                     </div>
                     <textarea
                       placeholder="발표에 대한 상세 내용을 작성해 주세요"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value.slice(0, 200))}
+                      value={topic_desc}
+                      onChange={(e) => setTopic_desc(e.target.value.slice(0, 200))}
                       className="h-[188px] w-full resize-none rounded-xl border border-[#E5E5EC] p-4 text-[15px] outline-none focus:border-[#5650FF]"
                     />
                   </div>
@@ -249,10 +230,12 @@ const Category = () => {
                     <button
                       onClick={() => setStep(3)}
                       disabled={
-                        !topic ||
-                        !description ||
+                        !topic_summary ||
+                        !topic_desc ||
                         hashInput.split(/\s+/).filter((v) => v.startsWith('#') && v.length > 1)
-                          .length < 1
+                          .length < 1 ||
+                        hashInput.split(/\s+/).filter((v) => v.startsWith('#') && v.length > 1)
+                          .length > 3
                       }
                       className="animate-in zoom-in-95 flex h-12 w-12 items-center justify-center rounded-xl bg-[#5650FF] text-white transition-all duration-200 disabled:bg-[#ACA9FE]"
                     >
@@ -263,9 +246,7 @@ const Category = () => {
                       onClick={() => setStep(2)}
                       className="flex h-12 w-28 items-center justify-center overflow-hidden rounded-xl bg-[#868686] text-white transition-all duration-300 hover:bg-[#707070]"
                     >
-                      <span
-                        className="whitespace-nowrap text-[17px] transition-opacity duration-200"
-                      >
+                      <span className="whitespace-nowrap text-[17px] transition-opacity duration-200">
                         다시하기
                       </span>
                     </button>

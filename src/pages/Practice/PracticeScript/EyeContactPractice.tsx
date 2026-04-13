@@ -108,7 +108,7 @@ const EyeContactPractice = () => {
       <PracticeLayout
         currentStepIndex={3}
         canGoPrev={true}
-        canGoNext={isFinished}
+        canGoNext={true}
         onPrev={() => navigate('/practice/breathing')}
         onNext={() => navigate('/practice/feelresult')}
       >
