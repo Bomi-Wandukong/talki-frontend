@@ -13,6 +13,7 @@ export default function LiveFeedback() {
   const navigate = useNavigate()
   const location = useLocation()
   const sessionData = location.state as {
+    originalType? : string
     presentationType?: string
     topic_summary?: string
     topic_desc?: string

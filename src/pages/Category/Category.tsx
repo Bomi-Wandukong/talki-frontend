@@ -5,13 +5,23 @@ import Nav from '@/components/Nav/Nav'
 const Category = () => {
   const navigate = useNavigate()
   const [step, setStep] = useState(1)
-  const [presentationType, setPresentationType] = useState('')
+  const [presentationType, setPresentationType] = useState('화상 발표')
   const [topic_summary, setTopic_summary] = useState('')
   const [topic_desc, setTopic_desc] = useState('')
   const [hashInput, setHashInput] = useState('')
 
   const [isUnexpectedEvent, setIsUnexpectedEvent] = useState(false)
   const [isRealtimeFeedback, setIsRealtimeFeedback] = useState(false)
+
+  const getMappedType = (type:string) => {
+    const mapping = {
+      '화상 발표': 'online_small',
+      '소규모 발표': 'small',
+      '강당 발표': 'large',
+      '강의실 발표': 'large',
+    }as const;
+    return mapping[type as keyof typeof mapping] || 'online_small';
+  }
 
   const handleComplete = () => {
     const topic_tags = hashInput
@@ -20,7 +30,8 @@ const Category = () => {
       .filter((v) => v.startsWith('#') && v.length > 1)
     navigate('/actual/guideline', {
       state: {
-        presentationType,
+        presentationType: getMappedType(presentationType),
+        originalType: presentationType,
         topic_summary,
         topic_desc,
         topic_tags,
@@ -39,7 +50,7 @@ const Category = () => {
           <h1 className="text-[24px] font-bold text-[#3B3B3B]">
             어떤 <span className="text-[#5650FF]">실전</span>을 준비하고 있나요?
           </h1>
-          <p className="mt-2 text-[#716FA4] text-[15px]">
+          <p className="mt-2 text-[15px] text-[#716FA4]">
             시작하기 전, 보다 정확한 검사를 위해 상황을 정해 주세요!
           </p>
 
@@ -152,7 +163,9 @@ const Category = () => {
                     <div className="flex flex-col gap-3">
                       <div className="flex items-center justify-between border-l-2 border-[#D7D6F1] pl-3">
                         <span className="fontSB text-[15px] text-[#3B3B3B]">주제 요약</span>
-                        <span className="text-[12px] text-[#AEAEB2]">{topic_summary.length}/50</span>
+                        <span className="text-[12px] text-[#AEAEB2]">
+                          {topic_summary.length}/50
+                        </span>
                       </div>
                       <input
                         type="text"
@@ -230,9 +243,7 @@ const Category = () => {
                       onClick={() => setStep(2)}
                       className="flex h-12 w-28 items-center justify-center overflow-hidden rounded-xl bg-[#868686] text-white transition-all duration-300 hover:bg-[#707070]"
                     >
-                      <span
-                        className="whitespace-nowrap text-[17px] transition-opacity duration-200"
-                      >
+                      <span className="whitespace-nowrap text-[17px] transition-opacity duration-200">
                         다시하기
                       </span>
                     </button>
