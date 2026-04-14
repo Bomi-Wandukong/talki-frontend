@@ -183,11 +183,12 @@ const LeftPanel = ({
       <div className="mt-8 grid grid-cols-2 gap-3 lg:hidden">
         {/* 실전 Card (mobile) */}
         <div
-          className="relative overflow-hidden rounded-2xl p-5"
+          className="relative overflow-hidden rounded-2xl p-5 cursor-pointer"
           style={{
             background: 'linear-gradient(135deg, #A9A4D8 0%, #8E88C4 100%)',
             minHeight: '140px',
           }}
+          onClick={() => alert('실전 기능은 PC 환경에서 진행해주세요.')}
         >
           <h3 className="mb-1 text-lg font-bold text-white">실전</h3>
           <p className="text-xs leading-relaxed text-white/80">
@@ -199,15 +200,16 @@ const LeftPanel = ({
             <img
               src={IMAGES.home.real}
               alt="실전"
-              className="h-12 w-12 object-contain opacity-40"
+              className="h-12 w-12 object-contain opacity-40 pointer-events-none"
             />
           </div>
         </div>
 
         {/* 연습 Card (mobile) */}
         <div
-          className="relative overflow-hidden rounded-2xl bg-white p-5"
+          className="relative overflow-hidden rounded-2xl bg-white p-5 cursor-pointer"
           style={{ minHeight: '140px', border: '1px solid #F0F0F5' }}
+          onClick={() => alert('연습 기능은 PC 환경에서 진행해주세요.')}
         >
           <h3 className="mb-1 text-lg font-bold" style={{ color: '#1A1A2E' }}>
             연습
@@ -221,7 +223,7 @@ const LeftPanel = ({
             <img
               src={IMAGES.home.practice}
               alt="연습"
-              className="h-12 w-12 object-contain opacity-40"
+              className="h-12 w-12 object-contain opacity-40 pointer-events-none"
             />
           </div>
         </div>

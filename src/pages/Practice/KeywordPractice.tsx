@@ -98,7 +98,7 @@ const KeywordPractice = () => {
   }, [step, prepTimeLeft, recordTimeLeft])
 
   const handlePrev = () => navigate('/practice/impromptu') // 이전 단계 이동 처리
-  const handleNext = () => navigate('/practice/keyword') // 이후 다음 단계(있다면) 추가 수정 필요
+  const handleNext = () => navigate('/practice/core') // 이후 다음 단계(있다면) 추가 수정 필요
 
   return (
     <div className="h-screen w-full overflow-hidden bg-[#FAFBFC] pt-[64px]">
