@@ -7,6 +7,13 @@ interface LeftPanelProps {
   practicedDates: Date[]
   rightView: 'calendar' | 'dashboard'
   onArrowClick: () => void
+  userName?: string
+  mindSetting?: string
+  recentReport?: {
+    dateTime: string
+    totalScore: number
+    topic: string
+  } | null
 }
 
 const DAYS_KR = ['일', '월', '화', '수', '목', '금', '토']
@@ -19,7 +26,22 @@ const isSameDay = (a: Date, b: Date) => {
   )
 }
 
-const LeftPanel = ({ streak, today, practicedDates, rightView, onArrowClick }: LeftPanelProps) => {
+const formatDate = (isoString: string) => {
+  const date = new Date(isoString)
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())}  ${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+const LeftPanel = ({
+  streak,
+  today,
+  practicedDates,
+  rightView,
+  onArrowClick,
+  userName = '사용자',
+  mindSetting = '',
+  recentReport = null,
+}: LeftPanelProps) => {
   // Build current week Mon–Sun
   const dayOfWeek = today.getDay()
   const monday = new Date(today)
@@ -34,10 +56,10 @@ const LeftPanel = ({ streak, today, practicedDates, rightView, onArrowClick }: L
   const isPracticed = (date: Date) => practicedDates.some((pd) => isSameDay(pd, date))
 
   return (
-    <div className="flex h-full flex-col py-10 lg:justify-center lg:py-0">
+    <div className="flex h-full flex-col px-[4vw] py-10 lg:justify-center lg:py-0">
       <div className="mb-[4vh] lg:mb-[6vh]">
         <h1 className="mb-1 text-lg font-bold text-[#5650FF] lg:text-[1.6rem]">
-          <span className="text-[#FF9500]">김톡희</span>님, 반가워요!
+          <span className="text-[#FF9500]">{userName}</span>님, 반가워요!
         </h1>
         <p className="text-xs text-[#ACA9FE] lg:text-base">
           작은 시작이라도 괜찮아요. 토키가 함께 할게요!
@@ -64,7 +86,7 @@ const LeftPanel = ({ streak, today, practicedDates, rightView, onArrowClick }: L
 
         {/* Week circles card */}
         <div
-          className="rounded-xl px-4 py-3 lg:rounded-3xl lg:py-[3.5vh] min-[1500px]:px-10"
+          className="min-[1500px]:px-10 rounded-xl px-4 py-3 lg:rounded-3xl lg:py-[3.5vh]"
           style={{
             border: '1px solid #F0F0F5',
             backgroundColor: '#ffffff',
@@ -80,11 +102,11 @@ const LeftPanel = ({ streak, today, practicedDates, rightView, onArrowClick }: L
                 <div key={idx} className="flex flex-col items-center">
                   {practiced ? (
                     <div
-                      className="flex h-7 w-7 items-center justify-center rounded-full min-[1200px]:h-8 min-[1200px]:w-8 xl:h-9 xl:w-9"
+                      className="min-[1200px]:h-8 min-[1200px]:w-8 flex h-7 w-7 items-center justify-center rounded-full xl:h-9 xl:w-9"
                       style={{ backgroundColor: '#6C63FF' }}
                     >
                       <svg
-                        className="h-4 w-4 min-[1200px]:h-5 min-[1200px]:w-5 xl:h-6 xl:w-6"
+                        className="min-[1200px]:h-5 min-[1200px]:w-5 h-4 w-4 xl:h-6 xl:w-6"
                         viewBox="0 0 24 24"
                         fill="none"
                       >
@@ -98,7 +120,7 @@ const LeftPanel = ({ streak, today, practicedDates, rightView, onArrowClick }: L
                       </svg>
                     </div>
                   ) : (
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#F5F5FA] text-[10px] font-medium text-[#3B3B3B] min-[1200px]:h-8 min-[1200px]:w-8 min-[1200px]:text-xs xl:h-9 xl:w-9 xl:text-sm">
+                    <div className="min-[1200px]:h-8 min-[1200px]:w-8 min-[1200px]:text-xs flex h-7 w-7 items-center justify-center rounded-full bg-[#F5F5FA] text-[10px] font-medium text-[#3B3B3B] xl:h-9 xl:w-9 xl:text-sm">
                       {dayLetter}
                     </div>
                   )}
@@ -112,19 +134,17 @@ const LeftPanel = ({ streak, today, practicedDates, rightView, onArrowClick }: L
       {/* Today's Recommendation */}
       <div className="mb-[4vh] lg:mb-[5vh]">
         <h2 className="mb-2 text-sm font-semibold text-[#716FA4] lg:text-base">
-          오늘의 <span className="text-[#5650FF]">추천 연습</span>
+          이전 <span className="text-[#5650FF]">마음가짐 기록</span>
         </h2>
         <div
-          className="group flex cursor-pointer items-center justify-between rounded-xl border px-5 py-[2.5vh] transition-all hover:shadow-md lg:rounded-3xl"
+          className="group flex cursor-pointer items-center justify-center rounded-xl border bg-[#5650FF] px-5 py-[3.5vh] text-center transition-all hover:shadow-md lg:rounded-3xl"
           style={{ border: '1px solid #F0F0F5', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}
         >
           <div>
-            <p className="mb-1 text-xs text-[#AFAFC0]">
-              시선처리가 어색한 김톡희님을 위한 오늘의 연습!
+            <p className={`text-base text-white ${mindSetting && 'font-semibold'}`}>
+              {mindSetting ? `"${mindSetting}"` : '마음가짐 기록이 없습니다.'}
             </p>
-            <p className="text-base font-semibold text-[#3B3B3B]">시선 연습</p>
           </div>
-          <LuChevronRight className="h-5 w-5 text-gray-300 transition-colors group-hover:text-gray-400" />
         </div>
       </div>
 
@@ -133,19 +153,30 @@ const LeftPanel = ({ streak, today, practicedDates, rightView, onArrowClick }: L
         <h2 className="mb-2 text-sm font-semibold text-[#716FA4] lg:text-base">
           최근 <span className="text-[#5650FF]">실전 리포트 결과</span>
         </h2>
-        <div
-          className="group flex cursor-pointer items-center justify-between rounded-xl border px-5 py-[2.5vh] transition-all hover:shadow-md lg:rounded-3xl"
-          style={{ border: '1px solid #F0F0F5', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}
-        >
-          <div className="min-w-0 flex-1">
-            <p className="mb-1 text-xs text-[#AFAFC0]">2025.10.05&nbsp;&nbsp;23:12</p>
-            <div className="flex items-center gap-3">
-              <span className="shrink-0 text-base font-bold text-[#3B3B3B]">25점</span>
-              <p className="truncate text-sm">사회불안완화를 위한 인지행동치료 서비스</p>
+        {recentReport?.dateTime ? (
+          <div
+            className="group flex cursor-pointer items-center justify-between rounded-xl border px-5 py-[3.5vh] transition-all hover:shadow-md lg:rounded-3xl"
+            style={{ border: '1px solid #F0F0F5', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}
+          >
+            <div className="min-w-0 flex-1">
+              <p className="mb-1 text-xs text-[#AFAFC0]">{formatDate(recentReport.dateTime)}</p>
+              <div className="flex items-center gap-3">
+                <span className="shrink-0 text-base font-bold text-[#3B3B3B]">
+                  {recentReport.totalScore}점
+                </span>
+                <p className="truncate text-sm">{recentReport.topic}</p>
+              </div>
             </div>
+            <LuChevronRight className="ml-2 h-5 w-5 shrink-0 text-gray-300 transition-colors group-hover:text-gray-400" />
           </div>
-          <LuChevronRight className="ml-2 h-5 w-5 shrink-0 text-gray-300 transition-colors group-hover:text-gray-400" />
-        </div>
+        ) : (
+          <div
+            className="flex items-center justify-center rounded-xl border px-5 py-[4vh] lg:rounded-3xl"
+            style={{ border: '1px solid #F0F0F5', backgroundColor: '#F8F8FA' }}
+          >
+            <p className="text-sm text-[#AFAFC0]">최근 실전 리포트가 없습니다.</p>
+          </div>
+        )}
       </div>
 
       {/* 실전 / 연습 Cards — mobile only (PC notice) */}
