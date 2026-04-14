@@ -1,278 +1,394 @@
 import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react'
 import { FaceMesh } from '@mediapipe/face_mesh'
 import type { Results as FaceMeshResults } from '@mediapipe/face_mesh'
-import { Hands } from '@mediapipe/hands'
-import type { Results as HandsResults } from '@mediapipe/hands'
 import { Pose } from '@mediapipe/pose'
 import type { Results as PoseResults } from '@mediapipe/pose'
 import { Camera } from '@mediapipe/camera_utils'
 
 export interface LiveFeedbackTrackerRef {
-  stopRecording: () => void
+  stopRecording: () => Promise<Blob>
 }
 
-const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef>((_, ref) => {
-  const videoRef = useRef<HTMLVideoElement | null>(null)
+export interface LiveFeedbackTrackerProps {
+  presentationType?: string
+  isLiveFeedbackOn?: boolean
+  isEmergencyOn?: boolean
+  onFeedbackReceived?: (msg: string) => void
+  onSessionStart?: (presentationId: string) => void
+}
 
-  // 녹화 관련
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const recordedChunksRef = useRef<Blob[]>([])
-  const streamRef = useRef<MediaStream | null>(null)
-  const cameraRef = useRef<Camera | null>(null)
+const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrackerProps>(
+  (
+    {
+      presentationType,
+      isLiveFeedbackOn = false,
+      isEmergencyOn = false,
+      onFeedbackReceived,
+      onSessionStart,
+    },
+    ref
+  ) => {
+    const videoRef = useRef<HTMLVideoElement | null>(null)
 
-  // MediaPipe 결과 저장을 위한 ref (리렌더링 방지)
-  const faceDataRef = useRef<FaceMeshResults | null>(null)
-  const handDataRef = useRef<HandsResults | null>(null)
-  const poseDataRef = useRef<PoseResults | null>(null)
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+    const recordedChunksRef = useRef<Blob[]>([])
+    const streamRef = useRef<MediaStream | null>(null)
+    const cameraRef = useRef<Camera | null>(null)
 
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop()
+    const faceDataRef = useRef<FaceMeshResults | null>(null)
+    const poseDataRef = useRef<PoseResults | null>(null)
 
-      mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(recordedChunksRef.current, {
-          type: 'video/webm',
-        })
+    const toggleStatesRef = useRef({ isLiveFeedbackOn, isEmergencyOn })
+    const onFeedbackReceivedRef = useRef(onFeedbackReceived)
+    const onSessionStartRef = useRef(onSessionStart)
 
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `live-feedback-${Date.now()}.webm`
-        a.click()
+    useEffect(() => {
+      toggleStatesRef.current = { isLiveFeedbackOn, isEmergencyOn }
+      onFeedbackReceivedRef.current = onFeedbackReceived
+      onSessionStartRef.current = onSessionStart
+    }, [isLiveFeedbackOn, isEmergencyOn, onFeedbackReceived, onSessionStart])
 
-        URL.revokeObjectURL(url)
-        recordedChunksRef.current = []
+    const wsRef = useRef<WebSocket | null>(null)
+    const audioContextRef = useRef<AudioContext | null>(null)
+    const processorRef = useRef<ScriptProcessorNode | null>(null)
 
-        console.log('💾 Recording saved')
-      }
-    }
-  }
-
-  // 부모 컴포넌트에서 호출할 수 있도록 메서드 노출
-  useImperativeHandle(ref, () => ({
-    stopRecording,
-  }))
-
-  useEffect(() => {
-    if (!videoRef.current) return
-
-    let lastLogTime = 0
-    let isCleanup = false
-
-    const faceMesh = new FaceMesh({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
-    })
-    const hands = new Hands({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
-    })
-    const pose = new Pose({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
-    })
-
-    async function initCamera() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
-        })
-        if (isCleanup) {
-          stream.getTracks().forEach((track) => track.stop())
-          return
+    const stopRecording = (): Promise<Blob> => {
+      return new Promise((resolve, reject) => {
+        if (!mediaRecorderRef.current) {
+          return reject(new Error('MediaRecorder is not initialized'))
+        }
+        if (mediaRecorderRef.current.state === 'inactive') {
+          return reject(new Error('MediaRecorder is inactive'))
         }
 
-        streamRef.current = stream
-        videoRef.current!.srcObject = stream
-
-        // 녹화 시작
-        startRecording(stream)
-        startMediapipe()
-      } catch (err) {
-        console.error('❌ Camera permission denied!', err)
-      }
-    }
-
-    function startRecording(stream: MediaStream) {
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'video/webm',
-      })
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          recordedChunksRef.current.push(event.data)
+        mediaRecorderRef.current.onstop = () => {
+          const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' })
+          recordedChunksRef.current = []
+          console.log('💾 Recording stopped and blob created')
+          resolve(blob)
         }
-      }
 
-      mediaRecorder.start()
-      mediaRecorderRef.current = mediaRecorder
-
-      console.log('🎥 Recording started')
+        mediaRecorderRef.current.stop()
+      })
     }
 
-    function startMediapipe() {
-      faceMesh.setOptions({
-        maxNumFaces: 1,
-        refineLandmarks: true,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5,
-      })
-      faceMesh.onResults((results) => {
-        faceDataRef.current = results
-      })
+    useImperativeHandle(ref, () => ({ stopRecording }))
 
-      hands.setOptions({
-        maxNumHands: 2,
-        modelComplexity: 1,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5,
-      })
-      hands.onResults((results) => {
-        handDataRef.current = results
-      })
+    useEffect(() => {
+      if (!videoRef.current) return
 
-      pose.setOptions({
-        modelComplexity: 1,
-        smoothLandmarks: true,
-        enableSegmentation: false,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5,
-      })
-      pose.onResults((results) => {
-        poseDataRef.current = results
-      })
+      let lastLogTime = 0
+      let isCleanup = false
 
-      const camera = new Camera(videoRef.current!, {
-        onFrame: async () => {
+      const smartLocateFile = (file: string) => {
+        if (file.includes('hands')) return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        if (file.includes('pose')) return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+        if (file.includes('face_mesh'))
+          return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+        return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+      }
+
+      const faceMesh = new FaceMesh({ locateFile: smartLocateFile })
+      const pose = new Pose({ locateFile: smartLocateFile })
+
+      // ✅ 테스트 코드와 동일: Float32 → Int16 PCM
+      function float32ToInt16(float32: Float32Array): Int16Array {
+        const int16 = new Int16Array(float32.length)
+        for (let i = 0; i < float32.length; i++) {
+          const s = Math.max(-1, Math.min(1, float32[i]))
+          int16[i] = s < 0 ? s * 0x8000 : s * 0x7fff
+        }
+        return int16
+      }
+
+      // ✅ 테스트 코드와 동일: arrayBufferToBase64
+      function arrayBufferToBase64(buffer: ArrayBuffer): string {
+        let binary = ''
+        const bytes = new Uint8Array(buffer)
+        for (let i = 0; i < bytes.byteLength; i++) {
+          binary += String.fromCharCode(bytes[i])
+        }
+        return btoa(binary)
+      }
+
+      // ✅ 테스트 코드와 동일: face/pose 인덱스 전체
+      const FACE_INDICES = [
+        468, 469, 470, 471, 473, 474, 475, 476, 33, 133, 362, 263, 159, 386, 145, 374,
+      ]
+      const POSE_INDICES = [13, 14, 15, 16]
+
+      function buildPayload(base64Audio: string) {
+        const face: Record<string, { x: number; y: number }> = {}
+        const pose: Record<string, { x: number; y: number }> = {}
+
+        const faceLandmarks = faceDataRef.current?.multiFaceLandmarks?.[0]
+        FACE_INDICES.forEach((idx) => {
+          face[String(idx)] = faceLandmarks?.[idx]
+            ? {
+                x: Number(faceLandmarks[idx].x.toFixed(3)),
+                y: Number(faceLandmarks[idx].y.toFixed(3)),
+              }
+            : { x: 0, y: 0 }
+        })
+
+        const poseLandmarks = poseDataRef.current?.poseLandmarks
+        POSE_INDICES.forEach((idx) => {
+          pose[String(idx)] = poseLandmarks?.[idx]
+            ? {
+                x: Number(poseLandmarks[idx].x.toFixed(3)),
+                y: Number(poseLandmarks[idx].y.toFixed(3)),
+              }
+            : { x: 0, y: 0 }
+        })
+
+        return { face, pose, audio: base64Audio, timestamp: Date.now() }
+      }
+
+      // ✅ WS onopen 이후 호출 → 연결 확정 후 오디오 전송 시작
+      function startAudioWebSocketRecording(stream: MediaStream) {
+        const audioTracks = stream.getAudioTracks()
+        if (audioTracks.length === 0) return
+
+        const audioCtx = new AudioContext()
+        const source = audioCtx.createMediaStreamSource(new MediaStream(audioTracks))
+
+        // 1초(sampleRate 샘플 수) 누적 후 전송
+        const targetSamples = audioCtx.sampleRate
+        const accumulator: Float32Array[] = []
+        let totalSamples = 0
+
+        const processor = audioCtx.createScriptProcessor(4096, 1, 1)
+        source.connect(processor)
+        processor.connect(audioCtx.destination)
+
+        processor.onaudioprocess = (e) => {
           if (isCleanup) return
-          const image = videoRef.current!
-          // 병렬 실행으로 프레임 드랍 방지
-          await Promise.all([faceMesh.send({ image }), hands.send({ image }), pose.send({ image })])
 
-          printCombinedResults()
-        },
-        width: 640,
-        height: 480,
-      })
+          const chunk = new Float32Array(e.inputBuffer.getChannelData(0))
+          accumulator.push(chunk)
+          totalSamples += chunk.length
 
-      cameraRef.current = camera
-      camera.start()
-    }
+          if (totalSamples >= targetSamples) {
+            const merged = new Float32Array(totalSamples)
+            let offset = 0
+            for (const c of accumulator) {
+              merged.set(c, offset)
+              offset += c.length
+            }
+            accumulator.length = 0
+            totalSamples = 0
 
-    function printCombinedResults() {
-      const now = Date.now()
-      if (now - lastLogTime < 1000) return
-      lastLogTime = now
+            if (wsRef.current?.readyState !== WebSocket.OPEN) return
 
-      const faceData = faceDataRef.current
-      const handData = handDataRef.current
-      const poseData = poseDataRef.current
+            // ✅ Float32 → Int16 → base64 (테스트 코드와 동일 포맷)
+            const int16 = float32ToInt16(merged)
+            const base64Audio = arrayBufferToBase64(int16.buffer as ArrayBuffer)
+            const payload = buildPayload(base64Audio)
 
-      const output: {
-        gaze: string
-        headTilt: number | null
-        pinch: boolean
-        shoulderTilt: number | null
-        face: any
-        hand: any
-        shoulder: any
-      } = {
-        gaze: 'unknown',
-        headTilt: null,
-        pinch: false,
-        shoulderTilt: null,
-        face: null,
-        hand: null,
-        shoulder: null,
-      }
+            console.log('📤 WS Payload:', {
+              faceKeys: Object.keys(payload.face),
+              poseKeys: Object.keys(payload.pose),
+              audioLength: base64Audio.length,
+              timestamp: payload.timestamp,
+            })
 
-      /** FaceMesh */
-      if (faceData?.multiFaceLandmarks && faceData.multiFaceLandmarks.length > 0) {
-        const face = faceData.multiFaceLandmarks[0]
-        const leftEye = face[33]
-        const rightEye = face[263]
-
-        // Eye corner 기반 시선 근사 (IRIS 미사용)
-        const gazeDelta = rightEye.x - leftEye.x
-        let gaze = 'center'
-        if (gazeDelta > 0.02) gaze = 'right'
-        else if (gazeDelta < -0.02) gaze = 'left'
-
-        const headTilt = face[234].y - face[454].y
-
-        output.gaze = gaze
-        output.headTilt = Number(headTilt.toFixed(3))
-        output.face = {
-          leftEye: { x: leftEye.x, y: leftEye.y },
-          rightEye: { x: rightEye.x, y: rightEye.y },
-        }
-      }
-
-      /** Hands */
-      if (handData?.multiHandLandmarks) {
-        const firstHand = handData.multiHandLandmarks[0]
-        if (firstHand) {
-          const thumb = firstHand[4]
-          const index = firstHand[8]
-
-          const dx = thumb.x - index.x
-          const dy = thumb.y - index.y
-          const dist = Math.sqrt(dx * dx + dy * dy)
-
-          if (dist < 0.03) output.pinch = true
-
-          output.hand = {
-            thumbTip: { x: thumb.x, y: thumb.y },
-            indexTip: { x: index.x, y: index.y },
+            wsRef.current.send(JSON.stringify(payload))
           }
         }
+
+        audioContextRef.current = audioCtx
+        processorRef.current = processor
       }
 
-      /** Pose */
-      if (poseData?.poseLandmarks) {
-        const ls = poseData.poseLandmarks[11]
-        const rs = poseData.poseLandmarks[12]
+      function startRecording(stream: MediaStream) {
+        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' })
 
-        const shoulderTilt = ls.y - rs.y
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) recordedChunksRef.current.push(event.data)
+        }
 
-        output.shoulderTilt = Number(shoulderTilt.toFixed(3))
-        output.shoulder = {
-          left: { x: ls.x, y: ls.y },
-          right: { x: rs.x, y: rs.y },
+        mediaRecorder.start()
+        mediaRecorderRef.current = mediaRecorder
+        console.log('🎥 Recording started')
+      }
+
+      function startMediapipe() {
+        faceMesh.setOptions({
+          maxNumFaces: 1,
+          refineLandmarks: true, // 468번 홍채 랜드마크 사용에 필요
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5,
+        })
+        faceMesh.onResults((results) => {
+          faceDataRef.current = results
+        })
+
+        pose.setOptions({
+          modelComplexity: 1,
+          smoothLandmarks: true,
+          enableSegmentation: false,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5,
+        })
+        pose.onResults((results) => {
+          poseDataRef.current = results
+        })
+
+        const camera = new Camera(videoRef.current!, {
+          onFrame: async () => {
+            if (isCleanup) return
+            const image = videoRef.current!
+
+            // ✅ WASM 전역 Module 충돌 방지: Promise.all 대신 순차 실행
+            await faceMesh.send({ image })
+            await pose.send({ image })
+
+            printCombinedResults()
+          },
+          width: 640,
+          height: 480,
+        })
+
+        cameraRef.current = camera
+        camera.start()
+      }
+
+      async function initCamera() {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+          if (isCleanup) {
+            stream.getTracks().forEach((track) => track.stop())
+            return
+          }
+
+          streamRef.current = stream
+          videoRef.current!.srcObject = stream
+
+          if (presentationType) {
+            const wsUrl = `ws://43.201.182.246:8080/realtime?type=${presentationType}`
+            const ws = new WebSocket(wsUrl)
+            console.log('wsUrl', wsUrl)
+
+            ws.onopen = () => {
+              console.log('🟢 WebSocket Connected')
+              // ✅ 연결 확정 후 오디오 전송 시작 (테스트 코드의 connect → startSending 순서와 동일)
+              startAudioWebSocketRecording(stream)
+            }
+            ws.onmessage = (event) => {
+              try {
+                const data = JSON.parse(event.data)
+                console.log('📥 WS Response:', data)
+
+                if (data.type === 'session_start') {
+                  console.log('✅ Session Start:', data)
+                  if (data.presentationId) onSessionStartRef.current?.(data.presentationId)
+                }
+                if (data.type === 'feedback' && data.data) {
+                  onFeedbackReceivedRef.current?.(data.data)
+                }
+              } catch (err) {
+                console.error('WS Parse error', err)
+              }
+            }
+            ws.onerror = (err) => console.error('WS Error', err)
+            ws.onclose = () => console.log('🔴 WebSocket Disconnected')
+
+            wsRef.current = ws
+          }
+
+          startRecording(stream)
+          startMediapipe()
+        } catch (err) {
+          console.error('❌ Camera permission denied!', err)
         }
       }
 
-      console.log('📦 Combined (every 1s):', output)
-    }
+      function printCombinedResults() {
+        const now = Date.now()
+        if (now - lastLogTime < 1000) return
+        lastLogTime = now
 
-    initCamera()
+        const faceData = faceDataRef.current
+        const poseData = poseDataRef.current
 
-    return () => {
-      isCleanup = true
-      console.log('🧹 cleaning up...')
+        const output: {
+          gaze: string
+          headTilt: number | null
+          shoulderTilt: number | null
+          face: any
+          shoulder: any
+        } = { gaze: 'unknown', headTilt: null, shoulderTilt: null, face: null, shoulder: null }
 
-      // 리소스 해제
-      cameraRef.current?.stop()
-      streamRef.current?.getTracks().forEach((track) => track.stop())
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        mediaRecorderRef.current.stop()
+        if (faceData?.multiFaceLandmarks && faceData.multiFaceLandmarks.length > 0) {
+          const face = faceData.multiFaceLandmarks[0]
+          const leftEye = face[33]
+          const rightEye = face[263]
+
+          const gazeDelta = rightEye.x - leftEye.x
+          let gaze = 'center'
+          if (gazeDelta > 0.02) gaze = 'right'
+          else if (gazeDelta < -0.02) gaze = 'left'
+
+          output.gaze = gaze
+          output.headTilt = Number((face[234].y - face[454].y).toFixed(3))
+          output.face = {
+            leftEye: { x: leftEye.x, y: leftEye.y },
+            rightEye: { x: rightEye.x, y: rightEye.y },
+          }
+        }
+
+        if (poseData?.poseLandmarks) {
+          const ls = poseData.poseLandmarks[11]
+          const rs = poseData.poseLandmarks[12]
+          output.shoulderTilt = Number((ls.y - rs.y).toFixed(3))
+          output.shoulder = {
+            left: { x: ls.x, y: ls.y },
+            right: { x: rs.x, y: rs.y },
+          }
+        }
+
+        // console.log('📦 Combined (every 1s):', output)
       }
 
-      // MediaPipe 인스턴스 종료 (지원되는 경우)
-      faceMesh.close()
-      hands.close()
-      pose.close()
-    }
-  }, [])
+      initCamera()
 
-  return (
-    <video
-      ref={videoRef}
-      autoPlay
-      playsInline
-      muted
-      style={{ width: 0, height: 0, opacity: 0, position: 'absolute' }}
-    />
-  )
-})
+      return () => {
+        isCleanup = true
+        console.log('🧹 cleaning up...')
+
+        cameraRef.current?.stop()
+        streamRef.current?.getTracks().forEach((track) => track.stop())
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop()
+        }
+        if (processorRef.current) {
+          processorRef.current.disconnect()
+          processorRef.current = null
+        }
+        if (audioContextRef.current) {
+          audioContextRef.current.close()
+          audioContextRef.current = null
+        }
+        if (wsRef.current) {
+          wsRef.current.close()
+        }
+
+        faceMesh.close()
+        pose.close()
+      }
+    }, [presentationType])
+
+    return (
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        style={{ width: 0, height: 0, opacity: 0, position: 'absolute' }}
+      />
+    )
+  }
+)
 
 LiveFeedbackTracker.displayName = 'LiveFeedbackTracker'
 
