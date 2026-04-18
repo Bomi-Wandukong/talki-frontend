@@ -17,6 +17,8 @@ const SpeakerCheckView = ({ onComplete, sessionData }: { onComplete: () => void;
   const animationFrameRef = useRef<number | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const streamRef = useRef<MediaStream | null>(null)
+  const retryCountRef = useRef(0)
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // 가상의 백엔드 분석 API 호출 함수
   const mockAnalyzeAudio = async (blob: Blob) => {
@@ -37,9 +39,13 @@ const SpeakerCheckView = ({ onComplete, sessionData }: { onComplete: () => void;
     setIsAnalyzing(false)
   }
 
+  const MAX_RETRIES = 3
+  const RETRY_DELAY_MS = 2000
+
   const initVideo = useCallback(async () => {
     try {
       setStatus('loading')
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop())
       }
@@ -48,18 +54,53 @@ const SpeakerCheckView = ({ onComplete, sessionData }: { onComplete: () => void;
         audio: false,
       })
       streamRef.current = stream
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
+
+      if (!videoRef.current) return
+      const video = videoRef.current
+      video.srcObject = stream
+
+      if (video.readyState >= 2) {
+        retryCountRef.current = 0
         setStatus('ready')
+        return
       }
+
+      const onLoaded = () => {
+        retryCountRef.current = 0
+        setStatus('ready')
+        video.removeEventListener('loadeddata', onLoaded)
+        if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
+      }
+      video.addEventListener('loadeddata', onLoaded)
+
+      // RETRY_DELAY_MS 안에 loadeddata 안 오면 자동 재시도
+      retryTimerRef.current = setTimeout(() => {
+        video.removeEventListener('loadeddata', onLoaded)
+        if (retryCountRef.current < MAX_RETRIES) {
+          retryCountRef.current += 1
+          console.warn(`카메라 로딩 재시도 (${retryCountRef.current}/${MAX_RETRIES})`)
+          initVideo()
+        } else {
+          retryCountRef.current = 0
+          setStatus('error')
+        }
+      }, RETRY_DELAY_MS)
     } catch (err) {
-      setStatus('error')
+      if (retryCountRef.current < MAX_RETRIES) {
+        retryCountRef.current += 1
+        console.warn(`카메라 접근 재시도 (${retryCountRef.current}/${MAX_RETRIES})`)
+        retryTimerRef.current = setTimeout(initVideo, RETRY_DELAY_MS)
+      } else {
+        retryCountRef.current = 0
+        setStatus('error')
+      }
     }
   }, [])
 
   useEffect(() => {
     initVideo()
     return () => {
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
       streamRef.current?.getTracks().forEach((track) => track.stop())
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current)
       audioContextRef.current?.close()
@@ -185,8 +226,24 @@ const SpeakerCheckView = ({ onComplete, sessionData }: { onComplete: () => void;
                 />
               </svg>
             )}
+            {sttResult === 'fail' && (
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path
+                  d="M3 3L11 11"
+                  stroke="#EF4444"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M11 3L3 11"
+                  stroke="#EF4444"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            )}
           </div>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-[14px]">
             {isAnalyzing
               ? '목소리를 분석하고 있어요...'
               : sttResult === 'success'
@@ -215,7 +272,7 @@ const SpeakerCheckView = ({ onComplete, sessionData }: { onComplete: () => void;
           </div>
         </div>
 
-        <p className="fontSB mb-10 text-center text-xl leading-relaxed text-[#5650FF]">
+        <p className="fontSB mb-10 text-center text-[18px] leading-relaxed text-[#5650FF]">
           " 작은 한마디라도 괜찮아요. 시작이 중요하니까요 "
         </p>
 

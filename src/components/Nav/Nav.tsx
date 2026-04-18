@@ -126,31 +126,48 @@ const Nav: React.FC = () => {
         </div>
 
         <div className="relative flex items-center gap-3" ref={dropdownRef}>
-          <button
-            className="flex items-center gap-3 cursor-pointer"
-            onMouseEnter={() => setShowDropdown(true)}
-          >
-            <div className="h-8 w-8 rounded-full bg-gray-300" />
-            {profile && (
-              <span className="text-[13px] z-100 font-medium text-[#3B3B3B]">{profile.userName}</span>
-            )}
-          </button>
+          {profile ? (
+            <>
+              <button
+                className="flex items-center gap-3 cursor-pointer"
+                onMouseEnter={() => setShowDropdown(true)}
+              >
+                <div className="h-8 w-8 rounded-full bg-gray-300" />
+                <span className="text-[13px] z-100 font-medium text-[#3B3B3B]">{profile.userName}</span>
+              </button>
 
-          {showDropdown && (
-            <div className="absolute right-0 top-10 z-50 min-w-[120px] overflow-hidden rounded-xl bg-black/60 shadow-lg">
-              <button
-                className="w-full px-5 py-2 pt-4 text-left text-[14px] text-white hover:bg-white/10"
-                onClick={handleLogout}
+              {showDropdown && (
+                <div className="absolute right-0 top-10 z-50 min-w-[120px] overflow-hidden rounded-xl bg-black/60 shadow-lg">
+                  <button
+                    className="w-full px-5 py-2 pt-4 text-left text-[14px] text-white hover:bg-white/10"
+                    onClick={handleLogout}
+                  >
+                    로그아웃
+                  </button>
+                  <button
+                    className="w-full px-5 py-2 pb-4 text-left text-[14px] text-white hover:bg-white/10"
+                    onClick={() => { setShowDropdown(false); setShowProfileModal(true) }}
+                  >
+                    내 정보
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="text-[14px] font-medium text-[#5650FF] transition-colors hover:text-[#5650FF]/70"
               >
-                로그아웃
-              </button>
-              <button
-                className="w-full px-5 py-2 pb-4 text-left text-[14px] text-white hover:bg-white/10"
-                onClick={() => { setShowDropdown(false); setShowProfileModal(true) }}
+                로그인
+              </Link>
+              <Link
+                to="/signup"
+                className="text-[14px] font-medium text-[#5650FF] transition-colors hover:text-[#5650FF]/70"
               >
-                내 정보
-              </button>
-            </div>
+                회원가입
+              </Link>
+            </>
           )}
         </div>
       </header>

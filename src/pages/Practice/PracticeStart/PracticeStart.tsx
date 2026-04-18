@@ -84,7 +84,7 @@ const PracticeStart = () => {
                 onClick={() => handleSelect(thought)}
                 className={`flex items-center gap-3 rounded-2xl bg-white px-5 py-5 text-left text-[15px] text-[#3B3B3B] drop-shadow-[0_2px_4px_rgba(0,0,0,0.05)] transition-all ${
                   isActive
-                    ? 'bg-[#e8e7ff] ring-2 ring-[#5650FF]'
+                    ? 'bg-[#e7e7ff] ring-2 ring-[#5650FF]'
                     : 'hover:ring-1 hover:ring-[#5650FF]/40'
                 }`}
               >

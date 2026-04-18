@@ -22,6 +22,8 @@ import PracticeScript from './pages/Practice/PracticeScript/PracticeScript'
 import EyeContactPractice from './pages/Practice/PracticeScript/EyeContactPractice'
 import PracticeFeel from './pages/Practice/PracticeResult/PracticeFeel'
 import AnalysisLoading from '@/pages/AnalysisLoading/AnalysisLoading'
+import PracticeMind from './pages/Practice/PracticeResult/PracticeMind'
+import PracticeResult from './pages/Practice/PracticeResult/PracticeResult'
 
 function App() {
   return (
@@ -58,6 +60,8 @@ function App() {
               <Route path="script" element={<PracticeScript/>}/>
               <Route path="eyecontact" element={<EyeContactPractice/>}/>
               <Route path="feelresult" element={<PracticeFeel/>}/>
+              <Route path="mind" element={<PracticeMind/>}/>
+              <Route path="complete" element={<PracticeResult/>}/>
             </Route>
           </Route>
         </Route>
