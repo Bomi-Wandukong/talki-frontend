@@ -20,56 +20,68 @@ export default function AnalysisResultDetail({ data }: { data?: any }) {
       },
       { threshold: 0.2 }
     )
-
     sectionRefs.current.forEach((ref) => {
       if (ref) observer.observe(ref)
     })
-
     return () => observer.disconnect()
   }, [])
 
-  // API에서 받은 realTimeResultDTOList를 VideoPlayer용 포맷으로 변환
   const mapTypeToDesc = (type: string) => {
     switch (type) {
-      case 'pose_rigid': return '자세가 경직된 구간입니다.'
-      case 'pose_unstable': return '자세가 불안정한 구간입니다.'
-      case 'gaze_unstable': return '시선이 불안정한 구간입니다.'
-      case 'speech_slow': return '말 속도가 느려진 구간입니다.'
-      case 'speech_fast': return '말 속도가 빨라진 구간입니다.'
-      case 'silence': return '침묵이 발생한 구간입니다.'
-      default: return '주의가 필요한 구간입니다.'
+      case 'pose_rigid':
+        return '자세가 경직된 구간입니다.'
+      case 'pose_unstable':
+        return '자세가 불안정한 구간입니다.'
+      case 'gaze_unstable':
+        return '시선이 불안정한 구간입니다.'
+      case 'speech_slow':
+        return '말 속도가 느려진 구간입니다.'
+      case 'speech_fast':
+        return '말 속도가 빨라진 구간입니다.'
+      case 'silence':
+        return '침묵이 발생한 구간입니다.'
+      default:
+        return '주의가 필요한 구간입니다.'
     }
   }
 
+  // llmFeedback 텍스트
+  const speechAnalysis = data?.llmFeedback?.['음성 분석 결과'] ?? '음성 분석 진행 중...'
+  const repeatWordAnalysis = data?.llmFeedback?.['반복어 분석 결과'] ?? '반복어 분석 진행 중...'
+  const gazeAnalysis = data?.llmFeedback?.['시선 분석 결과'] ?? '시선 분석 진행 중...'
+  const postureAnalysis = data?.llmFeedback?.['자세/제스처 분석 결과'] ?? '자세 분석 진행 중...'
+  const topicAnalysis = data?.llmFeedback?.['주제 적합성 분석 결과'] ?? '주제 분석 진행 중...'
+  const totalAnalysis = data?.llmFeedback?.['전체 분석 결과'] ?? '전체 분석 진행 중...'
+
+  // rawData 수치
+  const wpm = data?.rawData?.speech?.wpm ?? 0
+  const fillerCount = data?.rawData?.speech?.fillers_count ?? 0
+  const silenceCount = data?.rawData?.speech?.silence_count ?? 0
+  const silenceRatio = data?.rawData?.speech?.silence_ratio ?? 0
+  const poseWarningRatio = Math.round((data?.poseWarningRatio ?? 0) * 100)
+  const gazeRate = Math.round((data?.gazeFrontRatio ?? 0) * 100)
+
+  // 반복어 차트용
+  const repeatWords = fillerCount > 0 ? [{ word: '음', count: fillerCount }] : []
+
+  // 영상 타임스탬프
   const improvements = (data?.realTimeResultDTOList ?? []).map((item: any) => ({
     time: item.timestamp,
-    description: mapTypeToDesc(item.type)
+    description: mapTypeToDesc(item.type),
   }))
 
   const actionPoints = {
-    strengths: [
-      {
-        time: '0:02',
-        description: '자연스러운 제스처와 목소리 톤이 돋보였습니다.',
-      }
-    ],
-    improvements: improvements.length > 0 ? improvements : [
-      {
-        time: '0:00',
-        description: '분석된 약점 구간이 없습니다.',
-      }
-    ],
+    strengths: [{ time: '0:02', description: '자연스러운 제스처와 목소리 톤이 돋보였습니다.' }],
+    improvements:
+      improvements.length > 0
+        ? improvements
+        : [{ time: '0:00', description: '분석된 약점 구간이 없습니다.' }],
     questions: (data?.emergencyQuestions ?? []).map((q: any) => ({
       time: q.timestamp || '0:00',
       question: q.question,
-      answer: q.answer
+      answer: q.answer,
     })),
   }
-
-  const speechAnalysis = data?.speechAnalysis ?? '음성 분석 진행 중...'
-  const repeatWordAnalysis = data?.repeatWordAnalysis ?? '반복어 분석 진행 중...'
-  const gazeRate = data?.cameraGazeRate ?? 0
-  const presentationContentFeedback = data?.presentationContentFeedback ?? '내용 분석 진행 중...'
 
   return (
     <div className="min-h-screen w-full bg-[#F7F7F8] text-[#3B3B3B]">
@@ -78,7 +90,7 @@ export default function AnalysisResultDetail({ data }: { data?: any }) {
           <span className="fontBold text-[20px]">세부 분석 결과</span>
         </div>
 
-        {/* 음성 분석 결과 */}
+        {/* 음성 분석 */}
         <FeedbackSection
           title="분석 결과"
           highlightText="음성"
@@ -89,24 +101,55 @@ export default function AnalysisResultDetail({ data }: { data?: any }) {
           }}
         >
           <div className="mt-6 px-5">
-            <div className="flex flex-col justify-center">
-              <p className="fontBold text-[14px] text-[#5650FF]">발화 속도 결과</p>
-              <p className="mt-5 text-[12px] whitespace-pre-line">
-                {speechAnalysis}
-              </p>
+            <p className="fontBold text-[14px] text-[#5650FF]">발화 속도 결과</p>
+
+            <div className="mt-2">
+              <div className="mb-1 flex justify-end text-[11px] text-gray-400">
+                적정 범위 (120-160 WPM)
+              </div>
+
+              {/* 트랙 */}
+              <div className="relative h-4 w-full rounded-full bg-gray-200">
+                {/* 적정 범위 초록 구간 */}
+                <div
+                  className="absolute h-full bg-[#A8D8A8]"
+                  style={{ left: '40%', width: '20%' }}
+                />
+                {/* 현재 WPM 파란 바 */}
+                <div
+                  className="absolute h-full rounded-l-full bg-[#5650FF]"
+                  style={{ width: `${Math.min((wpm / 200) * 100, 100)}%` }}
+                />
+              </div>
+
+              {/* 마커 영역 (바 아래) */}
+              <div className="relative mt-2 h-6">
+                <div
+                  className="absolute flex flex-col items-center"
+                  style={{
+                    left: `${Math.min((wpm / 200) * 100, 100)}%`,
+                    transform: 'translateX(-50%)',
+                  }}
+                >
+                  <div className="h-0 w-0 border-x-4 border-b-[6px] border-x-transparent border-b-[#3B3B3B]" />
+                  <span className="mt-1 text-[11px] font-bold text-[#3B3B3B]">{wpm} WPM</span>
+                </div>
+              </div>
             </div>
 
-            <div className="mt-10 flex flex-col justify-center">
+            <p className="mt-4 whitespace-pre-line text-[12px] text-[#3B3B3B]">{speechAnalysis}</p>
+
+            {/* 반복어 분석 결과 */}
+            <div className="mt-10">
               <p className="fontBold text-[14px] text-[#5650FF]">반복어 분석 결과</p>
-              <p className="mt-5 text-[12px] whitespace-pre-line">
+              <p className="mt-5 whitespace-pre-line text-[12px] text-[#3B3B3B]">
                 {repeatWordAnalysis}
               </p>
-              <RepeatWordChart data={data?.repeatWords} />
             </div>
           </div>
         </FeedbackSection>
 
-        {/* 시선 분석 결과 */}
+        {/* 시선 분석 */}
         <FeedbackSection
           title="분석 결과"
           highlightText="시선"
@@ -121,15 +164,11 @@ export default function AnalysisResultDetail({ data }: { data?: any }) {
               <p className="text-[13px] text-gray-600">카메라 응시율</p>
               <p className="fontBold text-right text-[26px] text-[#5650FF]">{gazeRate}%</p>
             </div>
-
-            <p className="mt-4 text-[12px]">
-              카메라를 비교적 잘 바라보면서 말하고 있어요. 지금 정도만 유지해도 충분히 안정적인
-              인상이에요.
-            </p>
+            <p className="mt-4 whitespace-pre-line text-[12px]">{gazeAnalysis}</p>
           </div>
         </FeedbackSection>
 
-        {/* 행동 분석 결과 */}
+        {/* 행동 분석 */}
         <FeedbackSection
           title="분석 결과"
           highlightText="행동"
@@ -139,10 +178,20 @@ export default function AnalysisResultDetail({ data }: { data?: any }) {
             sectionRefs.current[2] = el
           }}
         >
-          <VideoPlayerWithPoints videoSrc={data?.videoUrl || "./video/TimeStampTest.mp4"} paramPoints={actionPoints} />
+          <div className="mt-4 px-2">
+            <div className="mb-4 flex justify-between rounded-xl bg-[#F7F7F8] p-5">
+              <p className="text-[13px] text-gray-600">자세 불안정 비율</p>
+              <p className="fontBold text-right text-[26px] text-[#5650FF]">{poseWarningRatio}%</p>
+            </div>
+            <p className="mb-4 whitespace-pre-line text-[12px]">{postureAnalysis}</p>
+            <VideoPlayerWithPoints
+              videoSrc={data?.videoUrl || './video/TimeStampTest.mp4'}
+              paramPoints={actionPoints}
+            />
+          </div>
         </FeedbackSection>
 
-        {/* 발표 내용 분석 결과 */}
+        {/* 주제 적합성 분석 */}
         <FeedbackSection
           title="분석 결과"
           highlightText="발표 내용"
@@ -153,16 +202,28 @@ export default function AnalysisResultDetail({ data }: { data?: any }) {
           }}
         >
           <div className="mt-11 flex flex-col gap-5 px-2 md:flex-row">
-            <p className="mt-6 flex-1 pl-5 pr-10 text-[12px] whitespace-pre-line">
-              {presentationContentFeedback}
+            <p className="mt-6 flex-1 whitespace-pre-line pl-5 pr-10 text-[12px]">
+              {topicAnalysis}
             </p>
-
             <img
               src={IMAGES.graph}
               className="mx-auto h-auto min-w-[240px] object-contain"
               alt="내용 피드백 그래프"
             />
           </div>
+        </FeedbackSection>
+
+        {/* 전체 분석 결과 */}
+        <FeedbackSection
+          title="분석 결과"
+          highlightText="전체"
+          isVisible={visibleSections.includes(4)}
+          dataIndex={4}
+          innerRef={(el) => {
+            sectionRefs.current[4] = el
+          }}
+        >
+          <p className="mt-6 whitespace-pre-line px-5 text-[12px]">{totalAnalysis}</p>
         </FeedbackSection>
       </div>
     </div>
