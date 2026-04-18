@@ -53,15 +53,15 @@ function App() {
               <Route path="impromptu" element={<ImpromptuPractice />} />
               <Route path="keyword" element={<KeywordPractice />} />
               <Route path="core" element={<CoreUnderstandingPractice />} />
-              <Route path="tutorial" element={<PracticeTutorial/>}/>
-              <Route path="start" element={<PracticeStart/>}/>
-              <Route path="breathing" element={<BreathingPractice/>}/>
-              <Route path="select" element={<PracticeSelect/>}/>
-              <Route path="script" element={<PracticeScript/>}/>
-              <Route path="eyecontact" element={<EyeContactPractice/>}/>
-              <Route path="feelresult" element={<PracticeFeel/>}/>
-              <Route path="mind" element={<PracticeMind/>}/>
-              <Route path="complete" element={<PracticeResult/>}/>
+              <Route path="tutorial" element={<PracticeTutorial />} />
+              <Route path="start" element={<PracticeStart />} />
+              <Route path="breathing" element={<BreathingPractice />} />
+              <Route path="select" element={<PracticeSelect />} />
+              <Route path="script" element={<PracticeScript />} />
+              <Route path="eyecontact" element={<EyeContactPractice />} />
+              <Route path="feelresult" element={<PracticeFeel />} />
+              <Route path="mind" element={<PracticeMind />} />
+              <Route path="complete" element={<PracticeResult />} />
             </Route>
           </Route>
         </Route>

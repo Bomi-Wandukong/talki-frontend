@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import api from '@/api/fetchClient'
+import { getPersonalHome } from '@/api/personal'
 
 interface AnalysisState {
   key: string
@@ -15,6 +16,21 @@ export default function AnalysisLoading() {
   const location = useLocation()
   const navigate = useNavigate()
   const state = location.state as AnalysisState
+  const [userName, setUserName] = useState<string>('사용자')
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const data = await getPersonalHome()
+        if (data.userName) {
+          setUserName(data.userName)
+        }
+      } catch (err) {
+        console.error('Failed to fetch user name in loading page:', err)
+      }
+    }
+    fetchUser()
+  }, [])
 
   useEffect(() => {
     if (!state || !state.key) {
@@ -70,7 +86,7 @@ export default function AnalysisLoading() {
     }
   }, [])
 
-  const userName = localStorage.getItem('userName') || '사용자'
+  // userName is now managed by state
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-center bg-[#F7F7F8] px-6">
@@ -87,7 +103,7 @@ export default function AnalysisLoading() {
         영상을 분석하고 있어요
       </h1>
       <p className="max-w-md text-center text-sm leading-relaxed text-gray-500 md:text-base">
-        AI가 {userName} 님의 시선 처리, 발화 속도, 제스처를 꼼꼼하게{' '}
+        TALKI AI가 {userName} 님의 시선 처리, 발화 속도, 제스처를 꼼꼼하게{' '}
         <br className="hidden md:block" />
         살펴보고 있습니다. 잠시만 기다려주세요!
       </p>
