@@ -14,8 +14,42 @@ export interface PersonalHomeResponse {
   } | null;
 }
 
+/**
+ * Validates the shape of the PersonalHomeResponse at runtime.
+ */
+function validatePersonalHomeResponse(data: any): data is PersonalHomeResponse {
+  if (!data || typeof data !== 'object') return false;
+
+  const hasValidPracticeDays =
+    data.practiceDays &&
+    typeof data.practiceDays.streakDays === 'number' &&
+    Array.isArray(data.practiceDays.practiceDays);
+
+  const hasValidRecentReport =
+    data.recentPresentationReport === null ||
+    (typeof data.recentPresentationReport === 'object' &&
+      typeof data.recentPresentationReport.dateTime === 'string' &&
+      typeof data.recentPresentationReport.totalScore === 'number' &&
+      typeof data.recentPresentationReport.topic === 'string');
+
+  return (
+    typeof data.userName === 'string' &&
+    typeof data.mindSetting === 'string' &&
+    !!hasValidPracticeDays &&
+    !!hasValidRecentReport
+  );
+}
+
 export const getPersonalHome = async (): Promise<PersonalHomeResponse> => {
   const response = await api.get('/personal/home');
-  console.log('getPersonalHome API response:', response);
-  return response as PersonalHomeResponse;
+
+  if (import.meta.env.DEV) {
+    console.log('getPersonalHome API response:', response);
+  }
+
+  if (!validatePersonalHomeResponse(response)) {
+    throw new Error('Invalid API response format for PersonalHomeResponse');
+  }
+
+  return response;
 };

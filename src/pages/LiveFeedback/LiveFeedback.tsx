@@ -185,63 +185,77 @@ export default function LiveFeedback() {
                     if (!trackerRef.current || isUploading) return
 
                     try {
+                      // 0. 필수 ID 확인 (추가됨)
+                      if (!presentationId) {
+                        alert(
+                          '발표 식별 정보(Presentation ID)가 없습니다. 메인 페이지에서 다시 시작해주세요.'
+                        )
+                        return
+                      }
+
                       setIsUploading(true)
 
                       // 1. 녹화 종료 및 Blob 획득
                       const blob = await trackerRef.current.stopRecording()
 
                       // 2. 업로드 URL 발급 요청
-                      if (presentationId) {
-                        const filename = `record_${Date.now()}.webm`
+                      const filename = `record_${Date.now()}.webm`
 
-                        // 프로필 정보를 가져와서 userId (id 필드) 세팅
-                        let userId = null
-                        try {
-                          const profileRes = await api.get('/profile/get')
-                          if (profileRes && typeof profileRes.id === 'number') {
-                            userId = profileRes.id
-                          }
-                        } catch (err) {
-                          console.error('프로필 조회를 실패했습니다.', err)
+                      // 프로필 정보를 가져와서 userId (id 필드) 세팅
+                      let userId = null
+                      try {
+                        const profileRes = await api.get('/profile/get')
+                        if (profileRes && typeof profileRes.id === 'number') {
+                          userId = profileRes.id
                         }
-
-                        const resData = await api.post('/videos/upload-url', {
-                          presentationId: presentationId,
-                          filename: filename,
-                          userId: userId,
-                          presentationType: sessionData?.presentationType || 'unknown',
-                          topic: sessionData?.topic_desc || 'unknown',
-                        })
-
-                        console.log('✅ POST Request successful', resData)
-
-                        // 3. S3 업로드 (Pre-signed URL 사용)
-                        if (resData.uploadUrl) {
-                          console.log('📤 Uploading video to S3...')
-                          const uploadRes = await fetch(resData.uploadUrl, {
-                            method: 'PUT',
-                            body: blob,
-                            headers: {
-                              'Content-Type': 'video/webm',
-                            },
-                          })
-
-                          if (!uploadRes.ok) {
-                            throw new Error(`S3 upload failed with status: ${uploadRes.status}`)
-                          }
-                          console.log('✅ Video uploaded to S3 successfully')
-                        }
-                        // 로딩 페이지 이동 (S3 key와 세션 정보 전달)
-                        navigate('/analysis-loading', {
-                          state: {
-                            ...sessionData,
-                            presentationId,
-                            key: resData?.key,
-                          },
-                        })
+                      } catch (err) {
+                        console.error('프로필 조회를 실패했습니다.', err)
                       }
-                    } catch (err) {
-                      console.error('❌ POST Request Failed:', err)
+
+                      const resData = await api.post('/videos/upload-url', {
+                        presentationId: presentationId,
+                        filename: filename,
+                        userId: userId,
+                        presentationType: sessionData?.presentationType || 'unknown',
+                        topic: sessionData?.topic_desc || 'unknown',
+                      })
+
+                      // 업로드 URL 및 키 확인 (강화됨)
+                      if (!resData || !resData.uploadUrl) {
+                        throw new Error('영상을 업로드하기 위한 서버 URL을 받지 못했습니다.')
+                      }
+                      if (!resData.key) {
+                        throw new Error('서버로부터 영상 식별 키(Key)를 받지 못했습니다.')
+                      }
+
+                      console.log('✅ POST Request successful', resData)
+
+                      // 3. S3 업로드 (Pre-signed URL 사용)
+                      console.log('📤 Uploading video to S3...')
+                      const uploadRes = await fetch(resData.uploadUrl, {
+                        method: 'PUT',
+                        body: blob,
+                        headers: {
+                          'Content-Type': 'video/webm',
+                        },
+                      })
+
+                      if (!uploadRes.ok) {
+                        throw new Error(`저장소 업로드 실패 (Status: ${uploadRes.status})`)
+                      }
+                      console.log('✅ Video uploaded to S3 successfully')
+
+                      // 로딩 페이지 이동 (S3 key와 세션 정보 전달)
+                      navigate('/analysis-loading', {
+                        state: {
+                          ...sessionData,
+                          presentationId,
+                          key: resData.key,
+                        },
+                      })
+                    } catch (err: any) {
+                      console.error('❌ Upload Flow Failed:', err)
+                      alert(`처리 중 오류가 발생했습니다: ${err.message || '알 수 없는 오류'}`)
                     } finally {
                       setIsUploading(false)
                     }

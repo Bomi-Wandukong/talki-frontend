@@ -31,7 +31,7 @@ export default function AnalysisResultDetail({ data }: { data?: any }) {
   // API에서 받은 realTimeResultDTOList를 VideoPlayer용 포맷으로 변환
   const mapTypeToDesc = (type: string) => {
     switch (type) {
-      case 'pose_rigid': return '자제가 경직된 구간입니다.'
+      case 'pose_rigid': return '자세가 경직된 구간입니다.'
       case 'pose_unstable': return '자세가 불안정한 구간입니다.'
       case 'gaze_unstable': return '시선이 불안정한 구간입니다.'
       case 'speech_slow': return '말 속도가 느려진 구간입니다.'

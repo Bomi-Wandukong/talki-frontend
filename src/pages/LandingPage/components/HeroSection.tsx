@@ -51,7 +51,7 @@ export default function HeroSection() {
       {/* Content Container */}
       <div className="relative z-10 mx-auto flex h-full w-full max-w-[1280px] flex-col items-center justify-center gap-4 px-6 pb-40 pt-20 md:px-16 lg:flex-row lg:items-end lg:gap-6 lg:pb-[20vh] lg:pt-0">
         {/* Text Section (Logo, H2, P) - Middle on mobile, Left on desktop */}
-        <div className="order-2 flex -mt-4 animate-[fadeIn_1s_ease-out] flex-col items-start px-2 text-left text-white lg:order-1 lg:mt-0 lg:mb-2 lg:w-[45%] lg:px-0">
+        <div className="order-2 -mt-4 flex animate-[fadeIn_1s_ease-out] flex-col items-start px-2 text-left text-white lg:order-1 lg:mb-2 lg:mt-0 lg:w-[45%] lg:px-0">
           {/* Logo */}
           <div className="mb-2 lg:mb-6">
             <img
@@ -68,7 +68,7 @@ export default function HeroSection() {
           <p className="text-[11px] font-light leading-relaxed text-white/90 md:text-[13px] lg:text-[13px]">
             사회불안이 있더라도, 발표와 면접이 두렵지 않도록.
             <br />
-            인지행동치료 기반의 훈련으로 불안을 완화할 수 도와드려요.
+            인지행동치료 기반의 훈련으로 불안을 완화할 수 있도록 도와드려요.
             <br />
             혼자서는 어렵던 연습, 이제는 <span className="font-bold">토키TALKI</span>와 함께해요.
           </p>

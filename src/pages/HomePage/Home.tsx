@@ -30,7 +30,10 @@ const Home = () => {
 
         if (data.practiceDays) {
           setStreak(data.practiceDays.streakDays || 0)
-          const dates = (data.practiceDays.practiceDays || []).map((d: string) => new Date(d))
+          const dates = (data.practiceDays.practiceDays || []).map((d: string) => {
+            const [y, m, day] = d.split('-').map(Number)
+            return new Date(y, m - 1, day)
+          })
           setPracticedDates(dates)
         }
       } catch (err) {

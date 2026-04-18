@@ -76,9 +76,13 @@ export default function AnalysisResult({ data }: { data?: any }) {
 
             <div className="mt-6 px-4">
               <div className="mt-8 flex flex-col gap-8 md:flex-row">
-                <div className="hover:scale-103 flex h-32 w-full cursor-pointer items-center rounded-3xl border-2 border-[#FFA956]/[.56] bg-white px-6 transition-all duration-300 hover:shadow-lg md:w-[50%]">
+                <div className="hover:scale-105 flex h-32 w-full cursor-pointer items-center rounded-3xl border-2 border-[#FFA956]/[.56] bg-white px-6 transition-all duration-300 hover:shadow-lg md:w-[50%]">
                   <div className="flex basis-[30%] justify-end">
-                    <img src={IMAGES.speakPractice} className="h-24 w-24 object-contain" />
+                    <img
+                      src={IMAGES.speakPractice}
+                      alt="말하기 연습 아이콘"
+                      className="h-24 w-24 object-contain"
+                    />
                   </div>
 
                   <div className="basis-[70%] pl-[6%]">
@@ -89,9 +93,13 @@ export default function AnalysisResult({ data }: { data?: any }) {
                   </div>
                 </div>
 
-                <div className="hover:scale-103 flex h-32 w-full cursor-pointer items-center rounded-3xl border-2 border-[#FFA956]/[.56] bg-[#FFA956] px-6 transition-all duration-300 hover:shadow-lg md:w-[50%]">
+                <div className="hover:scale-105 flex h-32 w-full cursor-pointer items-center rounded-3xl border-2 border-[#FFA956]/[.56] bg-[#FFA956] px-6 transition-all duration-300 hover:shadow-lg md:w-[50%]">
                   <div className="flex basis-[30%] justify-end">
-                    <img src={IMAGES.speakPractice} className="h-24 w-24 object-contain" />
+                    <img
+                      src={IMAGES.speakPractice}
+                      alt="시선 및 표정 훈련 아이콘"
+                      className="h-24 w-24 object-contain"
+                    />
                   </div>
 
                   <div className="basis-[70%] pl-[6%] text-white">
