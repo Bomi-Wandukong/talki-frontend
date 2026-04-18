@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react'
 import CircleProgress from '@/components/CircleProgress/CircleProgress'
 import LinearProgressBar from '@/components/LinearProgressBar/LinearProgressBar'
 import { IMAGES } from '@/utils/images'
+import { getPersonalHome } from '@/api/personal'
 
 export default function AnalysisResult({ data }: { data?: any }) {
   const progressData = [
@@ -14,7 +16,25 @@ export default function AnalysisResult({ data }: { data?: any }) {
   const goodPoints = data?.llmFeedback?.['장점'] ?? '분석 결과를 불러오는 중입니다...'
   const growthPoints = data?.llmFeedback?.['성장 포인트'] ?? '분석 결과를 불러오는 중입니다...'
   const practicePoints = data?.llmFeedback?.['연습'] ?? ''
-  const userName = data?.userName || localStorage.getItem('userName') || '회원'
+
+  const [userName, setUserName] = useState<string>(data?.userName || '회원')
+
+  useEffect(() => {
+    // If props doesn't have a valid userName, fetch it from the personal API
+    if (!data?.userName || data.userName === '사용자' || data.userName === '회원') {
+      const fetchUser = async () => {
+        try {
+          const personalData = await getPersonalHome()
+          if (personalData.userName) {
+            setUserName(personalData.userName)
+          }
+        } catch (err) {
+          console.error('Failed to fetch user name in AnalysisResult:', err)
+        }
+      }
+      fetchUser()
+    }
+  }, [data?.userName])
 
   return (
     <div className="min-h-screen w-full bg-[#F7F7F8]">
