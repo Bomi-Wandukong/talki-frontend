@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import RepeatWordChart from './RepeatWordChart'
 import FeedbackSection from './FeedbackSection'
 import VideoPlayerWithPoints from './VideoPlayerWithPoints'
 import { IMAGES } from '@/utils/images'
@@ -25,6 +24,13 @@ export default function AnalysisResultDetail({ data }: { data?: any }) {
     })
     return () => observer.disconnect()
   }, [])
+
+  // 초(second) → "m:ss" 포맷 변환
+  const formatTime = (seconds: number): string => {
+    const m = Math.floor(seconds / 60)
+    const s = Math.floor(seconds % 60)
+    return `${m}:${s.toString().padStart(2, '0')}`
+  }
 
   const mapTypeToDesc = (type: string) => {
     switch (type) {
@@ -56,22 +62,19 @@ export default function AnalysisResultDetail({ data }: { data?: any }) {
   // rawData 수치
   const wpm = data?.rawData?.speech?.wpm ?? 0
   const fillerCount = data?.rawData?.speech?.fillers_count ?? 0
-  const silenceCount = data?.rawData?.speech?.silence_count ?? 0
   const silenceRatio = data?.rawData?.speech?.silence_ratio ?? 0
   const poseWarningRatio = Math.round((data?.poseWarningRatio ?? 0) * 100)
   const gazeRate = Math.round((data?.gazeFrontRatio ?? 0) * 100)
 
-  // 반복어 차트용
-  const repeatWords = fillerCount > 0 ? [{ word: '음', count: fillerCount }] : []
-
-  // 영상 타임스탬프
+  // realTimeResultDTO → VideoPlayer용 포맷 (start/end 초 → "m:ss")
   const improvements = (data?.realTimeResultDTOList ?? []).map((item: any) => ({
-    time: item.timestamp,
+    time: formatTime(item.start ?? 0),
+    endTime: formatTime(item.end ?? 0),
     description: mapTypeToDesc(item.type),
   }))
 
   const actionPoints = {
-    strengths: [{ time: '0:02', description: '자연스러운 제스처와 목소리 톤이 돋보였습니다.' }],
+    strengths: [{ time: '0:00', description: '자연스러운 제스처와 목소리 톤이 돋보였습니다.' }],
     improvements:
       improvements.length > 0
         ? improvements
@@ -110,7 +113,7 @@ export default function AnalysisResultDetail({ data }: { data?: any }) {
 
               {/* 트랙 */}
               <div className="relative h-4 w-full rounded-full bg-gray-200">
-                {/* 적정 범위 초록 구간 */}
+                {/* 적정 범위 초록 구간: 120~160 / 200 */}
                 <div
                   className="absolute h-full bg-[#A8D8A8]"
                   style={{ left: '40%', width: '20%' }}
@@ -122,8 +125,8 @@ export default function AnalysisResultDetail({ data }: { data?: any }) {
                 />
               </div>
 
-              {/* 마커 영역 (바 아래) */}
-              <div className="relative mt-2 h-6">
+              {/* 마커 (바 아래) */}
+              <div className="relative mt-2 h-8">
                 <div
                   className="absolute flex flex-col items-center"
                   style={{
@@ -139,7 +142,6 @@ export default function AnalysisResultDetail({ data }: { data?: any }) {
 
             <p className="mt-4 whitespace-pre-line text-[12px] text-[#3B3B3B]">{speechAnalysis}</p>
 
-            {/* 반복어 분석 결과 */}
             <div className="mt-10">
               <p className="fontBold text-[14px] text-[#5650FF]">반복어 분석 결과</p>
               <p className="mt-5 whitespace-pre-line text-[12px] text-[#3B3B3B]">
@@ -184,10 +186,7 @@ export default function AnalysisResultDetail({ data }: { data?: any }) {
               <p className="fontBold text-right text-[26px] text-[#5650FF]">{poseWarningRatio}%</p>
             </div>
             <p className="mb-4 whitespace-pre-line text-[12px]">{postureAnalysis}</p>
-            <VideoPlayerWithPoints
-              videoSrc={data?.videoUrl || './video/TimeStampTest.mp4'}
-              paramPoints={actionPoints}
-            />
+            <VideoPlayerWithPoints videoSrc={data?.videoUrl || ''} paramPoints={actionPoints} />
           </div>
         </FeedbackSection>
 

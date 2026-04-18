@@ -57,6 +57,31 @@ export default function FeedbackResult() {
               ? JSON.parse(common.rawDataJson)
               : (common.rawDataJson ?? {})
 
+          // s3Key로 영상 다운로드 URL 요청
+          // s3Key로 영상 다운로드 URL 요청
+          let videoUrl = null
+          if (res.s3Key) {
+            try {
+              const videoRes = await api.get(
+                `/videos/download-url?key=${encodeURIComponent(res.s3Key)}`
+              )
+              // 응답이 문자열이거나 { url: "..." } 객체 모두 대응
+              if (typeof videoRes === 'string') {
+                videoUrl = videoRes
+              } else if (videoRes?.url) {
+                videoUrl = videoRes.url
+              } else if (videoRes?.downloadUrl) {
+                videoUrl = videoRes.downloadUrl
+              } else {
+                // 그 외 객체면 첫 번째 값 사용
+                videoUrl = Object.values(videoRes ?? {})[0] ?? null
+              }
+              console.log('✅ 영상 URL 수신:', videoUrl)
+            } catch (e) {
+              console.error('영상 URL 요청 실패:', e)
+            }
+          }
+
           const processedData = {
             totalScore: common.totalScore ?? 0,
             gazeScore: common.gazeScore ?? 0,
@@ -71,7 +96,7 @@ export default function FeedbackResult() {
             rawData,
             userName: res.userName ?? '',
             presentationType: res.presentationType ?? '',
-            videoUrl: res.s3Key ?? null,
+            videoUrl,
             realTimeResultDTOList: res.realTimeResultDTO ?? [],
           }
 
