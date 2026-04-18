@@ -199,7 +199,7 @@ export default function LiveFeedback() {
                       const blob = await trackerRef.current.stopRecording()
 
                       // 2. 업로드 URL 발급 요청
-                      const filename = `record_${Date.now()}.webm`
+                      const filename = `record_${Date.now()}.mp4`
 
                       // 프로필 정보를 가져와서 userId (id 필드) 세팅
                       let userId = null
@@ -215,6 +215,7 @@ export default function LiveFeedback() {
                       const resData = await api.post('/videos/upload-url', {
                         presentationId: presentationId,
                         filename: filename,
+                        contentType: 'video/mp4',
                         userId: userId,
                         presentationType: sessionData?.presentationType || 'unknown',
                         topic: sessionData?.topic_desc || 'unknown',
@@ -236,12 +237,16 @@ export default function LiveFeedback() {
                         method: 'PUT',
                         body: blob,
                         headers: {
-                          'Content-Type': 'video/webm',
+                          'Content-Type': 'video/mp4',
                         },
                       })
 
                       if (!uploadRes.ok) {
-                        throw new Error(`저장소 업로드 실패 (Status: ${uploadRes.status})`)
+                        const errorText = await uploadRes.text()
+                        console.error('❌ S3 Upload Error Response:', errorText)
+                        throw new Error(
+                          `저장소 업로드 실패 (Status: ${uploadRes.status}). 상세: ${errorText.substring(0, 100)}...`
+                        )
                       }
                       console.log('✅ Video uploaded to S3 successfully')
 

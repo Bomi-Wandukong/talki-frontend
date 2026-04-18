@@ -63,7 +63,7 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
         if (mediaRecorderRef.current.state === 'inactive') {
           console.warn('⚠️ MediaRecorder is already inactive. Returning existing chunks.')
           if (recordedChunksRef.current.length > 0) {
-            const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' })
+            const blob = new Blob(recordedChunksRef.current, { type: 'video/mp4' })
             recordedChunksRef.current = []
             return resolve(blob)
           } else {
@@ -72,7 +72,7 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
         }
 
         mediaRecorderRef.current.onstop = () => {
-          const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' })
+          const blob = new Blob(recordedChunksRef.current, { type: 'video/mp4' })
           recordedChunksRef.current = []
           console.log('💾 Recording stopped and blob created')
           resolve(blob)
@@ -101,7 +101,6 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
       const faceMesh = new FaceMesh({ locateFile: smartLocateFile })
       const pose = new Pose({ locateFile: smartLocateFile })
 
-      // ✅ 테스트 코드와 동일: Float32 → Int16 PCM
       function float32ToInt16(float32: Float32Array): Int16Array {
         const int16 = new Int16Array(float32.length)
         for (let i = 0; i < float32.length; i++) {
@@ -111,7 +110,6 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
         return int16
       }
 
-      // ✅ 테스트 코드와 동일: arrayBufferToBase64
       function arrayBufferToBase64(buffer: ArrayBuffer): string {
         let binary = ''
         const bytes = new Uint8Array(buffer)
@@ -121,7 +119,6 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
         return btoa(binary)
       }
 
-      // ✅ 테스트 코드와 동일: face/pose 인덱스 전체
       const FACE_INDICES = [
         468, 469, 470, 471, 473, 474, 475, 476, 33, 133, 362, 263, 159, 386, 145, 374,
       ]
@@ -190,7 +187,6 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
 
             if (wsRef.current?.readyState !== WebSocket.OPEN) return
 
-            // ✅ Float32 → Int16 → base64 (테스트 코드와 동일 포맷)
             const int16 = float32ToInt16(merged)
             const base64Audio = arrayBufferToBase64(int16.buffer as ArrayBuffer)
             const payload = buildPayload(base64Audio)
@@ -212,7 +208,7 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
 
       function startRecording(stream: MediaStream) {
         try {
-          const options = { mimeType: 'video/webm' }
+          const options = { mimeType: 'video/mp4' }
           // 브라우저 지원 여부 확인 (최소한의 안전장치)
           if (!MediaRecorder.isTypeSupported(options.mimeType)) {
             console.warn(`⚠️ ${options.mimeType} is not supported, falling back to default.`)
@@ -392,18 +388,20 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
           console.log(`🛑 Stopping track: ${track.kind}`)
           track.stop()
         })
-        
+
         if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
           console.log('⏹️ Stopping MediaRecorder during cleanup')
           mediaRecorderRef.current.stop()
         }
-        
+
         if (processorRef.current) {
           processorRef.current.disconnect()
           processorRef.current = null
         }
         if (audioContextRef.current) {
-          audioContextRef.current.close().catch(err => console.error('Error closing AudioContext', err))
+          audioContextRef.current
+            .close()
+            .catch((err) => console.error('Error closing AudioContext', err))
           audioContextRef.current = null
         }
         if (wsRef.current) {

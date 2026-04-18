@@ -4,7 +4,6 @@ import AnalysisResultDetail from './components/AnalysisResultDetail'
 import FeedbackBottomBar from './components/FeedbackBottomBar'
 import Nav from '@/components/Nav/Nav'
 import { downloadFullPDF, downloadBasicPDF } from '../../utils/pdfDownload'
-
 import { useLocation, useNavigate } from 'react-router-dom'
 import api from '@/api/fetchClient'
 
@@ -16,7 +15,14 @@ export default function FeedbackResult() {
 
   const location = useLocation()
   const navigate = useNavigate()
-  const presentationId = location.state?.presentationId
+
+  const presentationId = location.state?.presentationId || sessionStorage.getItem('presentationId')
+
+  useEffect(() => {
+    if (presentationId) {
+      sessionStorage.setItem('presentationId', presentationId)
+    }
+  }, [presentationId])
 
   useEffect(() => {
     if (!presentationId) {
@@ -26,36 +32,72 @@ export default function FeedbackResult() {
       return
     }
 
-    const fetchResult = async (retryCount = 0) => {
+    let isCancelled = false
+    let timeoutId: ReturnType<typeof setTimeout>
+
+    const poll = async () => {
+      if (isCancelled) return
+
       try {
-        setLoading(true)
         const res = await api.get(
           `/analyze/getResult?presentationId=${encodeURIComponent(presentationId)}`
         )
+        console.log('분석 결과 확인 중:', res)
 
-        // 데이터가 구체적으로 비어있거나 분석 결과의 핵심 수치(예: totalScore)가 없는 경우
-        if (!res || res.totalScore === undefined) {
-          if (retryCount < 3) {
-            console.log(`Analysis data not ready, retrying... (${retryCount + 1}/3)`)
-            setTimeout(() => fetchResult(retryCount + 1), 3000)
-            return
+        if (res) {
+          const common = res.commonFeedbackResultDTO ?? res
+
+          const llmFeedback =
+            typeof common.llmFeedbackJson === 'string'
+              ? JSON.parse(common.llmFeedbackJson)
+              : (common.llmFeedbackJson ?? {})
+
+          const rawData =
+            typeof common.rawDataJson === 'string'
+              ? JSON.parse(common.rawDataJson)
+              : (common.rawDataJson ?? {})
+
+          const processedData = {
+            totalScore: common.totalScore ?? 0,
+            gazeScore: common.gazeScore ?? 0,
+            postureScore: common.postureScore ?? 0,
+            speechScore: common.speechScore ?? 0,
+            topicScore: common.topicScore ?? 0,
+            fillerScore: common.fillerScore ?? 0,
+            speechWpm: common.speechWpm ?? 0,
+            gazeFrontRatio: common.gazeFrontRatio ?? 0,
+            poseWarningRatio: common.poseWarningRatio ?? 0,
+            llmFeedback,
+            rawData,
+            userName: res.userName ?? '',
+            presentationType: res.presentationType ?? '',
+            videoUrl: res.s3Key ?? null,
+            realTimeResultDTOList: res.realTimeResultDTO ?? [],
           }
-        }
 
-        setAnalysisData(res)
-      } catch (err) {
-        console.error('Failed to fetch analysis result:', err)
-        if (retryCount < 3) {
-          setTimeout(() => fetchResult(retryCount + 1), 3000)
+          console.log('✅ 분석 결과 수신 성공!')
+          setAnalysisData(processedData)
+          setLoading(false)
           return
         }
-      } finally {
-        setLoading(false)
+      } catch (err) {
+        console.error('Failed to fetch analysis result:', err)
+      }
+
+      if (!isCancelled) {
+        console.log('🔄 10초 후 다시 시도합니다...')
+        timeoutId = setTimeout(poll, 10000)
       }
     }
 
-    fetchResult()
-  }, [presentationId, navigate])
+    setLoading(true)
+    poll()
+
+    return () => {
+      isCancelled = true
+      clearTimeout(timeoutId)
+    }
+  }, [presentationId])
 
   const handleBottomButton = () => {
     if (showDetail) {
@@ -67,16 +109,12 @@ export default function FeedbackResult() {
 
   const handleDownloadPDF = async () => {
     if (isDownloading) return
-
     setIsDownloading(true)
-
     try {
       if (showDetail) {
-        // 세부 분석까지 본 경우 - 전체 다운로드
         await downloadFullPDF()
         alert('전체 분석 결과 PDF 다운로드가 완료되었습니다!')
       } else {
-        // 기본 분석만 본 경우 - 기본 분석만 다운로드
         await downloadBasicPDF()
         alert('기본 분석 결과 PDF 다운로드가 완료되었습니다!')
       }
@@ -120,29 +158,21 @@ export default function FeedbackResult() {
   return (
     <div className="relative min-h-screen bg-[#F7F7F8] pt-[80px]">
       <Nav />
-      {/* 전체 콘텐츠를 감싸는 div */}
       <div id="full-analysis-content">
-        {/* 기본 분석 결과 */}
         <div id="basic-analysis-content" className="animate-[fadeIn_0.6s_ease-out]">
           <AnalysisResult data={analysisData} />
         </div>
-
-        {/* 세부 분석 결과 */}
         {showDetail && (
           <div className="animate-[slideUp_0.8s_ease-out]">
             <AnalysisResultDetail data={analysisData} />
           </div>
         )}
       </div>
-
-      {/* 버튼 */}
       <FeedbackBottomBar
         isDetail={showDetail}
         onClick={handleBottomButton}
         onDownloadPDF={handleDownloadPDF}
       />
-
-      {/* 다운로드 중 로딩 표시 */}
       {isDownloading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="rounded-xl bg-white p-8">
