@@ -12,39 +12,88 @@ const CameraCheckView = ({ onComplete }: { onComplete: () => void }) => {
   const [progress, setProgress] = useState(0)
   const [timeLeft, setTimeLeft] = useState(5)
   const [isInside, setIsInside] = useState(false)
+  const [isCameraReady, setIsCameraReady] = useState(false)
 
   const startTimeRef = useRef<number | null>(null)
+  const retryCountRef = useRef(0)
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const REQUIRED_TIME = 5000
+  const MAX_RETRIES = 3
+  const RETRY_DELAY_MS = 2000
 
   // MediaPipe 모델 및 카메라 초기화
   useEffect(() => {
     const init = async () => {
       try {
-        const vision = await FilesetResolver.forVisionTasks(
-          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm'
-        )
-        faceLandmarkerRef.current = await FaceLandmarker.createFromOptions(vision, {
-          baseOptions: {
-            modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
-            delegate: 'GPU',
-          },
-          runningMode: 'VIDEO',
-          numFaces: 1,
-          minFaceDetectionConfidence: 0.6,
-        })
+        if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
+
+        // MediaPipe 모델은 최초 1회만 로드
+        if (!faceLandmarkerRef.current) {
+          const vision = await FilesetResolver.forVisionTasks(
+            'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm'
+          )
+          faceLandmarkerRef.current = await FaceLandmarker.createFromOptions(vision, {
+            baseOptions: {
+              modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
+              delegate: 'GPU',
+            },
+            runningMode: 'VIDEO',
+            numFaces: 1,
+            minFaceDetectionConfidence: 0.6,
+          })
+        }
+
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { width: 1280, height: 720 },
         })
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream
-          videoRef.current.addEventListener('loadeddata', predictWebcam)
+
+        if (!videoRef.current) return
+        const video = videoRef.current
+        video.srcObject = stream
+
+        const onLoaded = () => {
+          retryCountRef.current = 0
+          setIsCameraReady(true)
+          video.removeEventListener('loadeddata', onLoaded)
+          if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
+          predictWebcam()
+        }
+
+        if (video.readyState >= 2) {
+          retryCountRef.current = 0
+          setIsCameraReady(true)
+          predictWebcam()
+        } else {
+          video.addEventListener('loadeddata', onLoaded)
+
+          retryTimerRef.current = setTimeout(() => {
+            video.removeEventListener('loadeddata', onLoaded)
+            if (retryCountRef.current < MAX_RETRIES) {
+              retryCountRef.current += 1
+              console.warn(`카메라 로딩 재시도 (${retryCountRef.current}/${MAX_RETRIES})`)
+              setFeedback('카메라를 다시 연결하는 중...')
+              init()
+            } else {
+              retryCountRef.current = 0
+              setFeedback('카메라를 연결할 수 없습니다.')
+            }
+          }, RETRY_DELAY_MS)
         }
       } catch (error) {
-        setFeedback('카메라를 연결할 수 없습니다.')
+        if (retryCountRef.current < MAX_RETRIES) {
+          retryCountRef.current += 1
+          console.warn(`카메라 접근 재시도 (${retryCountRef.current}/${MAX_RETRIES})`)
+          setFeedback('카메라를 다시 연결하는 중...')
+          retryTimerRef.current = setTimeout(init, RETRY_DELAY_MS)
+        } else {
+          retryCountRef.current = 0
+          setFeedback('카메라를 연결할 수 없습니다.')
+        }
       }
     }
     init()
     return () => {
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
       const stream = videoRef.current?.srcObject as MediaStream
       stream?.getTracks().forEach((track) => track.stop())
     }
@@ -169,7 +218,7 @@ const CameraCheckView = ({ onComplete }: { onComplete: () => void }) => {
 
   return (
     <div className="flex w-full flex-col items-center">
-      <div className="relative aspect-video w-full max-w-[50%] overflow-hidden rounded-2xl">
+      <div className="relative aspect-video w-full max-w-[55%] overflow-hidden rounded-2xl">
         <video
           ref={videoRef}
           className="h-full w-full scale-x-[-1] object-cover"
@@ -178,13 +227,15 @@ const CameraCheckView = ({ onComplete }: { onComplete: () => void }) => {
           muted
         />
 
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <img
-            src={isInside ? IMAGES.guidelineSuccess : IMAGES.guideline}
-            alt="가이드라인"
-            className={`mt-10 h-[75%] w-auto transition-all duration-300`}
-          />
-        </div>
+        {isCameraReady && (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <img
+              src={isInside ? IMAGES.guidelineSuccess : IMAGES.guideline}
+              alt="가이드라인"
+              className={`mt-10 h-[75%] w-auto transition-all duration-300`}
+            />
+          </div>
+        )}
       </div>
 
       <div className="mt-8 flex w-[40%] items-center justify-center">
@@ -205,7 +256,7 @@ const CameraCheckView = ({ onComplete }: { onComplete: () => void }) => {
             />
           </svg>
         </div>
-        <p className="fontMedium flex w-[90%] justify-center text-xl">{feedback}</p>
+        <p className="fontMedium flex w-[90%] justify-center text-[16px]">{feedback}</p>
       </div>
     </div>
   )
