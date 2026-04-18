@@ -16,14 +16,18 @@ const SENTENCES = [
   '결국 좋은 말하기는 여러 기술 이전에, 상대방을 배려하는 작은 태도에서 시작됩니다.',
 ]
 
-// 청중 얼굴 위치 (비디오 컨테이너 기준 %)
+// 청중 얼굴 위치 (비디오 컨테이너 기준 %) — 앞줄 위주 10개
 const DOT_POSITIONS = [
-  { x: 17, y: 68 },
-  { x: 42, y: 44 },
-  { x: 72, y: 41 },
-  { x: 29, y: 27 },
-  { x: 60, y: 25 },
-  { x: 84, y: 34 },
+  { x: 27, y: 55 }, // 앞중간 왼쪽
+  { x: 72, y: 41 }, // 뒷줄 오른쪽
+  { x: 22, y: 46 }, // 뒷줄 왼쪽
+  { x: 80, y: 66 }, // 앞줄 오른쪽
+  { x: 44, y: 52 }, // 중간 중앙
+  { x: 18, y: 68 }, // 앞줄 왼쪽
+  { x: 81, y: 62 }, // 앞중간 오른쪽 끝
+  { x: 40, y: 68 }, // 앞줄 중앙 왼쪽
+  { x: 64, y: 58 }, // 앞중간 오른쪽
+  { x: 22, y: 46 }, // 뒷줄 왼쪽
 ]
 
 const EyeContactPractice = () => {
@@ -32,9 +36,13 @@ const EyeContactPractice = () => {
   const [countdown, setCountdown] = useState(5)
   const [sentenceIdx, setSentenceIdx] = useState(0)
   const [dotIdx, setDotIdx] = useState(0)
+  const [sentenceEnded, setSentenceEnded] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const sentenceEndedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const currentSentenceRef = useRef(0)
 
   const containerRef = useRef<HTMLDivElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
   const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const dotTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const sentenceTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -43,18 +51,37 @@ const EyeContactPractice = () => {
     if (countdownTimerRef.current) clearInterval(countdownTimerRef.current)
     if (dotTimerRef.current) clearInterval(dotTimerRef.current)
     if (sentenceTimerRef.current) clearInterval(sentenceTimerRef.current)
+    if (sentenceEndedTimerRef.current) clearTimeout(sentenceEndedTimerRef.current)
   }
 
   const startPracticing = () => {
     setStep('practicing')
     setDotIdx(0)
+    currentSentenceRef.current = 0
 
+    // 문장당 점 2개: 3.5초마다 점 이동
     dotTimerRef.current = setInterval(() => {
       setDotIdx((prev) => (prev + 1) % DOT_POSITIONS.length)
     }, 3500)
 
+    // 문장은 7초마다 교체
     sentenceTimerRef.current = setInterval(() => {
-      setSentenceIdx((prev) => (prev + 1) % SENTENCES.length)
+      const next = currentSentenceRef.current + 1
+
+      if (next >= SENTENCES.length) {
+        // 마지막 문장 종료: 점·영상 멈추고 15초 뒤 결과 화면
+        if (dotTimerRef.current) clearInterval(dotTimerRef.current)
+        if (sentenceTimerRef.current) clearInterval(sentenceTimerRef.current)
+        videoRef.current?.pause()
+        setSentenceEnded(true)
+        sentenceEndedTimerRef.current = setTimeout(async () => {
+          if (document.fullscreenElement) await document.exitFullscreen()
+          setStep('finished')
+        }, 15000)
+      } else {
+        currentSentenceRef.current = next
+        setSentenceIdx(next)
+      }
     }, 7000)
   }
 
@@ -62,6 +89,7 @@ const EyeContactPractice = () => {
     setStep('countdown')
     setCountdown(5)
     setSentenceIdx(0)
+    currentSentenceRef.current = 0
 
     countdownTimerRef.current = setInterval(() => {
       setCountdown((prev) => {
@@ -75,8 +103,11 @@ const EyeContactPractice = () => {
     }, 1000)
   }
 
-  const handleStop = () => {
+  const handleStop = async () => {
     clearAllTimers()
+    if (document.fullscreenElement) {
+      await document.exitFullscreen()
+    }
     setStep('finished')
   }
 
@@ -113,7 +144,7 @@ const EyeContactPractice = () => {
         onNext={() => navigate('/practice/feelresult')}
       >
         <TitleSection
-          title="시선 고정 훈련"
+          title="시선 고정 연습"
           badgeText="스크립트 기반 기초 연습"
           description="제시된 스크립트 문장을 읽으면서 점들에 시선을 고정해봐요."
         />
@@ -176,6 +207,7 @@ const EyeContactPractice = () => {
               style={{ aspectRatio: '16/9' }}
             >
               <video
+                ref={videoRef}
                 src="/video/LivePeople.mp4"
                 className="h-full w-full object-cover"
                 autoPlay
@@ -198,6 +230,15 @@ const EyeContactPractice = () => {
               {step === 'practicing' && (
                 <div className="absolute inset-x-0 top-0 flex items-center justify-center bg-[#5650FF]/85 px-8 py-4">
                   <p className="fontSB text-[16px] text-white">{SENTENCES[sentenceIdx]}</p>
+                </div>
+              )}
+
+              {/* 문장 종료 알림 (마지막 문장 후 15초간 유지) */}
+              {sentenceEnded && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                  <span className="fontSB rounded-2xl bg-white/95 px-8 py-4 text-[18px] text-[#5650FF] shadow-lg">
+                    문장이 끝났습니다!
+                  </span>
                 </div>
               )}
 

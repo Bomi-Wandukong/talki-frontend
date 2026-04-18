@@ -26,7 +26,7 @@ const PracticeFeel = () => {
         canGoPrev={true}
         canGoNext={canGoNext}
         onPrev={() => navigate('/practice/tutorial')}
-        onNext={() => navigate('/practice/breathing')}
+        onNext={() => navigate('/practice/mind')}
         //뭘 선택했냐에 따라 다른 뒤로(이전 연습 프로그램)으로 이동해야함. 이후에 수정 예정
         coachBubble={
           <CoachBubble>
