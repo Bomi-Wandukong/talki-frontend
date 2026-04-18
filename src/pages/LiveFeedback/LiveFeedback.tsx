@@ -84,7 +84,7 @@ export default function LiveFeedback() {
                 return dotIndex !== -1 ? trimmed.substring(0, dotIndex + 1) : trimmed
               })
               .join('\n')
-            
+
             setFeedbackMessage(formattedMsg)
             // 약간의 시간 뒤에 피드백을 지우는 로직 (선택사항)
             setTimeout(() => setFeedbackMessage(null), 3000)
@@ -214,18 +214,36 @@ export default function LiveFeedback() {
                         })
 
                         console.log('✅ POST Request successful', resData)
+
+                        // 3. S3 업로드 (Pre-signed URL 사용)
+                        if (resData.uploadUrl) {
+                          console.log('📤 Uploading video to S3...')
+                          const uploadRes = await fetch(resData.uploadUrl, {
+                            method: 'PUT',
+                            body: blob,
+                            headers: {
+                              'Content-Type': 'video/webm',
+                            },
+                          })
+
+                          if (!uploadRes.ok) {
+                            throw new Error(`S3 upload failed with status: ${uploadRes.status}`)
+                          }
+                          console.log('✅ Video uploaded to S3 successfully')
+                        }
+                        // 로딩 페이지 이동 (S3 key와 세션 정보 전달)
+                        navigate('/analysis-loading', {
+                          state: {
+                            ...sessionData,
+                            presentationId,
+                            key: resData?.key,
+                          },
+                        })
                       }
                     } catch (err) {
                       console.error('❌ POST Request Failed:', err)
                     } finally {
                       setIsUploading(false)
-                      // 에러 여부에 상관없이 결과 페이지 이동 (백엔드 세션 식별용 아이디 전달)
-                      navigate('/result', {
-                        state: {
-                          ...sessionData,
-                          presentationId,
-                        },
-                      })
                     }
                   }}
                   className="mt-2 w-full cursor-pointer rounded-full bg-[#5650FF] px-6 py-2 text-center text-sm text-white transition-colors hover:bg-[#4540CC] disabled:bg-[#ACA9FE] md:w-auto md:text-base"

@@ -1,12 +1,44 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import AnalysisResult from './components/AnalysisResult'
 import AnalysisResultDetail from './components/AnalysisResultDetail'
 import FeedbackBottomBar from './components/FeedbackBottomBar'
+import Nav from '@/components/Nav/Nav'
 import { downloadFullPDF, downloadBasicPDF } from '../../utils/pdfDownload'
+
+import { useLocation, useNavigate } from 'react-router-dom'
+import api from '@/api/fetchClient'
 
 export default function FeedbackResult() {
   const [showDetail, setShowDetail] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
+  const [analysisData, setAnalysisData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  const location = useLocation()
+  const navigate = useNavigate()
+  const presentationId = location.state?.presentationId
+
+  useEffect(() => {
+    if (!presentationId) {
+      console.error('No presentationId provided')
+      // navigate('/home') // 임시 주석 처리 (테스트를 위해)
+      // return
+    }
+
+    const fetchResult = async () => {
+      try {
+        setLoading(true)
+        const res = await api.get(`/analyze/getResult?presentationId=${presentationId}`)
+        setAnalysisData(res)
+      } catch (err) {
+        console.error('Failed to fetch analysis result:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchResult()
+  }, [presentationId])
 
   const handleBottomButton = () => {
     if (showDetail) {
@@ -39,19 +71,31 @@ export default function FeedbackResult() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F7F7F8]">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#5650FF] border-t-transparent"></div>
+          <p className="mt-4 font-medium text-gray-500">결과를 불러오는 중입니다...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="relative">
+    <div className="relative min-h-screen bg-[#F7F7F8] pt-[80px]">
+      <Nav />
       {/* 전체 콘텐츠를 감싸는 div */}
       <div id="full-analysis-content">
         {/* 기본 분석 결과 */}
         <div id="basic-analysis-content" className="animate-[fadeIn_0.6s_ease-out]">
-          <AnalysisResult />
+          <AnalysisResult data={analysisData} />
         </div>
 
         {/* 세부 분석 결과 */}
         {showDetail && (
           <div className="animate-[slideUp_0.8s_ease-out]">
-            <AnalysisResultDetail />
+            <AnalysisResultDetail data={analysisData} />
           </div>
         )}
       </div>

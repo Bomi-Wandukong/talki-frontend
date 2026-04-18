@@ -53,12 +53,22 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
     const processorRef = useRef<ScriptProcessorNode | null>(null)
 
     const stopRecording = (): Promise<Blob> => {
+      console.log('⏹️ stopRecording called, current state:', mediaRecorderRef.current?.state)
       return new Promise((resolve, reject) => {
         if (!mediaRecorderRef.current) {
           return reject(new Error('MediaRecorder is not initialized'))
         }
+
+        // 만약 이미 inactive 상태라면, 현재까지 쌓인 청크로 블롭을 만들어 반환합니다.
         if (mediaRecorderRef.current.state === 'inactive') {
-          return reject(new Error('MediaRecorder is inactive'))
+          console.warn('⚠️ MediaRecorder is already inactive. Returning existing chunks.')
+          if (recordedChunksRef.current.length > 0) {
+            const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' })
+            recordedChunksRef.current = []
+            return resolve(blob)
+          } else {
+            return reject(new Error('MediaRecorder is inactive and no data was recorded.'))
+          }
         }
 
         mediaRecorderRef.current.onstop = () => {
@@ -201,15 +211,36 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
       }
 
       function startRecording(stream: MediaStream) {
-        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' })
+        try {
+          const options = { mimeType: 'video/webm' }
+          // 브라우저 지원 여부 확인 (최소한의 안전장치)
+          if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+            console.warn(`⚠️ ${options.mimeType} is not supported, falling back to default.`)
+            delete (options as any).mimeType
+          }
 
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) recordedChunksRef.current.push(event.data)
+          const mediaRecorder = new MediaRecorder(stream, options)
+
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              recordedChunksRef.current.push(event.data)
+            }
+          }
+
+          mediaRecorder.onerror = (event) => {
+            console.error('❌ MediaRecorder Error:', (event as any).error)
+          }
+
+          mediaRecorder.onstart = () => {
+            console.log('🎥 MediaRecorder started, state:', mediaRecorder.state)
+          }
+
+          mediaRecorder.start(1000) // 1초마다 데이터 조각 획득 (안정성 강화)
+          mediaRecorderRef.current = mediaRecorder
+          console.log('🎥 Recording initialization requested')
+        } catch (err) {
+          console.error('❌ Failed to start MediaRecorder:', err)
         }
-
-        mediaRecorder.start()
-        mediaRecorderRef.current = mediaRecorder
-        console.log('🎥 Recording started')
       }
 
       function startMediapipe() {
@@ -354,19 +385,25 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
 
       return () => {
         isCleanup = true
-        console.log('🧹 cleaning up...')
+        console.log('🧹 cleaning up LiveFeedbackTracker effect...')
 
         cameraRef.current?.stop()
-        streamRef.current?.getTracks().forEach((track) => track.stop())
+        streamRef.current?.getTracks().forEach((track) => {
+          console.log(`🛑 Stopping track: ${track.kind}`)
+          track.stop()
+        })
+        
         if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          console.log('⏹️ Stopping MediaRecorder during cleanup')
           mediaRecorderRef.current.stop()
         }
+        
         if (processorRef.current) {
           processorRef.current.disconnect()
           processorRef.current = null
         }
         if (audioContextRef.current) {
-          audioContextRef.current.close()
+          audioContextRef.current.close().catch(err => console.error('Error closing AudioContext', err))
           audioContextRef.current = null
         }
         if (wsRef.current) {

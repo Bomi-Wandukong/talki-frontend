@@ -40,10 +40,10 @@ const LinearProgressBar: React.FC<LinearProgressBarProps> = ({ label, score, max
   return (
     <div className="fontRegular flex w-full items-center gap-4">
       {/* Label */}
-      <span className="mr-[13%] text-[15px]">{label}</span>
+      <span className="mr-[10%] text-[13px]">{label}</span>
 
       {/* Progress Bar */}
-      <div className="h-4 flex-1 overflow-hidden rounded-full bg-[#E5E7EB]">
+      <div className="h-3 flex-1 overflow-hidden rounded-full bg-[#E5E7EB]">
         <div
           className="h-full rounded-full transition-all duration-300 ease-out"
           style={{
@@ -54,8 +54,8 @@ const LinearProgressBar: React.FC<LinearProgressBarProps> = ({ label, score, max
       </div>
 
       {/* Score */}
-      <span className="fontRegular text-center text-[15px] text-[#3B3B3B]">
-        <span className="fontBold text-[20px] text-[#5650FF]">{animatedScore}</span>/{maxScore}
+      <span className="fontRegular text-center text-[13px] text-[#3B3B3B]">
+        <span className="fontBold text-[16px] text-[#5650FF]">{animatedScore}</span>/{maxScore}
       </span>
     </div>
   )
