@@ -7,8 +7,8 @@ interface LeftPanelProps {
   practicedDates: Date[]
   rightView: 'calendar' | 'dashboard'
   onArrowClick: () => void
-  userName?: string
-  mindSetting?: string
+  userName?: string | null
+  mindSetting?: string | null
   recentReport?: {
     dateTime: string
     totalScore: number
@@ -59,7 +59,7 @@ const LeftPanel = ({
     <div className="flex h-full flex-col px-[4vw] py-10 lg:justify-center lg:py-0">
       <div className="mb-[4vh] lg:mb-[6vh]">
         <h1 className="mb-1 text-lg font-bold text-[#5650FF] lg:text-[1.6rem]">
-          <span className="text-[#FF9500]">{userName}</span>님, 반가워요!
+          <span className="text-[#FF9500]">{userName || '사용자'}</span>님, 반가워요!
         </h1>
         <p className="text-xs text-[#ACA9FE] lg:text-base">
           작은 시작이라도 괜찮아요. 토키가 함께 할게요!
@@ -183,7 +183,7 @@ const LeftPanel = ({
       <div className="mt-8 grid grid-cols-2 gap-3 lg:hidden">
         {/* 실전 Card (mobile) */}
         <div
-          className="relative overflow-hidden rounded-2xl p-5 cursor-pointer"
+          className="relative cursor-pointer overflow-hidden rounded-2xl p-5"
           style={{
             background: 'linear-gradient(135deg, #A9A4D8 0%, #8E88C4 100%)',
             minHeight: '140px',
@@ -200,14 +200,14 @@ const LeftPanel = ({
             <img
               src={IMAGES.home.real}
               alt="실전"
-              className="h-12 w-12 object-contain opacity-40 pointer-events-none"
+              className="pointer-events-none h-12 w-12 object-contain opacity-40"
             />
           </div>
         </div>
 
         {/* 연습 Card (mobile) */}
         <div
-          className="relative overflow-hidden rounded-2xl bg-white p-5 cursor-pointer"
+          className="relative cursor-pointer overflow-hidden rounded-2xl bg-white p-5"
           style={{ minHeight: '140px', border: '1px solid #F0F0F5' }}
           onClick={() => alert('연습 기능은 PC 환경에서 진행해주세요.')}
         >
@@ -223,7 +223,7 @@ const LeftPanel = ({
             <img
               src={IMAGES.home.practice}
               alt="연습"
-              className="h-12 w-12 object-contain opacity-40 pointer-events-none"
+              className="pointer-events-none h-12 w-12 object-contain opacity-40"
             />
           </div>
         </div>
