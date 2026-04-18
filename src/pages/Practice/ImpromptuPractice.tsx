@@ -103,11 +103,11 @@ const ImpromptuPractice = () => {
   }
 
   const handleNext = () => {
-    alert('다음 단계로 이동합니다.')
+    navigate('/practice/keyword')
   }
 
   const handlePrev = () => {
-    alert('이전 단계로 이동합니다.')
+    navigate(-1)
   }
 
   const currentQuestion = questions.find((q) => q.id === selectedNum)?.text || ''

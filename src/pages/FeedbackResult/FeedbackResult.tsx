@@ -1,12 +1,61 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import AnalysisResult from './components/AnalysisResult'
 import AnalysisResultDetail from './components/AnalysisResultDetail'
 import FeedbackBottomBar from './components/FeedbackBottomBar'
+import Nav from '@/components/Nav/Nav'
 import { downloadFullPDF, downloadBasicPDF } from '../../utils/pdfDownload'
+
+import { useLocation, useNavigate } from 'react-router-dom'
+import api from '@/api/fetchClient'
 
 export default function FeedbackResult() {
   const [showDetail, setShowDetail] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
+  const [analysisData, setAnalysisData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  const location = useLocation()
+  const navigate = useNavigate()
+  const presentationId = location.state?.presentationId
+
+  useEffect(() => {
+    if (!presentationId) {
+      console.error('No presentationId provided')
+      setLoading(false)
+      navigate('/home')
+      return
+    }
+
+    const fetchResult = async (retryCount = 0) => {
+      try {
+        setLoading(true)
+        const res = await api.get(
+          `/analyze/getResult?presentationId=${encodeURIComponent(presentationId)}`
+        )
+
+        // 데이터가 구체적으로 비어있거나 분석 결과의 핵심 수치(예: totalScore)가 없는 경우
+        if (!res || res.totalScore === undefined) {
+          if (retryCount < 3) {
+            console.log(`Analysis data not ready, retrying... (${retryCount + 1}/3)`)
+            setTimeout(() => fetchResult(retryCount + 1), 3000)
+            return
+          }
+        }
+
+        setAnalysisData(res)
+      } catch (err) {
+        console.error('Failed to fetch analysis result:', err)
+        if (retryCount < 3) {
+          setTimeout(() => fetchResult(retryCount + 1), 3000)
+          return
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchResult()
+  }, [presentationId, navigate])
 
   const handleBottomButton = () => {
     if (showDetail) {
@@ -39,19 +88,49 @@ export default function FeedbackResult() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F7F7F8]">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#5650FF] border-t-transparent"></div>
+          <p className="mt-4 font-medium text-gray-500">결과를 불러오는 중입니다...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!analysisData) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[#F7F7F8] px-6 text-center">
+        <Nav />
+        <p className="text-[20px] font-bold text-gray-800">결과를 불러올 수 없습니다.</p>
+        <p className="mt-2 text-[15px] text-gray-500">
+          분석이 아직 진행 중이거나 오류가 발생했을 수 있습니다.
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-8 rounded-xl bg-[#5650FF] px-8 py-3 font-bold text-white transition-all hover:bg-[#4540CC]"
+        >
+          다시 시도하기
+        </button>
+      </div>
+    )
+  }
+
   return (
-    <div className="relative">
+    <div className="relative min-h-screen bg-[#F7F7F8] pt-[80px]">
+      <Nav />
       {/* 전체 콘텐츠를 감싸는 div */}
       <div id="full-analysis-content">
         {/* 기본 분석 결과 */}
         <div id="basic-analysis-content" className="animate-[fadeIn_0.6s_ease-out]">
-          <AnalysisResult />
+          <AnalysisResult data={analysisData} />
         </div>
 
         {/* 세부 분석 결과 */}
         {showDetail && (
           <div className="animate-[slideUp_0.8s_ease-out]">
-            <AnalysisResultDetail />
+            <AnalysisResultDetail data={analysisData} />
           </div>
         )}
       </div>

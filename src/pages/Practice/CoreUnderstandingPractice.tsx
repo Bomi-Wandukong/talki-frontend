@@ -107,7 +107,7 @@ const CoreUnderstandingPractice = () => {
   }, [step, prepTimeLeft, recordTimeLeft])
 
   const handlePrev = () => navigate('/practice/keyword')
-  const handleNext = () => {} // 다음 단계 정의 시 추가
+  const handleNext = () => navigate('/practice/feelresult')
 
   return (
     <div className="h-screen w-full overflow-hidden bg-[#FAFBFC] pt-[64px]">

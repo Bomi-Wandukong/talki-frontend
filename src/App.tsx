@@ -21,6 +21,7 @@ import PracticeSelect from './pages/Practice/PracticeStart/PracticeSelect'
 import PracticeScript from './pages/Practice/PracticeScript/PracticeScript'
 import EyeContactPractice from './pages/Practice/PracticeScript/EyeContactPractice'
 import PracticeFeel from './pages/Practice/PracticeResult/PracticeFeel'
+import AnalysisLoading from '@/pages/AnalysisLoading/AnalysisLoading'
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
           <Route element={<MainLayout />}>
             <Route path="/home" element={<Home />} />
             <Route path="/live" element={<LiveFeedback />} />
+            <Route path="/analysis-loading" element={<AnalysisLoading />} />
             <Route path="/result" element={<FeedbackResult />} />
 
             {/* 실전 루트 */}

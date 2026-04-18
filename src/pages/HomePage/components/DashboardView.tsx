@@ -1,7 +1,10 @@
 import GrowthGraph from './GrowthGraph'
 import { IMAGES } from '@/utils/images'
+import { useNavigate } from 'react-router-dom'
 
 const DashboardView = () => {
+  const navigate = useNavigate()
+
   return (
     <div className="flex flex-col gap-[4vh] lg:h-full">
       {/* 실전 / 연습 Cards — desktop only */}
@@ -13,6 +16,7 @@ const DashboardView = () => {
             background: 'linear-gradient(135deg, #7C72F5 0%, #5E55E6 100%)',
             minHeight: '176px',
           }}
+          onClick={() => navigate('/actual/tutorial')}
         >
           <div className="relative z-10 max-w-[55%]">
             <h3 className="mb-2 text-xl font-bold text-white">실전</h3>
@@ -35,6 +39,7 @@ const DashboardView = () => {
         <div
           className="relative cursor-pointer overflow-hidden rounded-3xl bg-white px-7 py-5 transition-all hover:shadow-xl"
           style={{ minHeight: '176px' }}
+          onClick={() => navigate('/practice/tutorial')}
         >
           <div className="relative z-10 max-w-[55%]">
             <h3 className="mb-2 text-xl font-bold" style={{ color: '#1A1A2E' }}>

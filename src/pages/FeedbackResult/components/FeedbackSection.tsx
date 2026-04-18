@@ -22,11 +22,11 @@ export default function FeedbackSection({
     <div
       ref={innerRef}
       data-index={dataIndex}
-      className={`mt-10 w-full rounded-2xl border border-[#D7D6F1] bg-white px-4 pb-14 pt-10 transition-all duration-700 md:px-8 ${
+      className={`mt-8 w-full rounded-2xl border border-[#D7D6F1] bg-white px-4 pb-10 pt-8 transition-all duration-700 md:px-6 ${
         isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
       }`}
     >
-      <p className="fontBold text-[20px]">
+      <p className="fontBold text-[17px]">
         <span className="text-[#5650FF]">{highlightText}</span> {title}
       </p>
       {children}

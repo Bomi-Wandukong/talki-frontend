@@ -42,8 +42,8 @@ const CircleProgress: React.FC<CircleProgressProps> = ({ label, score, maxScore 
     return () => clearInterval(timer)
   }, [score, maxScore])
 
-  const radius = 60
-  const strokeWidth = 18
+  const radius = 50
+  const strokeWidth = 14
   const normalizedRadius = radius - strokeWidth / 2
   const circumference = normalizedRadius * 2 * Math.PI
   const strokeDashoffset = -(circumference - (animatedPercentage / 100) * circumference)
@@ -81,9 +81,9 @@ const CircleProgress: React.FC<CircleProgressProps> = ({ label, score, maxScore 
       </div>
 
       {/* Label and score */}
-      <div className="fontRegular mt-5 text-center text-[15px] text-[#3B3B3B]">
+      <div className="fontRegular mt-4 text-center text-[13px] text-[#3B3B3B]">
         <span>{label}</span>
-        <span className="fontBold ml-2 text-[20px] text-[#5650FF]">{animatedScore}</span>
+        <span className="fontBold ml-2 text-[16px] text-[#5650FF]">{animatedScore}</span>
         <span>/{maxScore}</span>
       </div>
     </div>
