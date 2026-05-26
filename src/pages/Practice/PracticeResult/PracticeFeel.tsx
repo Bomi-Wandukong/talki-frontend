@@ -12,9 +12,24 @@ const options = [
   { id: 'much-harder', emoji: '😰', label: '예상보다 훨씬 어려웠어요.' },
 ]
 
+const PREV_ROUTE: Record<string, string> = {
+  script: '/practice/eyecontact',
+  impromptu: '/practice/core',
+}
+
 const PracticeFeel = () => {
   const navigate = useNavigate()
-  const [selected, setSelected] = useState<string | null>(null)
+  const [selected, setSelected] = useState<string | null>(
+    () => localStorage.getItem('practiceFeelSelected'),
+  )
+
+  const handleSelect = (id: string) => {
+    setSelected(id)
+    localStorage.setItem('practiceFeelSelected', id)
+  }
+
+  const practiceType = localStorage.getItem('practiceType') ?? 'script'
+  const prevRoute = PREV_ROUTE[practiceType] ?? '/practice/eyecontact'
 
   const canGoNext = !!selected
 
@@ -25,9 +40,8 @@ const PracticeFeel = () => {
         currentStepIndex={4}
         canGoPrev={true}
         canGoNext={canGoNext}
-        onPrev={() => navigate('/practice/tutorial')}
+        onPrev={() => navigate(prevRoute)}
         onNext={() => navigate('/practice/mind')}
-        //뭘 선택했냐에 따라 다른 뒤로(이전 연습 프로그램)으로 이동해야함. 이후에 수정 예정
         coachBubble={
           <CoachBubble>
             <div>
@@ -74,7 +88,7 @@ const PracticeFeel = () => {
               <div key={option.id} className="flex flex-col">
                 {/* 카드 */}
                 <div
-                  onClick={() => setSelected(option.id)}
+                  onClick={() => handleSelect(option.id)}
                   className={`cursor-pointer rounded-xl border p-4 transition-all ${
                     isSelected
                       ? 'border-[#5650FF] bg-[#EEF0FF]'

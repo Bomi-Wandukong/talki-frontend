@@ -10,6 +10,13 @@ import api from '@/api/fetchClient'
 
 const TUTORIAL_HIDE_KEY = 'hideLiveTutorial'
 
+const PRESENTATION_VIDEO: Record<string, string> = {
+  '화상 발표': './video/video_meeting.mp4',
+  '강당 발표': './video/small_auditorium_presentation.mp4',
+  '소규모 발표': './video/LivePeople.mp4',
+  '강의실 발표': './video/classroom_presentation.mp4',
+}
+
 export default function LiveFeedback() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -95,7 +102,7 @@ export default function LiveFeedback() {
         }}
       />
 
-      <div className="relative min-h-screen w-full overflow-hidden">
+      <div className="relative min-h-screen w-full overflow-hidden bg-black">
         {/* 튜토리얼 */}
         {showTutorial && (
           <TutorialModal
@@ -112,12 +119,12 @@ export default function LiveFeedback() {
         {/* 배경 비디오 */}
         <video
           ref={videoRef}
-          src="./video/LivePeople.mp4"
+          src={PRESENTATION_VIDEO[sessionData?.originalType ?? ''] ?? './video/LivePeople.mp4'}
           autoPlay
           loop
           muted
           playsInline
-          className="absolute left-0 top-0 h-full w-full object-cover"
+          className={`absolute left-0 top-0 h-full w-full ${sessionData?.originalType === '화상 발표' ? 'object-contain' : 'object-cover'}`}
         />
 
         {/* 비디오 위 콘텐츠 */}
