@@ -24,6 +24,7 @@ import PracticeFeel from './pages/Practice/PracticeResult/PracticeFeel'
 import AnalysisLoading from '@/pages/AnalysisLoading/AnalysisLoading'
 import PracticeMind from './pages/Practice/PracticeResult/PracticeMind'
 import PracticeResult from './pages/Practice/PracticeResult/PracticeResult'
+import ActualGuard from '@/components/ActualGuard/ActualGuard'
 
 function App() {
   return (
@@ -43,13 +44,13 @@ function App() {
             <Route path="/result" element={<FeedbackResult />} />
 
             {/* 실전 루트 */}
-            <Route path="/actual">
+            <Route path="/actual" element={<ActualGuard />}>
               <Route path="tutorial" element={<Tutorial />} />
               <Route path="guideline" element={<GuideLine />} />
               <Route path="category" element={<Category />} />
             </Route>
 
-            <Route path="/practice">
+            <Route path="/practice" element={<ActualGuard />}>
               <Route path="impromptu" element={<ImpromptuPractice />} />
               <Route path="keyword" element={<KeywordPractice />} />
               <Route path="core" element={<CoreUnderstandingPractice />} />

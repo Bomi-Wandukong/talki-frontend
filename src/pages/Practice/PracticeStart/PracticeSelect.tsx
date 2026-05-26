@@ -27,8 +27,13 @@ const PracticeSelect = () => {
   const [selected, setSelected] = useState<PracticeType | null>(null)
 
   const handleNext = () => {
-    if (selected === 'script') navigate('/practice/script')
-    else if (selected === 'impromptu') navigate('/practice/impromptu')
+    if (selected === 'script') {
+      localStorage.setItem('practiceType', 'script')
+      navigate('/practice/script')
+    } else if (selected === 'impromptu') {
+      localStorage.setItem('practiceType', 'impromptu')
+      navigate('/practice/impromptu')
+    }
   }
 
   return (

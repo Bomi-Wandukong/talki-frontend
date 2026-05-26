@@ -52,4 +52,8 @@ export const IMAGES = {
   PT2 : '/img/PracticeTutorial/PT2.png',
   PT3 : '/img/PracticeTutorial/PT3.png',
   PT4 : '/img/PracticeTutorial/PT4.png',
+  PracticeGuide1 : '/img/PracticeTutorial/PracticeGuide1.png',
+  PracticeGuide2 : '/img/PracticeTutorial/PracticeGuide2.png',
+  PracticeGuide3 : '/img/PracticeTutorial/PracticeGuide3.png',
+  PracticeGuide4 : '/img/PracticeTutorial/PracticeGuide4.png',
 } as const
