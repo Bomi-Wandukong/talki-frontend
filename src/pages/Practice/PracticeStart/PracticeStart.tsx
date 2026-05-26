@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Nav from '@/components/Nav/Nav'
 import PracticeLayout from '@/components/Practice/PracticeLayout'
 import CoachBubble from '@/components/Practice/CoachBubble'
+import PracticeGuideModal, { HIDE_KEY } from './PracticeGuideModal'
 
 const THOUGHTS = [
   '사람들이 내가 긴장한 것을 알아챌 것이다.',
@@ -15,6 +16,7 @@ const THOUGHTS = [
 
 const PracticeStart = () => {
   const navigate = useNavigate()
+  const [showGuide, setShowGuide] = useState(() => localStorage.getItem(HIDE_KEY) !== 'true')
   const [selected, setSelected] = useState<string | null>(null)
   const [customText, setCustomText] = useState('')
   const [isCustom, setIsCustom] = useState(false)
@@ -43,6 +45,7 @@ const PracticeStart = () => {
 
   return (
     <div className="h-screen w-full overflow-hidden bg-[#FAFBFC] pt-[64px]">
+      {showGuide && <PracticeGuideModal onClose={() => setShowGuide(false)} />}
       <Nav />
       <PracticeLayout
         currentStepIndex={0}
@@ -82,10 +85,10 @@ const PracticeStart = () => {
               <button
                 key={thought}
                 onClick={() => handleSelect(thought)}
-                className={`flex items-center gap-3 rounded-2xl bg-white px-5 py-5 text-left text-[15px] text-[#3B3B3B] drop-shadow-[0_2px_4px_rgba(0,0,0,0.05)] transition-all ${
+                className={`flex items-center gap-3 rounded-2xl px-5 py-5 text-left text-[15px] text-[#3B3B3B] drop-shadow-[0_2px_4px_rgba(0,0,0,0.05)] transition-all ${
                   isActive
                     ? 'bg-[#e7e7ff] ring-2 ring-[#5650FF]'
-                    : 'hover:ring-1 hover:ring-[#5650FF]/40'
+                    : 'bg-white hover:ring-1 hover:ring-[#5650FF]/40'
                 }`}
               >
                 <span

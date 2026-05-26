@@ -25,7 +25,7 @@ const PracticeMind = () => {
           currentStepIndex={5}
           canGoPrev={true}
           canGoNext={canGoNext}
-          onPrev={() => navigate('/practice/PracticeFeel')}
+          onPrev={() => navigate('/practice/feelresult')}
           onNext={() => navigate('/practice/complete')}
         >
           {/* 타이틀 */}
@@ -51,8 +51,8 @@ const PracticeMind = () => {
               <button
                 key={option}
                 onClick={() => setSelected(option)}
-                className={`flex w-full items-center gap-4 rounded-2xl bg-white px-6 py-5 text-left shadow-sm transition-all ${
-                  selected === option ? 'ring-2 ring-[#5650FF] bg-[#EDECFF]' : 'ring-1 ring-gray-100'
+                className={`flex w-full items-center gap-4 rounded-2xl px-6 py-5 text-left shadow-sm transition-all ${
+                  selected === option ? 'bg-[#EDECFF] ring-2 ring-[#5650FF]' : 'bg-white ring-1 ring-gray-100'
                 }`}
               >
                 <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
@@ -69,8 +69,8 @@ const PracticeMind = () => {
             {/* 직접 입력 */}
             <button
               onClick={() => setSelected('custom')}
-              className={`flex w-full items-center gap-4 rounded-2xl bg-white px-6 py-5 text-left shadow-sm transition-all ${
-                isCustom ? 'ring-2 ring-[#5650FF] bg-[#EDECFF]' : 'ring-1 ring-gray-100'
+              className={`flex w-full items-center gap-4 rounded-2xl px-6 py-5 text-left shadow-sm transition-all ${
+                isCustom ? 'bg-[#EDECFF] ring-2 ring-[#5650FF]' : 'bg-white ring-1 ring-gray-100'
               }`}
             >
               <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${

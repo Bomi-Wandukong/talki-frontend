@@ -48,7 +48,7 @@ const Category = () => {
 
       <div className="mx-auto flex w-[75%] flex-col items-center pt-20">
         <div className="mb-10 w-full">
-          <h1 className="text-[24px] font-bold text-[#3B3B3B]">
+          <h1 className="text-[24px] fontSB text-[#3B3B3B]">
             어떤 <span className="text-[#5650FF]">실전</span>을 준비하고 있나요?
           </h1>
           <p className="mt-2 text-[15px] text-[#716FA4]">
