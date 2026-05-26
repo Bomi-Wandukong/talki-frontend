@@ -13,6 +13,7 @@ export interface LiveFeedbackTrackerProps {
   presentationType?: string
   isLiveFeedbackOn?: boolean
   isEmergencyOn?: boolean
+  canRecord?: boolean
   onFeedbackReceived?: (msg: string) => void
   onSessionStart?: (presentationId: string) => void
 }
@@ -23,6 +24,7 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
       presentationType,
       isLiveFeedbackOn = false,
       isEmergencyOn = false,
+      canRecord = true,
       onFeedbackReceived,
       onSessionStart,
     },
@@ -41,6 +43,7 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
     const toggleStatesRef = useRef({ isLiveFeedbackOn, isEmergencyOn })
     const onFeedbackReceivedRef = useRef(onFeedbackReceived)
     const onSessionStartRef = useRef(onSessionStart)
+    const canRecordRef = useRef(canRecord)
 
     useEffect(() => {
       toggleStatesRef.current = { isLiveFeedbackOn, isEmergencyOn }
@@ -48,9 +51,48 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
       onSessionStartRef.current = onSessionStart
     }, [isLiveFeedbackOn, isEmergencyOn, onFeedbackReceived, onSessionStart])
 
+    useEffect(() => {
+      canRecordRef.current = canRecord
+      if (canRecord && streamRef.current && !mediaRecorderRef.current) {
+        startRecordingFromStream(streamRef.current)
+      }
+    }, [canRecord])
+
     const wsRef = useRef<WebSocket | null>(null)
     const audioContextRef = useRef<AudioContext | null>(null)
     const processorRef = useRef<ScriptProcessorNode | null>(null)
+
+    function startRecordingFromStream(stream: MediaStream) {
+      try {
+        const options = { mimeType: 'video/mp4' }
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+          console.warn(`⚠️ ${options.mimeType} is not supported, falling back to default.`)
+          delete (options as any).mimeType
+        }
+
+        const mediaRecorder = new MediaRecorder(stream, options)
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            recordedChunksRef.current.push(event.data)
+          }
+        }
+
+        mediaRecorder.onerror = (event) => {
+          console.error('❌ MediaRecorder Error:', (event as any).error)
+        }
+
+        mediaRecorder.onstart = () => {
+          console.log('🎥 MediaRecorder started, state:', mediaRecorder.state)
+        }
+
+        mediaRecorder.start(1000)
+        mediaRecorderRef.current = mediaRecorder
+        console.log('🎥 Recording initialization requested')
+      } catch (err) {
+        console.error('❌ Failed to start MediaRecorder:', err)
+      }
+    }
 
     const stopRecording = (): Promise<Blob> => {
       console.log('⏹️ stopRecording called, current state:', mediaRecorderRef.current?.state)
@@ -206,39 +248,6 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
         processorRef.current = processor
       }
 
-      function startRecording(stream: MediaStream) {
-        try {
-          const options = { mimeType: 'video/mp4' }
-          // 브라우저 지원 여부 확인 (최소한의 안전장치)
-          if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-            console.warn(`⚠️ ${options.mimeType} is not supported, falling back to default.`)
-            delete (options as any).mimeType
-          }
-
-          const mediaRecorder = new MediaRecorder(stream, options)
-
-          mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-              recordedChunksRef.current.push(event.data)
-            }
-          }
-
-          mediaRecorder.onerror = (event) => {
-            console.error('❌ MediaRecorder Error:', (event as any).error)
-          }
-
-          mediaRecorder.onstart = () => {
-            console.log('🎥 MediaRecorder started, state:', mediaRecorder.state)
-          }
-
-          mediaRecorder.start(1000) // 1초마다 데이터 조각 획득 (안정성 강화)
-          mediaRecorderRef.current = mediaRecorder
-          console.log('🎥 Recording initialization requested')
-        } catch (err) {
-          console.error('❌ Failed to start MediaRecorder:', err)
-        }
-      }
-
       function startMediapipe() {
         faceMesh.setOptions({
           maxNumFaces: 1,
@@ -323,7 +332,9 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
             wsRef.current = ws
           }
 
-          startRecording(stream)
+          if (canRecordRef.current) {
+            startRecordingFromStream(stream)
+          }
           startMediapipe()
         } catch (err) {
           console.error('❌ Camera permission denied!', err)

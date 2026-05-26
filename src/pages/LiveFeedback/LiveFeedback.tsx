@@ -81,6 +81,7 @@ export default function LiveFeedback() {
         presentationType={sessionData?.presentationType}
         isLiveFeedbackOn={isLiveFeedbackOn}
         isEmergencyOn={isEmergencyOn}
+        canRecord={!showCountdown}
         onFeedbackReceived={(msg) => {
           if (isLiveFeedbackOn && msg) {
             const formattedMsg = msg
