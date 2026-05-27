@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import AnalysisResult from './components/AnalysisResult'
 import AnalysisResultDetail from './components/AnalysisResultDetail'
 import FeedbackBottomBar from './components/FeedbackBottomBar'
+import PremiumModal from './components/PremiumModal'
 import Nav from '@/components/Nav/Nav'
 import { downloadFullPDF, downloadBasicPDF } from '../../utils/pdfDownload'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -12,6 +13,8 @@ export default function FeedbackResult() {
   const [isDownloading, setIsDownloading] = useState(false)
   const [analysisData, setAnalysisData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [userType, setUserType] = useState<'BASIC' | 'PREMIUM' | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const location = useLocation()
   const navigate = useNavigate()
@@ -23,6 +26,20 @@ export default function FeedbackResult() {
       sessionStorage.setItem('presentationId', presentationId)
     }
   }, [presentationId])
+
+  // 마운트 시 유저 타입 조회
+  useEffect(() => {
+    const fetchUserType = async () => {
+      try {
+        const profile = await api.get('/profile/get')
+        setUserType(profile?.userType ?? 'BASIC')
+      } catch (err) {
+        console.error('유저 타입 조회 실패:', err)
+        setUserType('BASIC')
+      }
+    }
+    fetchUserType()
+  }, [])
 
   useEffect(() => {
     if (!presentationId) {
@@ -128,7 +145,23 @@ export default function FeedbackResult() {
     if (showDetail) {
       window.location.href = '/'
     } else {
+      // userType이 PREMIUM이면 바로 세부 분석 표시, BASIC이면 모달 열기
+      if (userType === 'PREMIUM') {
+        setShowDetail(true)
+      } else {
+        setIsModalOpen(true)
+      }
+    }
+  }
+
+  const handleStartFreeTrial = async () => {
+    try {
+      await api.put('/profile/type/update?type=PREMIUM')
+      setUserType('PREMIUM')
+      setIsModalOpen(false)
       setShowDetail(true)
+    } catch (err) {
+      console.error('유저 타입 변경 실패:', err)
     }
   }
 
@@ -198,6 +231,12 @@ export default function FeedbackResult() {
         onClick={handleBottomButton}
         onDownloadPDF={handleDownloadPDF}
       />
+      {isModalOpen && (
+        <PremiumModal
+          onClose={() => setIsModalOpen(false)}
+          onStartFreeTrial={handleStartFreeTrial}
+        />
+      )}
       {isDownloading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="rounded-xl bg-white p-8">

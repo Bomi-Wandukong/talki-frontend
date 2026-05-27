@@ -101,10 +101,10 @@ export default function VideoPlayerWithPoints({
       </div>
 
       {/* 강점 포인트 */}
-      <div className="mt-8">
+      {/* <div className="mt-8">
         <p className="fontBold text-[16px] text-[#5650FF]">강점 포인트</p>
         <PointList points={paramPoints.strengths} onSeek={seekToTime} />
-      </div>
+      </div> */}
 
       {/* 개선 포인트 */}
       <div className="mt-12">

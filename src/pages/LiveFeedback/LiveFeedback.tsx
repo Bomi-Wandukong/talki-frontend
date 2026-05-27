@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import LiveFeedbackTracker from './components/LiveFeedbackTracker'
 import type { LiveFeedbackTrackerRef } from './components/LiveFeedbackTracker'
 import CountdownOverlay from './components/CountdownOverlay'
@@ -42,7 +42,6 @@ export default function LiveFeedback() {
   const [isLiveFeedbackOn, setIsLiveFeedbackOn] = useState(sessionData?.isRealtimeFeedback ?? false)
   const [isEmergencyOn, setIsEmergencyOn] = useState(sessionData?.isUnexpectedEvent ?? false)
 
-  const [isVoiceActive, setIsVoiceActive] = useState(false)
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null)
   const [presentationId, setPresentationId] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -81,6 +80,7 @@ export default function LiveFeedback() {
         presentationType={sessionData?.presentationType}
         isLiveFeedbackOn={isLiveFeedbackOn}
         isEmergencyOn={isEmergencyOn}
+        canRecord={!showCountdown}
         onFeedbackReceived={(msg) => {
           if (isLiveFeedbackOn && msg) {
             const formattedMsg = msg
@@ -145,8 +145,7 @@ export default function LiveFeedback() {
                 <VoiceWaveIndicator
                   size={112}
                   threshold={30} // 음성 감지 민감도 (낮을수록 민감)
-                  onVoiceDetected={(isDetected) => {
-                    // console.log('음성 감지:', isDetected)
+                  onVoiceDetected={() => {
                     // 필요한 로직 추가
                   }}
                   onError={(error) => {
@@ -280,7 +279,7 @@ export default function LiveFeedback() {
             </div>
 
             {/* 피드백 메시지 표시 (하단 중앙) */}
-            {feedbackMessage && (
+            {feedbackMessage && !showCountdown && (
               <div className="absolute bottom-24 left-1/2 -translate-x-1/2 transform rounded-2xl bg-red-500/80 px-6 py-3 text-white shadow-lg backdrop-blur-md transition-all">
                 <p className="whitespace-pre-line text-center font-semibold">{feedbackMessage}</p>
               </div>
