@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import FeedbackSection from './FeedbackSection'
 import VideoPlayerWithPoints from './VideoPlayerWithPoints'
-import { IMAGES } from '@/utils/images'
+import TriangleChart from './TriangleChart'
 
 export default function AnalysisResultDetail({ data }: { data?: any }) {
   const [visibleSections, setVisibleSections] = useState<number[]>([])
@@ -201,13 +201,13 @@ export default function AnalysisResultDetail({ data }: { data?: any }) {
           }}
         >
           <div className="mt-11 flex flex-col gap-5 px-2 md:flex-row">
-            <p className="mt-6 flex-1 whitespace-pre-line pl-5 pr-10 text-[12px]">
+            <p className="mt-6 flex-1 whitespace-pre-line pl-5 pr-4 text-[12px]">
               {topicAnalysis}
             </p>
-            <img
-              src={IMAGES.graph}
-              className="mx-auto h-auto min-w-[240px] object-contain"
-              alt="내용 피드백 그래프"
+            <TriangleChart
+              gazeScore={data?.gazeScore ?? 0}
+              postureScore={data?.postureScore ?? 0}
+              topicScore={data?.topicScore ?? 0}
             />
           </div>
         </FeedbackSection>

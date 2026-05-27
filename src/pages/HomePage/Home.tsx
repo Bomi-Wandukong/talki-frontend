@@ -7,6 +7,7 @@ import DateDetailModal from './components/DateDetailModal'
 
 import { getPersonalHome } from '@/api/personal'
 import type { PersonalHomeResponse } from '@/api/personal'
+import api from '@/api/fetchClient'
 
 const Home = () => {
   const [today] = useState(new Date())
@@ -20,6 +21,19 @@ const Home = () => {
   const [homeData, setHomeData] = useState<PersonalHomeResponse | null>(null)
   const [practicedDates, setPracticedDates] = useState<Date[]>([])
   const [streak, setStreak] = useState(0)
+  const [userName, setUserName] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const data = await api.get('/profile/get')
+        setUserName(data.userName ?? data.userId ?? null)
+      } catch (err) {
+        console.error('Failed to fetch profile:', err)
+      }
+    }
+    fetchUserName()
+  }, [])
 
   useEffect(() => {
     const fetchHomeData = async () => {
@@ -83,7 +97,7 @@ const Home = () => {
             practicedDates={practicedDates}
             rightView={rightView}
             onArrowClick={toggleRightView}
-            userName={homeData?.userName}
+            userName={userName}
             mindSetting={homeData?.mindSetting}
             recentReport={homeData?.recentPresentationReport}
           />
