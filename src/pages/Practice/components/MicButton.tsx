@@ -1,19 +1,34 @@
 import React from 'react'
 export type PracticeStep = 'idle' | 'preparing' | 'recording' | 'finished'
 import { FaMicrophone, FaStop } from 'react-icons/fa'
+import type { SubStepPhase } from '@/hooks/usePracticeSubStep'
 
 interface MicButtonProps {
-  step: PracticeStep
+  step: PracticeStep | SubStepPhase
   onStart: () => void
   onStop: () => void
 }
 
 const MicButton: React.FC<MicButtonProps> = ({ step, onStart, onStop }) => {
-  if (step === 'finished') return null
+  // 'ready'(연결 완료·대기)는 기존 'idle'과 동일하게 표시한다.
+  if (step === 'finished' || step === 'error') return null
+
+  const isIdle = step === 'idle' || step === 'ready'
 
   return (
     <div className="flex min-w-[120px] flex-col items-center justify-center">
-      {step === 'idle' && (
+      {step === 'connecting' && (
+        <>
+          <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-[#C9C7FF] text-white shadow-md">
+            <FaMicrophone className="text-2xl" />
+          </div>
+          <span className="whitespace-nowrap text-xs font-medium text-[#9B99C7]">
+            준비하는 중...
+          </span>
+        </>
+      )}
+
+      {isIdle && (
         <>
           <button
             onClick={onStart}
@@ -58,6 +73,15 @@ const MicButton: React.FC<MicButtonProps> = ({ step, onStart, onStop }) => {
             <FaStop className="text-xl" />
           </button>
           <span className="whitespace-nowrap text-xs font-medium text-[#E04E50]">녹음 중...</span>
+        </>
+      )}
+
+      {step === 'analyzing' && (
+        <>
+          <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-[#5650FF] text-white shadow-md">
+            <span className="h-6 w-6 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+          </div>
+          <span className="whitespace-nowrap text-xs font-medium text-[#716FA4]">분석 중...</span>
         </>
       )}
     </div>

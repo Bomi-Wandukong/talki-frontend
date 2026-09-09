@@ -20,11 +20,11 @@ const CoreTextCard: React.FC<CoreTextCardProps> = ({ originalText, keywords }) =
         
         <div className="flex flex-col items-end gap-2">
           <span className="text-[11px] font-medium text-[#B2B2B2]">이 단어들을 포함시켜 답변해보세요. (참고용)</span>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap justify-end gap-3">
             {keywords.map((kw) => (
               <div
                 key={kw.id}
-                className={`flex h-[32px] min-w-[84px] items-center justify-center rounded-[8px] border transition-all ${
+                className={`flex h-[32px] min-w-[84px] shrink-0 items-center justify-center whitespace-nowrap rounded-[8px] border px-3.5 transition-all ${
                   kw.isUsed
                     ? 'border-[#5650FF] bg-[#EEECFF] text-[#5650FF]'
                     : 'border-[#D9D9D9] bg-white text-[#868686]'

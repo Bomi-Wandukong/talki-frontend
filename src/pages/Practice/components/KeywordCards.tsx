@@ -20,7 +20,7 @@ const KeywordCards: React.FC<KeywordCardsProps> = ({ keywords }) => {
         return (
           <div
             key={kw.id}
-            className={`relative flex min-h-[84px] items-center justify-center rounded-xl p-6 transition-all ${
+            className={`relative flex min-h-[84px] items-center justify-center rounded-xl px-16 py-6 transition-all ${
               isUsed
                 ? 'border border-[#5650FF] bg-[#EEECFF]'
                 : 'border border-transparent bg-white shadow-sm'
@@ -35,7 +35,7 @@ const KeywordCards: React.FC<KeywordCardsProps> = ({ keywords }) => {
             >
               {isUsed ? <FaCheck /> : index + 1}
             </div>
-            <span className={`text-[18px] text-[#3B3B3B]`}>{kw.text}</span>
+            <span className="break-keep text-center text-[18px] text-[#3B3B3B]">{kw.text}</span>
 
             {isUsed && (
               <span className="absolute bottom-3 right-5 text-[11px] font-bold text-[#5650FF]">

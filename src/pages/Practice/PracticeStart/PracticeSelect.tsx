@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Nav from '@/components/Nav/Nav'
 import PracticeLayout from '@/components/Practice/PracticeLayout'
+import { clearStoredSessionId } from '@/api/practice'
 
 type PracticeType = 'script' | 'impromptu'
 
@@ -32,6 +33,8 @@ const PracticeSelect = () => {
       navigate('/practice/script')
     } else if (selected === 'impromptu') {
       localStorage.setItem('practiceType', 'impromptu')
+      // 새 연습 회차이므로 이전 세션을 버리고 첫 하위단계에서 새로 발급받는다.
+      clearStoredSessionId()
       navigate('/practice/impromptu')
     }
   }
