@@ -1,12 +1,22 @@
-import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react'
+import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react'
 import { FaceMesh } from '@mediapipe/face_mesh'
 import type { Results as FaceMeshResults } from '@mediapipe/face_mesh'
 import { Pose } from '@mediapipe/pose'
 import type { Results as PoseResults } from '@mediapipe/pose'
 import { Camera } from '@mediapipe/camera_utils'
 
+/** FastAPI 가 STT 용 wav 를 16kHz mono 로 저장하므로 전송 샘플레이트를 맞춘다. */
+const TARGET_SAMPLE_RATE = 16000
+
 export interface LiveFeedbackTrackerRef {
   stopRecording: () => Promise<Blob>
+  disconnectWebSocket: () => void
+}
+
+export interface LiveFeedbackQuestionPayload {
+  question_id: string
+  question: string
+  time_limit: number
 }
 
 export interface LiveFeedbackTrackerProps {
@@ -15,6 +25,7 @@ export interface LiveFeedbackTrackerProps {
   isEmergencyOn?: boolean
   canRecord?: boolean
   onFeedbackReceived?: (msg: string) => void
+  onSurpriseQuestionReceived?: (question: LiveFeedbackQuestionPayload) => void
   onSessionStart?: (presentationId: string) => void
 }
 
@@ -26,6 +37,7 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
       isEmergencyOn = false,
       canRecord = true,
       onFeedbackReceived,
+      onSurpriseQuestionReceived,
       onSessionStart,
     },
     ref
@@ -42,25 +54,70 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
 
     const toggleStatesRef = useRef({ isLiveFeedbackOn, isEmergencyOn })
     const onFeedbackReceivedRef = useRef(onFeedbackReceived)
+    const onSurpriseQuestionReceivedRef = useRef(onSurpriseQuestionReceived)
     const onSessionStartRef = useRef(onSessionStart)
     const canRecordRef = useRef(canRecord)
+
+    // MediaPipe 초기화/추론은 메인 스레드를 크게 점유하므로 카운트다운이 끝난 뒤에 시작한다.
+    const startMediapipeRef = useRef<(() => void) | null>(null)
+    const mediapipeStartedRef = useRef(false)
 
     useEffect(() => {
       toggleStatesRef.current = { isLiveFeedbackOn, isEmergencyOn }
       onFeedbackReceivedRef.current = onFeedbackReceived
+      onSurpriseQuestionReceivedRef.current = onSurpriseQuestionReceived
       onSessionStartRef.current = onSessionStart
-    }, [isLiveFeedbackOn, isEmergencyOn, onFeedbackReceived, onSessionStart])
+    }, [
+      isLiveFeedbackOn,
+      isEmergencyOn,
+      onFeedbackReceived,
+      onSurpriseQuestionReceived,
+      onSessionStart,
+    ])
 
     useEffect(() => {
       canRecordRef.current = canRecord
-      if (canRecord && streamRef.current && !mediaRecorderRef.current) {
+      if (!canRecord || !streamRef.current) return
+
+      if (!mediaRecorderRef.current) {
         startRecordingFromStream(streamRef.current)
       }
+      startMediapipeRef.current?.()
     }, [canRecord])
 
     const wsRef = useRef<WebSocket | null>(null)
     const audioContextRef = useRef<AudioContext | null>(null)
     const processorRef = useRef<ScriptProcessorNode | null>(null)
+    const sendTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+    const disconnectWebSocket = () => {
+      if (wsRef.current) {
+        console.log('🔌 Closing WebSocket from explicit end-session action')
+        wsRef.current.onopen = null
+        wsRef.current.onmessage = null
+        wsRef.current.onerror = null
+        wsRef.current.onclose = null
+        wsRef.current.close()
+        wsRef.current = null
+      }
+
+      if (sendTimerRef.current) {
+        clearInterval(sendTimerRef.current)
+        sendTimerRef.current = null
+      }
+
+      if (processorRef.current) {
+        processorRef.current.disconnect()
+        processorRef.current = null
+      }
+
+      if (audioContextRef.current) {
+        audioContextRef.current
+          .close()
+          .catch((err) => console.error('Error closing AudioContext', err))
+        audioContextRef.current = null
+      }
+    }
 
     function startRecordingFromStream(stream: MediaStream) {
       try {
@@ -124,7 +181,7 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
       })
     }
 
-    useImperativeHandle(ref, () => ({ stopRecording }))
+    useImperativeHandle(ref, () => ({ stopRecording, disconnectWebSocket }))
 
     useEffect(() => {
       if (!videoRef.current) return
@@ -142,6 +199,23 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
 
       const faceMesh = new FaceMesh({ locateFile: smartLocateFile })
       const pose = new Pose({ locateFile: smartLocateFile })
+
+      // 서버(_write_wav)가 16kHz mono 로 저장하므로 전송 샘플레이트를 맞춘다.
+      function downsample(input: Float32Array, fromRate: number, toRate: number): Float32Array {
+        if (fromRate <= toRate) return input
+
+        const ratio = fromRate / toRate
+        const output = new Float32Array(Math.floor(input.length / ratio))
+
+        for (let i = 0; i < output.length; i++) {
+          const start = Math.floor(i * ratio)
+          const end = Math.min(Math.floor((i + 1) * ratio), input.length)
+          let sum = 0
+          for (let j = start; j < end; j++) sum += input[j]
+          output[i] = end > start ? sum / (end - start) : 0
+        }
+        return output
+      }
 
       function float32ToInt16(float32: Float32Array): Int16Array {
         const int16 = new Int16Array(float32.length)
@@ -195,60 +269,89 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
 
       // ✅ WS onopen 이후 호출 → 연결 확정 후 오디오 전송 시작
       function startAudioWebSocketRecording(stream: MediaStream) {
-        const audioTracks = stream.getAudioTracks()
-        if (audioTracks.length === 0) return
-
-        const audioCtx = new AudioContext()
-        const source = audioCtx.createMediaStreamSource(new MediaStream(audioTracks))
-
-        // 1초(sampleRate 샘플 수) 누적 후 전송
-        const targetSamples = audioCtx.sampleRate
+        // 1초(16000 샘플) 분량을 모아 전송한다.
+        const targetSamples = TARGET_SAMPLE_RATE
         const accumulator: Float32Array[] = []
         let totalSamples = 0
 
-        const processor = audioCtx.createScriptProcessor(4096, 1, 1)
-        source.connect(processor)
-        processor.connect(audioCtx.destination)
+        // ── 오디오 캡처 준비 (실패해도 아래 전송 타이머는 계속 동작한다) ──
+        try {
+          const audioTracks = stream.getAudioTracks()
+          if (audioTracks.length === 0) {
+            console.warn('⚠️ 오디오 트랙이 없습니다. 랜드마크만 전송합니다.')
+          } else {
+            const audioCtx = new AudioContext({ sampleRate: TARGET_SAMPLE_RATE })
+            const source = audioCtx.createMediaStreamSource(new MediaStream(audioTracks))
 
-        processor.onaudioprocess = (e) => {
+            // 사용자 제스처 없이 만들어진 AudioContext 는 suspended 로 시작해 콜백이 돌지 않는다.
+            if (audioCtx.state === 'suspended') {
+              audioCtx.resume().catch((err) => console.error('AudioContext resume 실패', err))
+            }
+            console.log(`🎙️ AudioContext state=${audioCtx.state} rate=${audioCtx.sampleRate}`)
+
+            if (audioCtx.sampleRate !== TARGET_SAMPLE_RATE) {
+              console.warn(
+                `⚠️ AudioContext 가 ${audioCtx.sampleRate}Hz 로 열렸습니다. ${TARGET_SAMPLE_RATE}Hz 로 다운샘플해 전송합니다.`
+              )
+            }
+
+            const processor = audioCtx.createScriptProcessor(4096, 1, 1)
+            source.connect(processor)
+            processor.connect(audioCtx.destination)
+
+            // 오디오는 모으기만 하고, 실제 전송은 아래 1초 타이머가 담당한다.
+            processor.onaudioprocess = (e) => {
+              if (isCleanup) return
+
+              const input = new Float32Array(e.inputBuffer.getChannelData(0))
+              const chunk =
+                audioCtx.sampleRate === TARGET_SAMPLE_RATE
+                  ? input
+                  : downsample(input, audioCtx.sampleRate, TARGET_SAMPLE_RATE)
+              accumulator.push(chunk)
+              totalSamples += chunk.length
+            }
+
+            audioContextRef.current = audioCtx
+            processorRef.current = processor
+          }
+        } catch (err) {
+          console.error('❌ 오디오 캡처 초기화 실패 — 랜드마크만 전송합니다.', err)
+        }
+
+        // ── 1초마다 무조건 전송 ──
+        // 오디오가 아직 안 나오더라도 프레임을 보내야 서버 수신 타임아웃(3초)에 걸려
+        // 연결이 끊기지 않고, 시선/자세 분석도 계속 돌아간다.
+        sendTimerRef.current = setInterval(() => {
           if (isCleanup) return
+          if (wsRef.current?.readyState !== WebSocket.OPEN) return
 
-          const chunk = new Float32Array(e.inputBuffer.getChannelData(0))
-          accumulator.push(chunk)
-          totalSamples += chunk.length
-
-          if (totalSamples >= targetSamples) {
-            const merged = new Float32Array(totalSamples)
+          let base64Audio = ''
+          if (totalSamples > 0) {
+            const length = Math.min(totalSamples, targetSamples)
+            const merged = new Float32Array(length)
             let offset = 0
             for (const c of accumulator) {
-              merged.set(c, offset)
-              offset += c.length
+              if (offset >= length) break
+              const slice = c.subarray(0, Math.min(c.length, length - offset))
+              merged.set(slice, offset)
+              offset += slice.length
             }
             accumulator.length = 0
             totalSamples = 0
 
-            if (wsRef.current?.readyState !== WebSocket.OPEN) return
-
             const int16 = float32ToInt16(merged)
-            const base64Audio = arrayBufferToBase64(int16.buffer as ArrayBuffer)
-            const payload = buildPayload(base64Audio)
-
-            console.log('📤 WS Payload:', {
-              faceKeys: Object.keys(payload.face),
-              poseKeys: Object.keys(payload.pose),
-              audioLength: base64Audio.length,
-              timestamp: payload.timestamp,
-            })
-
-            wsRef.current.send(JSON.stringify(payload))
+            base64Audio = arrayBufferToBase64(int16.buffer as ArrayBuffer)
           }
-        }
 
-        audioContextRef.current = audioCtx
-        processorRef.current = processor
+          wsRef.current.send(JSON.stringify(buildPayload(base64Audio)))
+        }, 1000)
       }
 
       function startMediapipe() {
+        if (mediapipeStartedRef.current || isCleanup) return
+        mediapipeStartedRef.current = true
+
         faceMesh.setOptions({
           maxNumFaces: 1,
           refineLandmarks: true, // 468번 홍채 랜드마크 사용에 필요
@@ -322,6 +425,22 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
                 if (data.type === 'feedback' && data.data) {
                   onFeedbackReceivedRef.current?.(data.data)
                 }
+                if (
+                  data.type === 'surprise_question' &&
+                  data.question_id &&
+                  data.question &&
+                  typeof data.time_limit === 'number'
+                ) {
+                  if (!toggleStatesRef.current.isEmergencyOn) {
+                    console.log('⚠️ Surprise question ignored because emergency toggle is off')
+                  } else {
+                    onSurpriseQuestionReceivedRef.current?.({
+                      question_id: data.question_id,
+                      question: data.question,
+                      time_limit: data.time_limit,
+                    })
+                  }
+                }
               } catch (err) {
                 console.error('WS Parse error', err)
               }
@@ -332,10 +451,13 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
             wsRef.current = ws
           }
 
+          startMediapipeRef.current = startMediapipe
+
+          // 카운트다운 중이면 여기서 시작하지 않고, canRecord 가 켜지는 시점의 effect 가 시작한다.
           if (canRecordRef.current) {
             startRecordingFromStream(stream)
+            startMediapipe()
           }
-          startMediapipe()
         } catch (err) {
           console.error('❌ Camera permission denied!', err)
         }
@@ -405,6 +527,11 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
           mediaRecorderRef.current.stop()
         }
 
+        if (sendTimerRef.current) {
+          clearInterval(sendTimerRef.current)
+          sendTimerRef.current = null
+        }
+
         if (processorRef.current) {
           processorRef.current.disconnect()
           processorRef.current = null
@@ -419,8 +546,12 @@ const LiveFeedbackTracker = forwardRef<LiveFeedbackTrackerRef, LiveFeedbackTrack
           wsRef.current.close()
         }
 
-        faceMesh.close()
-        pose.close()
+        startMediapipeRef.current = null
+        if (mediapipeStartedRef.current) {
+          mediapipeStartedRef.current = false
+          faceMesh.close()
+          pose.close()
+        }
       }
     }, [presentationType])
 
