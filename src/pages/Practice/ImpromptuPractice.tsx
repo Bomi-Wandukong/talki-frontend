@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import Nav from '@/components/Nav/Nav'
 import PracticeLayout from '@/components/Practice/PracticeLayout'
 import CoachBubble from '@/components/Practice/CoachBubble'
+import RealtimeErrorBanner from '@/components/Practice/RealtimeErrorBanner'
 import TitleSection from './components/TitleSection'
 import QuestionCard from './components/QuestionCard'
 import TimerSection from './components/TimerSection'
@@ -44,11 +45,7 @@ const ImpromptuPractice = () => {
           description={`질문을 보고 ${context?.prepSeconds ?? 10}초 준비 후, ${context?.speakSeconds ?? 30}초 동안 자유롭게 말해보세요.`}
         />
 
-        {error && (
-          <div className="mb-4 rounded-xl border border-[#F3C1C1] bg-[#FDEDED] px-5 py-3 text-[14px] text-[#C0392B]">
-            {error}
-          </div>
-        )}
+        <RealtimeErrorBanner message={error} />
 
         {notice && !error && (
           <div className="mb-4 rounded-xl border border-[#F0DCA8] bg-[#FDF6E3] px-5 py-3 text-[14px] text-[#8A6D1F]">

@@ -4,6 +4,7 @@ import PracticeLayout from '@/components/Practice/PracticeLayout'
 import TimerSection from './components/TimerSection'
 import MicButton from './components/MicButton'
 import CoachBubble from '@/components/Practice/CoachBubble'
+import RealtimeErrorBanner from '@/components/Practice/RealtimeErrorBanner'
 import TitleSection from './components/TitleSection'
 import CoreTextCard, { type CoreKeyword } from './components/CoreTextCard'
 import KeywordAnalysis from './components/KeywordAnalysis'
@@ -54,11 +55,7 @@ const CoreUnderstandingPractice = () => {
           description={`아래 글을 읽고 핵심 내용을 ${context?.speakSeconds ?? 30}초 동안 요약하여 말해보세요.`}
         />
 
-        {error && (
-          <div className="mb-4 rounded-xl border border-[#F3C1C1] bg-[#FDEDED] px-5 py-3 text-[14px] text-[#C0392B]">
-            {error}
-          </div>
-        )}
+        <RealtimeErrorBanner message={error} />
 
         {notice && !error && (
           <div className="mb-4 rounded-xl border border-[#F0DCA8] bg-[#FDF6E3] px-5 py-3 text-[14px] text-[#8A6D1F]">

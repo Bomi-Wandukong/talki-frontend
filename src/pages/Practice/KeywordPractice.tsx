@@ -4,6 +4,7 @@ import PracticeLayout from '@/components/Practice/PracticeLayout'
 import TimerSection from './components/TimerSection'
 import MicButton from './components/MicButton'
 import CoachBubble from '@/components/Practice/CoachBubble'
+import RealtimeErrorBanner from '@/components/Practice/RealtimeErrorBanner'
 import TitleSection from './components/TitleSection'
 import KeywordCards, { type KeywordType } from './components/KeywordCards'
 import KeywordAnalysis from './components/KeywordAnalysis'
@@ -56,11 +57,7 @@ const KeywordPractice = () => {
           description={`아래 ${context?.keywords?.length ?? 3}개의 키워드를 모두 포함하여 자유롭게 말해보세요.`}
         />
 
-        {error && (
-          <div className="mb-4 rounded-xl border border-[#F3C1C1] bg-[#FDEDED] px-5 py-3 text-[14px] text-[#C0392B]">
-            {error}
-          </div>
-        )}
+        <RealtimeErrorBanner message={error} />
 
         {notice && !error && (
           <div className="mb-4 rounded-xl border border-[#F0DCA8] bg-[#FDF6E3] px-5 py-3 text-[14px] text-[#8A6D1F]">

@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { WS_BASE_URL } from '@/api/fetchClient'
 import { ensureImpromptuSession } from '@/api/practice'
 import type { PracticeSubStep } from '@/api/practice'
+import {
+  TARGET_SAMPLE_RATE,
+  arrayBufferToBase64,
+  downsampleTo16k,
+  float32ToInt16,
+} from '@/utils/audioEncode'
 
-export const PRACTICE_WS_BASE = 'ws://43.201.182.246:8080'
-
-/** FastAPI가 최종 STT를 16kHz mono wav로 저장하므로 전송 샘플레이트를 맞춘다. */
-const TARGET_SAMPLE_RATE = 16000
 /** 서버 수신 타임아웃(15초)에 걸리지 않도록 대기 구간에 보내는 하트비트 주기 */
 const KEEPALIVE_INTERVAL_MS = 5000
 /**
@@ -91,35 +94,6 @@ interface PracticeWsMessage {
 /** 서버의 keyword_usage와 동일한 규칙(공백 제거 후 부분 문자열 포함)으로 사용 여부를 판정한다. */
 export const isKeywordUsed = (keyword: string, text: string | undefined) =>
   (text ?? '').replace(/\s/g, '').includes(keyword.replace(/\s/g, ''))
-
-function downsample(input: Float32Array, fromRate: number, toRate: number): Float32Array {
-  if (fromRate <= toRate) return input
-
-  const ratio = fromRate / toRate
-  const output = new Float32Array(Math.floor(input.length / ratio))
-
-  for (let i = 0; i < output.length; i++) {
-    const start = Math.floor(i * ratio)
-    const end = Math.min(Math.floor((i + 1) * ratio), input.length)
-    let sum = 0
-    for (let j = start; j < end; j++) sum += input[j]
-    output[i] = end > start ? sum / (end - start) : 0
-  }
-  return output
-}
-
-function encodePcm16Base64(samples: Float32Array): string {
-  const pcm = new Int16Array(samples.length)
-  for (let i = 0; i < samples.length; i++) {
-    const s = Math.max(-1, Math.min(1, samples[i]))
-    pcm[i] = s < 0 ? s * 0x8000 : s * 0x7fff
-  }
-
-  const bytes = new Uint8Array(pcm.buffer)
-  let binary = ''
-  for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i])
-  return btoa(binary)
-}
 
 /**
  * 연습탭 4단계 하위단계(IMPROMPTU / KEYWORD / POINT) 실시간 분석 WebSocket 훅.
@@ -212,10 +186,7 @@ export function usePracticeSubStep(subStep: PracticeSubStep) {
       if (!isStreamingRef.current) return
 
       const input = new Float32Array(event.inputBuffer.getChannelData(0))
-      const chunk =
-        audioCtx.sampleRate === TARGET_SAMPLE_RATE
-          ? input
-          : downsample(input, audioCtx.sampleRate, TARGET_SAMPLE_RATE)
+      const chunk = downsampleTo16k(input, audioCtx.sampleRate)
 
       accumulated.push(chunk)
       accumulatedLength += chunk.length
@@ -232,7 +203,11 @@ export function usePracticeSubStep(subStep: PracticeSubStep) {
       accumulated.length = 0
       accumulatedLength = 0
 
-      send({ audio: encodePcm16Base64(merged), timestamp: Date.now() })
+      const int16 = float32ToInt16(merged)
+      send({
+        audio: arrayBufferToBase64(int16.buffer as ArrayBuffer),
+        timestamp: Date.now(),
+      })
     }
 
     source.connect(processor)
@@ -254,7 +229,7 @@ export function usePracticeSubStep(subStep: PracticeSubStep) {
         if (disposed) return
 
         const ws = new WebSocket(
-          `${PRACTICE_WS_BASE}/practice/realtime?sessionId=${sessionId}&subStep=${subStep}`
+          `${WS_BASE_URL}/practice/realtime?sessionId=${sessionId}&subStep=${subStep}`
         )
         wsRef.current = ws
 
