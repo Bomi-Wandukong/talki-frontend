@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import LiveFeedbackTracker from './components/LiveFeedbackTracker'
 import type { LiveFeedbackTrackerRef } from './components/LiveFeedbackTracker'
 import CountdownOverlay from './components/CountdownOverlay'
+import SurpriseQuestionCard from './components/SurpriseQuestionCard'
 import TutorialModal from './components/TutorialModal'
 import VoiceWaveIndicator from './components/VoiceWaveIndicator'
 import { FaArrowLeftLong } from 'react-icons/fa6'
@@ -43,6 +44,12 @@ export default function LiveFeedback() {
   const [isEmergencyOn, setIsEmergencyOn] = useState(sessionData?.isUnexpectedEvent ?? false)
 
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null)
+  const [surpriseQuestion, setSurpriseQuestion] = useState<{
+    questionId: string
+    question: string
+    timeLimit: number
+  } | null>(null)
+  const [remainingQuestionTime, setRemainingQuestionTime] = useState<number | null>(null)
   const [presentationId, setPresentationId] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
 
@@ -50,12 +57,12 @@ export default function LiveFeedback() {
   useEffect(() => {
     if (!videoRef.current) return
 
-    if (showTutorial || showCountdown) {
+    if (showTutorial || showCountdown || surpriseQuestion) {
       videoRef.current.pause()
     } else {
       videoRef.current.play()
     }
-  }, [showTutorial, showCountdown])
+  }, [showTutorial, showCountdown, surpriseQuestion])
 
   useEffect(() => {
     const hideTutorial = localStorage.getItem(TUTORIAL_HIDE_KEY)
@@ -73,6 +80,30 @@ export default function LiveFeedback() {
     console.log('돌발 상황:', isEmergencyOn)
   }, [isLiveFeedbackOn, isEmergencyOn])
 
+  useEffect(() => {
+    if (!surpriseQuestion || remainingQuestionTime === null) return
+
+    const timerId = setInterval(() => {
+      setRemainingQuestionTime((prev) => {
+        if (prev === null) return null
+        if (prev <= 1) {
+          setSurpriseQuestion(null)
+          return null
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(timerId)
+  }, [surpriseQuestion])
+
+  useEffect(() => {
+    if (!isEmergencyOn && surpriseQuestion) {
+      setSurpriseQuestion(null)
+      setRemainingQuestionTime(null)
+    }
+  }, [isEmergencyOn, surpriseQuestion])
+
   return (
     <>
       <LiveFeedbackTracker
@@ -80,7 +111,7 @@ export default function LiveFeedback() {
         presentationType={sessionData?.presentationType}
         isLiveFeedbackOn={isLiveFeedbackOn}
         isEmergencyOn={isEmergencyOn}
-        canRecord={!showCountdown}
+        canRecord={!showCountdown && !surpriseQuestion}
         onFeedbackReceived={(msg) => {
           if (isLiveFeedbackOn && msg) {
             const formattedMsg = msg
@@ -96,6 +127,14 @@ export default function LiveFeedback() {
             // 약간의 시간 뒤에 피드백을 지우는 로직 (선택사항)
             setTimeout(() => setFeedbackMessage(null), 3000)
           }
+        }}
+        onSurpriseQuestionReceived={(question) => {
+          setSurpriseQuestion({
+            questionId: question.question_id,
+            question: question.question,
+            timeLimit: question.time_limit,
+          })
+          setRemainingQuestionTime(question.time_limit)
         }}
         onSessionStart={(id) => {
           setPresentationId(id)
@@ -201,6 +240,9 @@ export default function LiveFeedback() {
 
                       setIsUploading(true)
 
+                      // 웹소켓은 즉시 종료하고, 이후 녹화/업로드는 이어서 진행
+                      trackerRef.current.disconnectWebSocket()
+
                       // 1. 녹화 종료 및 Blob 획득
                       const blob = await trackerRef.current.stopRecording()
 
@@ -279,10 +321,14 @@ export default function LiveFeedback() {
             </div>
 
             {/* 피드백 메시지 표시 (하단 중앙) */}
-            {feedbackMessage && !showCountdown && (
+            {feedbackMessage && !showCountdown && !surpriseQuestion && (
               <div className="absolute bottom-24 left-1/2 -translate-x-1/2 transform rounded-2xl bg-red-500/80 px-6 py-3 text-white shadow-lg backdrop-blur-md transition-all">
                 <p className="whitespace-pre-line text-center font-semibold">{feedbackMessage}</p>
               </div>
+            )}
+
+            {surpriseQuestion && (
+              <SurpriseQuestionCard question={surpriseQuestion.question} />
             )}
           </div>
         </div>

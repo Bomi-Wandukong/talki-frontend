@@ -1,38 +1,35 @@
 import React from 'react'
+import type { SubStepPhase } from '@/hooks/usePracticeSubStep'
 export type PracticeStep = 'idle' | 'preparing' | 'recording' | 'finished'
 
 interface QuestionCardProps {
   question: string
-  selectedNumber: number
-  onSelect: (num: number) => void
-  step: PracticeStep
+  step: PracticeStep | SubStepPhase
+  isLoading?: boolean
 }
 
-const QuestionCard: React.FC<QuestionCardProps> = ({
-  question,
-  selectedNumber,
-  onSelect,
-  step,
-}) => {
-  const isLocked = step !== 'idle'
+const QuestionCard: React.FC<QuestionCardProps> = ({ question, step, isLoading = false }) => {
   const isFinished = step === 'finished'
 
   return (
-    <div className={`mb-6 rounded-[20px] p-6 transition-colors ${isFinished ? 'bg-[#E7E7E7] pointer-events-none' : 'bg-white'}`}>
+    <div
+      className={`mb-6 rounded-[20px] p-6 transition-colors ${isFinished ? 'pointer-events-none bg-[#E7E7E7]' : 'bg-white'}`}
+    >
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg font-bold text-gray-800">질문</h3>
-        <select
-          value={selectedNumber}
-          onChange={(e) => onSelect(Number(e.target.value))}
-          disabled={isLocked}
-          className="min-w-[100px] rounded-md border border-gray-200 bg-white px-3 py-1 text-sm text-gray-600 outline-none disabled:opacity-50"
-        >
-          <option value={1}>질문 1</option>
-          <option value={2}>질문 2</option>
-          <option value={3}>질문 3</option>
-        </select>
+        <span className="rounded-md bg-[#F0EFFF] px-3 py-1 text-xs font-medium text-[#5650FF]">
+          TALKI가 생성한 주제
+        </span>
       </div>
-      <p className="font-medium text-gray-700">{question}</p>
+
+      {isLoading ? (
+        <div className="space-y-2">
+          <div className="h-4 w-4/5 animate-pulse rounded bg-[#EDEDED]" />
+          <div className="h-4 w-2/5 animate-pulse rounded bg-[#EDEDED]" />
+        </div>
+      ) : (
+        <p className="font-medium text-gray-700">{question}</p>
+      )}
     </div>
   )
 }

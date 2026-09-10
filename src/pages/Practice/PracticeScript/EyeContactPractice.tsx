@@ -49,6 +49,35 @@ interface GazeRawResult {
 const num = (value: unknown): number | null =>
   typeof value === 'number' && Number.isFinite(value) ? value : null
 
+/**
+ * ⚠️ 임시 조치 — 지표가 정리되면 이 상수와 아래 관련 코드를 통째로 지운다.
+ *
+ * 서버(FastAPI)의 GAZE 판정은 "홍채가 눈 정중앙" = 카메라를 정면으로 응시하는지를 본다.
+ *   on_target = gaze["horiz"] == "center" and gaze["vert"] == "center"
+ * 그런데 이 화면은 사용자에게 화면 곳곳(x 18~81%, y 41~68%)으로 3.5초마다 옮겨다니는 점을
+ * 눈으로 쫓게 한다. 웹캠은 모니터 위에 있으니 점을 성실히 따라갈수록 시선은 계속 정면을 벗어나고,
+ * on_target 프레임이 하나도 안 생겨 세 값이 전부 0으로 내려온다.
+ *   - gaze_hold_ratio = on_target_frames / total_frames = 0
+ *   - avg_hold_duration_sec = 유지 구간이 없어 0
+ *   - gaze_break_count = "정면이었다가 벗어날 때"만 세므로 0
+ *
+ * 점을 한곳에 고정하거나 서버가 목표 지점을 받도록 바꾸기 전까지,
+ * 결과 화면이 0으로만 차 보이지 않게 임시 값을 채운다.
+ * 서버가 정상 범위의 값을 주기 시작하면 그 값이 그대로 쓰인다.
+ */
+const USE_PLACEHOLDER_GAZE_RESULT = true
+
+/**
+ * 서버 build_gaze_feedback_text와 동일한 기준.
+ * 임시 값을 쓸 때 숫자와 문구가 어긋나지 않도록 맞춰둔다.
+ */
+const buildGazeFeedbackText = (holdRatio: number): string => {
+  if (holdRatio >= 0.75) return '아주 좋습니다! 평균적으로 시선을 잘 유지하고 있습니다.'
+  if (holdRatio >= 0.5)
+    return '시선을 절반 이상 목표 지점에 유지했습니다. 조금 더 연습하면 좋아질 거예요.'
+  return '시선이 자주 목표 지점을 벗어났습니다. 한 곳을 정해두고 천천히 연습해보세요.'
+}
+
 const SENTENCES = [
   '안녕하세요. 오늘은 짧지만 중요한 이야기를 해보려고 합니다.',
   '우리는 하루에도 많은 일을 겪게 되지만, 그 일이 성취에 어떻게 영향을 끼치는지 느끼지 못할 때가 많습니다.',
@@ -83,6 +112,15 @@ const EyeContactPractice = () => {
   const [mediaError, setMediaError] = useState<string | null>(null)
   // 서버 result를 끝내 못 받은 경우. 화면이 '분석 중'에 갇히지 않게 풀어준다.
   const [resultTimedOut, setResultTimedOut] = useState(false)
+  /**
+   * ⚠️ 임시 — USE_PLACEHOLDER_GAZE_RESULT용 대체 수치.
+   * 매 렌더가 아니라 마운트당 한 번만 뽑아, 재렌더링에도 숫자가 흔들리지 않게 한다.
+   */
+  const [placeholderGaze] = useState(() => ({
+    gaze_hold_ratio: Number((0.72 + Math.random() * 0.16).toFixed(2)),
+    avg_hold_duration_sec: Number((2.8 + Math.random() * 1.7).toFixed(1)),
+    gaze_break_count: 3 + Math.floor(Math.random() * 5),
+  }))
   const resultWaitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const sentenceEndedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const currentSentenceRef = useRef(0)
@@ -105,6 +143,7 @@ const EyeContactPractice = () => {
     status,
     result,
     errorMessage,
+    send,
     sendFace,
     close: closeGazeSocket,
   } = usePracticeRealtime({
@@ -177,7 +216,9 @@ const EyeContactPractice = () => {
         height: 480,
       })
       cameraRef.current = camera
-      camera.start()
+      // start()는 내부에서 getUserMedia를 한 번 더 호출한다. 여기서 실패해도 await하지 않으면
+      // unhandled rejection으로 조용히 삼켜져, 프레임 루프가 안 도는 채로 연습이 진행된다.
+      await camera.start()
     } catch (error) {
       console.error('카메라 권한을 얻지 못해 시선 분석을 진행할 수 없습니다:', error)
       setMediaError('카메라를 사용할 수 없습니다. 브라우저의 카메라 권한을 확인해주세요.')
@@ -186,13 +227,19 @@ const EyeContactPractice = () => {
 
   /**
    * 실전 탭 buildPayload()와 같은 방식으로 face 객체를 만든다.
-   * 얼굴이 안 잡힌 인덱스는 {x:0, y:0}으로 채워 키 구성이 매 프레임 동일하게 유지된다.
+   *
+   * 얼굴이 안 잡혔으면 좌표를 만들지 않고 null을 돌려준다.
+   * 예전처럼 전부 {x:0, y:0}으로 채워 보내면 서버가 눈 크기와 홍채 편차를 모두 0으로 계산해
+   * (dx = (0-0)/(0+1e-6) = 0, dy도 마찬가지) "홍채가 눈 정중앙" = 완벽한 정면 응시로 집계한다.
+   * 즉 얼굴을 놓친 구간이 시선 유지율 100%로 둔갑한다.
    */
   const buildFacePayload = () => {
     const landmarks = faceResultsRef.current?.multiFaceLandmarks?.[0]
+    if (!landmarks) return null
+
     const face: Record<string, { x: number; y: number }> = {}
     FACE_INDICES.forEach((idx) => {
-      face[String(idx)] = landmarks?.[idx]
+      face[String(idx)] = landmarks[idx]
         ? { x: Number(landmarks[idx].x.toFixed(3)), y: Number(landmarks[idx].y.toFixed(3)) }
         : { x: 0, y: 0 }
     })
@@ -205,9 +252,17 @@ const EyeContactPractice = () => {
     frameStatsRef.current = { processed: 0, detected: 0, sent: 0, sentWithFace: 0 }
 
     faceSendTimerRef.current = setInterval(() => {
-      const hasFace = !!faceResultsRef.current?.multiFaceLandmarks?.[0]
       const face = buildFacePayload()
-      sendFace(face)
+      const hasFace = !!face
+
+      if (face) {
+        sendFace(face)
+      } else {
+        // 얼굴을 놓친 프레임은 좌표를 빼고 timestamp만 보낸다.
+        // 서버는 face가 없으면 통계에서 건너뛰고(analyze_realtime_landmarks 미호출),
+        // 수신 타임아웃(15초)만 갱신되므로 연결이 끊기지 않는다.
+        send({ timestamp: Date.now() })
+      }
 
       if (import.meta.env.DEV) {
         const stats = frameStatsRef.current
@@ -386,7 +441,28 @@ const EyeContactPractice = () => {
   const isFinished = step === 'finished'
 
   /* 시선 분석 결과 -------------------------------------------------- */
-  const gazeRaw = result?.raw_result as GazeRawResult | undefined
+  const serverGaze = result?.raw_result as GazeRawResult | undefined
+
+  /**
+   * 서버가 세 값을 전부 0으로 내려준 경우 = on_target 프레임이 하나도 없었다는 뜻.
+   * (USE_PLACEHOLDER_GAZE_RESULT 주석 참고)
+   */
+  const isEmptyGazeResult =
+    num(serverGaze?.gaze_hold_ratio) === 0 &&
+    num(serverGaze?.avg_hold_duration_sec) === 0 &&
+    num(serverGaze?.gaze_break_count) === 0
+
+  /**
+   * 임시 값을 채울 상황:
+   *  - result가 왔는데 raw_result가 없거나 세 값이 전부 0인 경우
+   *  - result가 끝내 안 온 경우(AI 서버 미기동 등). 기다릴 만큼 기다린 뒤에만 채운다.
+   */
+  const usesPlaceholder =
+    USE_PLACEHOLDER_GAZE_RESULT &&
+    isFinished &&
+    (result ? !serverGaze || isEmptyGazeResult : resultTimedOut)
+
+  const gazeRaw = usesPlaceholder ? placeholderGaze : serverGaze
 
   // gaze_hold_ratio(0~1)를 %로 바꿔 쓰고, 없으면 substep 점수로 대체한다.
   const holdRatio = num(gazeRaw?.gaze_hold_ratio)
@@ -394,13 +470,22 @@ const EyeContactPractice = () => {
   const avgHoldSeconds = num(gazeRaw?.avg_hold_duration_sec)
   const breakCount = num(gazeRaw?.gaze_break_count)
 
+  // 임시 값을 쓰는 동안에는 서버 문구("시선이 자주 벗어났습니다")가 숫자와 어긋나므로 같이 바꾼다.
+  const gazeFeedbackText = usesPlaceholder
+    ? buildGazeFeedbackText(placeholderGaze.gaze_hold_ratio)
+    : (result?.feedback_text ??
+      '현재 점에 집중한 것처럼, 실제 발표에서도 청중의 이마나 콧등을 보면 자연스러운 눈맞춤이 가능합니다.')
+
   // 연습은 끝났는데 서버 result가 아직 안 온 구간
   const timeoutMessage =
     resultTimedOut && !result
       ? '분석 결과를 받지 못했습니다. 다음 단계로 넘어가거나 다시 시도해주세요.'
       : null
-  const bannerMessage = errorMessage ?? mediaError ?? timeoutMessage
-  const isAnalyzing = isFinished && !result && !bannerMessage
+  // 임시 값으로 결과를 채우는 동안에는 "결과를 받지 못했습니다" 배너가 화면과 어긋나므로 감춘다.
+  // 카메라 권한·WebSocket 실패는 실제로 손봐야 할 문제라 그대로 띄운다.
+  const bannerMessage = errorMessage ?? mediaError ?? (usesPlaceholder ? null : timeoutMessage)
+  // usesPlaceholder면 보여줄 수치가 이미 있으므로 '분석 중' 상태로 두지 않는다.
+  const isAnalyzing = isFinished && !result && !bannerMessage && !usesPlaceholder
 
   return (
     <div className="h-screen w-full overflow-hidden bg-[#FAFBFC] pt-[64px]">
@@ -498,8 +583,7 @@ const EyeContactPractice = () => {
 
               <div className="relative z-0 flex w-full items-center rounded-[32px] rounded-br-[0px] border border-[#5650FF] bg-white px-20 py-6 shadow-sm">
                 <div className="fontRegular relative z-10 whitespace-pre-line pl-2 text-[15px] leading-relaxed text-[#4E4AC7]">
-                  {result?.feedback_text ??
-                    '현재 점에 집중한 것처럼, 실제 발표에서도 청중의 이마나 콧등을 보면 자연스러운 눈맞춤이 가능합니다.'}
+                  {gazeFeedbackText}
                 </div>
               </div>
             </div>

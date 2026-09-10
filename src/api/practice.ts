@@ -1,4 +1,10 @@
 import api from './fetchClient'
+import {
+  getPracticeSessionId,
+  setPracticeSessionId,
+  setPracticeMode,
+  setSubStepQueue,
+} from '@/utils/practiceSession'
 
 /* ------------------------------------------------------------------ */
 /* 공통 타입 (openapi.json / tag: Practice 기준)                        */
@@ -245,4 +251,61 @@ export const EXPECTATION_LABEL: Record<ExpectationVsReality, string> = {
   AS_EXPECTED: '예상한 것과 비슷했어요.',
   WORSE_THAN_EXPECTED: '예상보다 조금 어려웠어요.',
   MUCH_WORSE_THAN_EXPECTED: '예상보다 훨씬 어려웠어요.',
+}
+
+/* ------------------------------------------------------------------ */
+/* 즉흥 구성 연습 세션 확보                                              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * 즉흥 구성 연습(IMPROMPTU)용 세션을 확보한다.
+ *
+ * 위저드를 정상적으로 거쳐 왔다면 0단계에서 만든 세션과 3단계에서 받은
+ * subStepQueue가 그대로 남아 있으므로 그것을 재사용한다.
+ * 세션이 없거나 만료(404)된 경우, 또는 이어서 진행할 하위단계가 이미 완료된
+ * 경우에는 WebSocket 연결이 거부되므로 세션을 새로 발급하고 모드를 다시 지정한다.
+ *
+ * @param subStep 이어서 진행할 하위단계.
+ */
+export const ensureImpromptuSession = async (
+  subStep?: PracticeSubStep
+): Promise<{
+  sessionId: string
+  subStepQueue: PracticeSubStep[]
+  completedSubSteps: PracticeSubStep[]
+}> => {
+  const stored = getPracticeSessionId()
+
+  if (stored) {
+    try {
+      const state = await getPracticeSessionState(stored)
+      const completedSubSteps = state.completedSubSteps ?? []
+      const alreadyDone = !!subStep && completedSubSteps.includes(subStep)
+
+      if (!alreadyDone) {
+        if (state.mode === 'IMPROMPTU' && state.subStepQueue?.length) {
+          return { sessionId: stored, subStepQueue: state.subStepQueue, completedSubSteps }
+        }
+
+        // 세션은 살아있지만 아직 모드가 정해지지 않은 경우
+        const step = await submitMode(stored, 'IMPROMPTU')
+        setPracticeMode('IMPROMPTU')
+        setSubStepQueue(step.subStepQueue ?? [])
+        return { sessionId: stored, subStepQueue: step.subStepQueue ?? [], completedSubSteps }
+      }
+
+      // 이미 마친 하위단계 → 아래에서 새 세션으로 다시 시작
+    } catch {
+      // 만료·폐기된 세션 → 아래에서 새로 발급
+    }
+  }
+
+  const { sessionId } = await startPracticeSession()
+  setPracticeSessionId(sessionId)
+
+  const step = await submitMode(sessionId, 'IMPROMPTU')
+  setPracticeMode('IMPROMPTU')
+  setSubStepQueue(step.subStepQueue ?? [])
+
+  return { sessionId, subStepQueue: step.subStepQueue ?? [], completedSubSteps: [] }
 }
