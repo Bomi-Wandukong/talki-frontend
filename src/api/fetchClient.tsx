@@ -1,5 +1,8 @@
 export const BASE_URL = import.meta.env.PROD ? 'http://43.201.182.246:8080' : '/api';
 
+// WebSocket은 vite dev 프록시(/api)를 타지 않으므로 개발/배포 모두 서버로 직접 연결한다.
+export const WS_BASE_URL = 'ws://43.201.182.246:8080';
+
 interface FetchClientOptions extends RequestInit {
   data?: any;
 }

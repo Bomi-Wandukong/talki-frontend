@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Nav from '@/components/Nav/Nav'
 import PracticeLayout from '@/components/Practice/PracticeLayout'
@@ -6,6 +6,34 @@ import { IMAGES } from '@/utils/images'
 import TitleSection from '../components/TitleSection'
 import MicButton from '../components/MicButton'
 import type { PracticeStep } from '../components/MicButton'
+import usePracticeRealtime from '@/hooks/usePracticeRealtime'
+import RealtimeErrorBanner from '@/components/Practice/RealtimeErrorBanner'
+import AnalyzingIndicator from '@/components/Practice/AnalyzingIndicator'
+import {
+  arrayBufferToBase64,
+  downsampleTo16k,
+  float32ToInt16,
+  TARGET_SAMPLE_RATE,
+} from '@/utils/audioEncode'
+
+/**
+ * 무음 감지 기준.
+ *
+ * 서버는 음성 인식이 아무것도 잡지 못하면 result를 보내지 않고 그대로 멈춰 있는다.
+ * (실제로 무음 90초를 보냈을 때 응답이 없고 하위단계도 완료되지 않는 것을 확인)
+ * 그대로 두면 사용자는 끝나지 않는 화면을 계속 보게 되므로 프론트에서 끊고 재시도를 안내한다.
+ */
+const SILENCE_VOLUME = 5 // liveVolume(0~100) 이 값 이하이면 소리가 없다고 본다
+const SILENCE_LIMIT_MS = 10000 // 이만큼 연속으로 조용하면 중단
+const RESULT_WAIT_BUFFER_SEC = 45 // 낭독 예정 시간을 이만큼 넘겨도 결과가 없으면 중단
+
+/** 서버가 내려주는 발음 명확도 라벨을 게이지용 점수로 환산 */
+const ARTICULATION_SCORE: Record<string, number> = {
+  우수: 95,
+  양호: 85,
+  보통: 65,
+  미흡: 35,
+}
 
 const SCRIPTS = [
   `안녕하세요, 오늘은 짧지만 중요한 이야기를 해보려고 합니다. 우리는 하루에도 많은 일을 겪게 되지만, 그 일이 성취에 어떻게 영향을 끼치는지 느끼진 못하는 경우가 많습니다. 말은 단순히 내용만이 아닌 크기, 목소리의 질감, 발화 방식에 따라 분위기가 완전히 달라질 수 있습니다. 그래서 좋은 전달은 단순히 정확하게 읽는 것이 아니라, 듣는 사람이 편하게 이해할 수 있도록 말하는 것이라고 생각합니다. 적절한 호흡과 리듬으로 이야기한 내용이 훨씬 더 잘 전달됩니다. 결국 좋은 말하기는 여러 기술 이전에, 상대방을 배려하는 작은 태도에서 시작됩니다.`,
@@ -18,166 +46,263 @@ const PracticeScript = () => {
   const navigate = useNavigate()
   const [step, setStep] = useState<PracticeStep>('idle')
 
-  // 실시간 볼륨 (0~100)
+  // 실시간 볼륨 (0~100) — 녹음 중 게이지를 움직이기 위한 로컬 값
   const [liveVolume, setLiveVolume] = useState(0)
-  // 최종 점수
-  const [finalSpeedScore, setFinalSpeedScore] = useState(0)
-  const [finalPronunciationScore, setFinalPronunciationScore] = useState(0)
+  // 마이크 권한 실패도 화면에 알린다. (WS 에러와 같은 배너를 쓴다)
+  const [mediaError, setMediaError] = useState<string | null>(null)
+  // 무음/응답없음으로 중단했을 때 재시도를 안내하는 문구
+  const [retryMessage, setRetryMessage] = useState<string | null>(null)
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const audioChunksRef = useRef<Blob[]>([])
   const audioContextRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
+  const processorRef = useRef<ScriptProcessorNode | null>(null)
   const animFrameRef = useRef<number | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const preparingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // 마지막으로 소리가 감지된 시각. 무음이 얼마나 이어졌는지 재는 기준점이다.
+  const lastSoundAtRef = useRef<number>(0)
+  const resultWaitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // 볼륨 수집 (평균 계산용)
-  const volumeSamplesRef = useRef<number[]>([])
+  // 4단계 SCRIPT 하위단계 실시간 분석 WebSocket
+  const { sessionStart, liveFeedback, result, errorMessage, sendAudio } = usePracticeRealtime({
+    subStep: 'SCRIPT',
+  })
 
-  const script = useMemo(() => SCRIPTS[Math.floor(Math.random() * SCRIPTS.length)], [])
+  // 서버가 내려준 스크립트를 쓰고, 아직 못 받았으면 로컬 문장으로 대체한다.
+  const [fallbackScript] = useState(() => SCRIPTS[Math.floor(Math.random() * SCRIPTS.length)])
+  const script = sessionStart?.script_text ?? fallbackScript
+  const speakSeconds = sessionStart?.speak_seconds ?? 60
+  const wpmMin = sessionStart?.reference_range?.wpm_min ?? 120
+  const wpmMax = sessionStart?.reference_range?.wpm_max ?? 160
 
-  const isFinished = step === 'finished'
+  // 사용자가 정지 버튼을 누르지 않아도 서버 result가 오면 결과 화면으로 본다.
+  const isFinished = step === 'finished' || !!result
 
-  // 실시간 볼륨 분석 루프
-  const startAnalysis = (stream: MediaStream) => {
-    const audioContext = new AudioContext()
+  /**
+   * 마이크 스트림 하나로 두 가지를 동시에 처리한다.
+   *  - analyser: 화면 게이지용 실시간 볼륨
+   *  - processor: 1초 단위로 모은 PCM을 base64로 변환해 WebSocket 전송
+   */
+  const startAudioPipeline = (stream: MediaStream) => {
+    // 가능하면 브라우저가 직접 16kHz로 뽑게 한다. 거부하는 브라우저에서는
+    // 기본 샘플레이트로 열고 아래에서 직접 다운샘플링한다.
+    let audioContext: AudioContext
+    try {
+      audioContext = new AudioContext({ sampleRate: TARGET_SAMPLE_RATE })
+    } catch {
+      audioContext = new AudioContext()
+    }
+    const source = audioContext.createMediaStreamSource(stream)
+
     const analyser = audioContext.createAnalyser()
     analyser.fftSize = 256
-    const source = audioContext.createMediaStreamSource(stream)
     source.connect(analyser)
+
+    const targetSamples = audioContext.sampleRate // 1초 분량
+    const accumulator: Float32Array[] = []
+    let totalSamples = 0
+
+    const processor = audioContext.createScriptProcessor(4096, 1, 1)
+    source.connect(processor)
+    processor.connect(audioContext.destination)
+
+    processor.onaudioprocess = (e) => {
+      const chunk = new Float32Array(e.inputBuffer.getChannelData(0))
+      accumulator.push(chunk)
+      totalSamples += chunk.length
+      if (totalSamples < targetSamples) return
+
+      const merged = new Float32Array(totalSamples)
+      let offset = 0
+      for (const c of accumulator) {
+        merged.set(c, offset)
+        offset += c.length
+      }
+      accumulator.length = 0
+      totalSamples = 0
+
+      // 서버는 16kHz로 가정하고 읽으므로 보내기 전에 반드시 맞춰준다.
+      const resampled = downsampleTo16k(merged, audioContext.sampleRate)
+      const int16 = float32ToInt16(resampled)
+      sendAudio(arrayBufferToBase64(int16.buffer as ArrayBuffer))
+    }
 
     audioContextRef.current = audioContext
     analyserRef.current = analyser
-    volumeSamplesRef.current = []
+    processorRef.current = processor
 
     const dataArray = new Uint8Array(analyser.frequencyBinCount)
+    lastSoundAtRef.current = 0 // 첫 tick에서 현재 시각으로 채운다
 
     const tick = () => {
+      if (lastSoundAtRef.current === 0) lastSoundAtRef.current = Date.now()
+
       analyser.getByteFrequencyData(dataArray)
       const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length
       const volume = Math.min(Math.round((avg / 128) * 100), 100)
       setLiveVolume(volume)
-      volumeSamplesRef.current.push(volume)
+
+      // 목소리가 계속 안 잡히면 서버는 영영 결과를 주지 않는다. 그 전에 끊는다.
+      if (volume > SILENCE_VOLUME) {
+        lastSoundAtRef.current = Date.now()
+      } else if (Date.now() - lastSoundAtRef.current > SILENCE_LIMIT_MS) {
+        abortRecording(
+          '목소리가 감지되지 않아 녹음을 중단했습니다. 마이크를 확인하고 다시 시도해주세요.'
+        )
+        return
+      }
+
       animFrameRef.current = requestAnimationFrame(tick)
     }
     animFrameRef.current = requestAnimationFrame(tick)
+
+    // 소리는 들어오는데 서버가 결과를 안 주는 경우에 대비한 상한선
+    resultWaitTimerRef.current = setTimeout(
+      () => abortRecording('분석 결과를 받지 못했습니다. 잠시 후 다시 시도해주세요.'),
+      (speakSeconds + RESULT_WAIT_BUFFER_SEC) * 1000
+    )
   }
 
-  const stopAnalysis = () => {
+  const stopAudioPipeline = () => {
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
+    animFrameRef.current = null
+    if (resultWaitTimerRef.current) clearTimeout(resultWaitTimerRef.current)
+    resultWaitTimerRef.current = null
+    processorRef.current?.disconnect()
+    processorRef.current = null
     audioContextRef.current?.close()
     audioContextRef.current = null
     analyserRef.current = null
   }
 
+  const releaseMic = () => {
+    streamRef.current?.getTracks().forEach((t) => t.stop())
+    streamRef.current = null
+  }
+
+  /**
+   * 분석을 진행할 수 없다고 판단해 녹음을 끊는다.
+   * 결과 화면으로 넘기지 않고 'idle'로 되돌려 마이크 버튼이 다시 나오게 한다. (재시도)
+   */
+  const abortRecording = (message: string) => {
+    stopAudioPipeline()
+    releaseMic()
+    setLiveVolume(0)
+    setRetryMessage(message)
+    setStep('idle')
+  }
+
   const handleStart = async () => {
     setStep('preparing')
+    setMediaError(null)
+    setRetryMessage(null)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       streamRef.current = stream
 
       preparingTimerRef.current = setTimeout(() => {
-        // MediaRecorder 시작
-        audioChunksRef.current = []
-        const recorder = new MediaRecorder(stream)
-        recorder.ondataavailable = (e) => {
-          if (e.data.size > 0) audioChunksRef.current.push(e.data)
-        }
-        recorder.start(100)
-        mediaRecorderRef.current = recorder
-
-        // 볼륨 분석 시작
-        startAnalysis(stream)
+        startAudioPipeline(stream)
         setStep('recording')
       }, 2000)
-    } catch {
+    } catch (error) {
+      console.error('마이크 권한을 얻지 못했습니다:', error)
+      setMediaError('마이크를 사용할 수 없습니다. 브라우저의 마이크 권한을 확인해주세요.')
       setStep('idle')
     }
   }
 
   const handleStop = () => {
-    // MediaRecorder 중지 → 파일 저장
-    const recorder = mediaRecorderRef.current
-    if (recorder && recorder.state !== 'inactive') {
-      recorder.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `practice_script_${Date.now()}.webm`
-        a.click()
-        URL.revokeObjectURL(url)
-      }
-      recorder.stop()
-    }
-
-    // 스트림 트랙 종료
-    streamRef.current?.getTracks().forEach((t) => t.stop())
-    streamRef.current = null
-
-    // 볼륨 분석 중지 → 최종 점수 계산
-    stopAnalysis()
-    const samples = volumeSamplesRef.current
-    const avgVolume = samples.length > 0 ? samples.reduce((a, b) => a + b, 0) / samples.length : 0
-
-    // 볼륨 기반으로 WPM 추정 -> 그냥 인식 잘 되는지 확인하기 위함. 이후 서버랑 연결 후 내용 변경
-    const estimatedWPM = Math.round(80 + (avgVolume / 100) * 100)
-    // 발음 명확도도 유사.
-    const variance =
-      samples.length > 1
-        ? samples.reduce((acc, v) => acc + Math.pow(v - avgVolume, 2), 0) / samples.length
-        : 0
-    const pronunciationScore = Math.max(0, Math.min(100, Math.round(100 - variance * 0.3)))
-
-    setFinalSpeedScore(estimatedWPM)
-    setFinalPronunciationScore(pronunciationScore)
+    stopAudioPipeline()
+    releaseMic()
     setLiveVolume(0)
+    // 최종 점수는 서버가 보내주는 result 메시지로 채워진다.
     setStep('finished')
   }
 
   useEffect(() => {
     return () => {
       if (preparingTimerRef.current) clearTimeout(preparingTimerRef.current)
-      stopAnalysis()
-      streamRef.current?.getTracks().forEach((t) => t.stop())
+      stopAudioPipeline()
+      releaseMic()
     }
   }, [])
 
-  // 표시용 점수: 녹음 중엔 실시간 볼륨 기반, 완료 후엔 최종 점수 //이후 삭제 예정
+  // result가 도착하면 마이크와 오디오 파이프라인을 정리한다.
+  // (결과 화면 전환 자체는 isFinished에서 파생되므로 여기서 setState 하지 않는다.)
+  useEffect(() => {
+    if (!result) return
+    stopAudioPipeline()
+    releaseMic()
+  }, [result])
+
+  /* 표시용 값 ---------------------------------------------------------- */
+  const rawResult = result?.raw_result as
+    | { wpm?: number; articulation_label?: string }
+    | undefined
+  const finalWpm = Math.round(Number(rawResult?.wpm ?? 0))
+  const articulationLabel = rawResult?.articulation_label ?? ''
+
+  // 녹음 중엔 볼륨 기반 추정치로 게이지를 움직이고, 끝나면 서버 수치로 대체한다.
   const displaySpeedScore = isFinished
-    ? finalSpeedScore
+    ? finalWpm
     : step === 'recording'
       ? Math.round(80 + (liveVolume / 100) * 100)
       : 0
-  const displayPronunciationScore = isFinished
-    ? finalPronunciationScore
-    : step === 'recording'
-      ? Math.min(100, liveVolume + 30)
-      : 0
-  const pronunciationLabel = isFinished
-    ? displayPronunciationScore >= 80
-      ? '양호'
-      : displayPronunciationScore >= 60
-        ? '보통'
-        : '미흡'
-    : ''
-  const speedFeedback =
-    finalSpeedScore >= 120 && finalSpeedScore <= 160
-      ? '말 속도가 적정 범위에 있습니다.'
-      : finalSpeedScore < 120
-        ? '말 속도가 조금 느립니다. 자연스러운 속도로 읽어보세요.'
-        : '말 속도가 빠른 편입니다. 천천히 읽어보세요.'
-  const pronunciationFeedback =
-    finalPronunciationScore >= 70 ? '발음의 고저가 일정합니다.' : '발음을 더 또렷하게 해보세요.'
+  // 발음 명확도는 음성을 글자로 옮겨야 판정할 수 있어서 서버가 최종 result에만 담아준다.
+  // 그래서 녹음 중에는 아예 보여주지 않고, 끝난 뒤 라벨을 게이지 값으로 환산해 채운다.
+  const displayPronunciationScore =
+    ARTICULATION_SCORE[articulationLabel] ?? result?.score ?? 0
+  const pronunciationLabel = articulationLabel
+
+  // 배너 우선순위: 연결 실패 > 마이크 권한 > 재시도 안내.
+  // 결과가 나온 뒤에는 재시도 안내를 띄우지 않는다.
+  const bannerMessage = errorMessage ?? mediaError ?? (isFinished ? null : retryMessage)
+
+  // 녹음은 끝났지만 서버 result가 아직 안 온 구간. 이 동안 로딩을 보여준다.
+  // 서버는 음성 인식을 마쳐야 결과를 주므로 수 초에서 수십 초가 걸릴 수 있다.
+  const isAnalyzing = isFinished && !result && !bannerMessage
+
+  // 녹음 준비 중 / 녹음 중 / 분석 중에는 다음 단계로 넘어가지 못하게 막는다.
+  // 도중에 이동하면 오디오 전송이 끊겨 서버가 하위단계를 완료 처리하지 못한다.
+  const isRecording = step === 'preparing' || step === 'recording'
+
+  /*
+   * 분석 카드 높이.
+   * 말 속도만 있을 때(실시간 / 분석 중)는 1행 크기로 두고,
+   * 결과가 오면 발음 명확도가 붙으면서 2행 크기로 늘어난다.
+   * height는 auto로 두면 애니메이션이 안 걸려서 두 값을 명시한다.
+   */
+  const showTwoRows = isFinished && !isAnalyzing
+  const panelHeight = showTwoRows ? 214 : 150
+  const lockedMessage = isRecording
+    ? '녹음이 끝나면 이동할 수 있습니다.'
+    : isAnalyzing
+      ? '분석이 끝날 때까지 기다려주세요.'
+      : undefined
+
+  // 완료 후 코치버블 문구: 서버 피드백이 있으면 그대로, 없으면 로컬 기준으로 대체
+  const feedbackBullets = result?.feedback_text
+    ? [result.feedback_text]
+    : isAnalyzing
+      ? ['분석이 끝나면 피드백을 보여드릴게요.']
+      : [
+          finalWpm >= wpmMin && finalWpm <= wpmMax
+            ? '말 속도가 적정 범위에 있습니다.'
+            : finalWpm < wpmMin
+              ? '말 속도가 조금 느립니다. 자연스러운 속도로 읽어보세요.'
+              : '말 속도가 빠른 편입니다. 천천히 읽어보세요.',
+          '분석 결과를 받지 못했습니다. 연결 상태를 확인해주세요.',
+        ]
 
   return (
     <div className="h-screen w-full overflow-hidden bg-[#FAFBFC] pt-[64px]">
       <Nav />
       <PracticeLayout
         currentStepIndex={3}
-        canGoPrev={true}
+        canGoPrev={!isRecording}
         canGoNext={true}
+        isLocked={isRecording || isAnalyzing}
+        lockedMessage={lockedMessage}
         onPrev={() => navigate('/practice/breathing')}
         onNext={() => navigate('/practice/eyecontact')}
       >
@@ -187,11 +312,20 @@ const PracticeScript = () => {
           description="아래 문장을 자연스럽게 읽어보세요. 완벽하지 않아도 괜찮습니다."
         />
 
+        <RealtimeErrorBanner
+          message={bannerMessage}
+          detail={
+            bannerMessage === retryMessage
+              ? '마이크 버튼을 다시 눌러 진행할 수 있습니다.'
+              : undefined
+          }
+        />
+
         {/* 제공 문장 */}
         <div className="relative mb-3 rounded-2xl bg-white p-7 drop-shadow-[0_2px_4px_rgba(0,0,0,0.05)]">
           <div className="mb-3 flex items-center justify-between">
             <span className="fontSB text-[16px] text-[#3B3B3B]">제공 문장</span>
-            <span className="text-[13px] text-[#ABABAB]">약 1분 분량</span>
+            <span className="text-[13px] text-[#ABABAB]">약 {Math.round(speakSeconds / 60)}분 분량</span>
           </div>
           <p className="fontRegular text-[15px] leading-relaxed text-[#5D5D5D]">{script}</p>
 
@@ -207,11 +341,20 @@ const PracticeScript = () => {
 
         {/* 실시간 분석 + 코치버블 */}
         <div className="flex w-full justify-between py-4 pb-6 h-[240px]">
-          <div className="w-[50%] flex-1 rounded-2xl bg-white p-6 drop-shadow-[0_2px_4px_rgba(0,0,0,0.05)]">
+          <div
+            className="w-[50%] flex-1 self-start overflow-hidden rounded-2xl bg-white p-6 drop-shadow-[0_2px_4px_rgba(0,0,0,0.05)] transition-[height] duration-500 ease-out"
+            style={{ height: panelHeight }}
+          >
             <span className="fontSB mb-4 block text-[16px] text-[#3B3B3B]">
-              {isFinished ? '최종 분석' : '실시간 분석'}
+              {isAnalyzing ? '분석 중' : isFinished ? '최종 분석' : '실시간 분석'}
             </span>
-            <div className="flex flex-col gap-5">
+            {isAnalyzing && (
+              <AnalyzingIndicator
+                message="음성을 분석하고 있습니다. 잠시만 기다려주세요."
+                minHeight={78}
+              />
+            )}
+            <div className={`flex flex-col gap-5 ${isAnalyzing ? 'hidden' : ''}`}>
               {/* 말 속도 */}
               <div>
                 <div className="mb-1 flex items-center justify-between">
@@ -225,7 +368,7 @@ const PracticeScript = () => {
                 <div className="relative h-2 w-full overflow-hidden rounded-full bg-[#E5E7EB]">
                   <div
                     className="absolute top-0 h-full bg-[#C7C5FF]"
-                    style={{ left: '40%', width: '20%' }}
+                    style={{ left: `${(wpmMin / 200) * 100}%`, width: `${((wpmMax - wpmMin) / 200) * 100}%` }}
                   />
                   <div
                     className="absolute top-0 h-full rounded-full bg-[#5650FF]"
@@ -236,30 +379,36 @@ const PracticeScript = () => {
                     }}
                   />
                 </div>
-                <p className="mt-1 text-[12px] text-[#ABABAB]">적정 범위 (120-160 WPM)</p>
+                <p className="mt-1 text-[12px] text-[#ABABAB]">
+                  적정 범위 ({wpmMin}-{wpmMax} WPM)
+                </p>
               </div>
 
-              {/* 발음 명확도 */}
-              <div>
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="fontRegular text-[14px] text-[#3B3B3B]">발음 명확도</span>
-                  <span className="text-[14px]">
-                    {isFinished
-                      ? pronunciationLabel
-                      : displayPronunciationScore > 0
-                        ? `${displayPronunciationScore}%`
-                        : ''}
-                  </span>
-                </div>
-                <div className="relative h-2 w-full overflow-hidden rounded-full bg-[#E5E7EB]">
-                  <div
-                    className="h-full rounded-full bg-[#5650FF]"
-                    style={{
-                      width: `${displayPronunciationScore}%`,
-                      transition:
-                        step === 'recording' ? 'width 0.1s ease-out' : 'width 0.7s ease-out',
-                    }}
-                  />
+              {/*
+                발음 명확도 — 최종 결과에서만 나온다.
+                항상 렌더링해 두고, 카드가 1행 높이일 때는 overflow-hidden으로 잘려서 안 보인다.
+                결과가 오면 카드가 커지면서 이 줄이 드러나고 동시에 서서히 나타난다.
+              */}
+              <div
+                style={{
+                  opacity: showTwoRows ? 1 : 0,
+                  transition: 'opacity 400ms ease-out 150ms',
+                }}
+              >
+                <div>
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="fontRegular text-[14px] text-[#3B3B3B]">발음 명확도</span>
+                    <span className="fontSB text-[14px] text-[#5650FF]">{pronunciationLabel}</span>
+                  </div>
+                  <div className="relative h-2 w-full overflow-hidden rounded-full bg-[#E5E7EB]">
+                    <div
+                      className="h-full rounded-full bg-[#5650FF]"
+                      style={{
+                        width: `${displayPronunciationScore}%`,
+                        transition: 'width 0.7s ease-out',
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -279,14 +428,15 @@ const PracticeScript = () => {
                 <div className="relative z-10 pl-8 pb-3">
                   <p className="fontBold mb-3 text-[16px] text-[#4E4AC7] pb-2">TALKI의 간단 피드백</p>
                   <ul className="flex flex-col gap-1.5">
-                    <li className="fontRegular flex items-start gap-2 text-[14px] text-[#4E4AC7]">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#5650FF]" />
-                      {speedFeedback}
-                    </li>
-                    <li className="fontRegular flex items-start gap-2 text-[14px] text-[#4E4AC7]">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#5650FF]" />
-                      {pronunciationFeedback}
-                    </li>
+                    {feedbackBullets.map((text) => (
+                      <li
+                        key={text}
+                        className="fontRegular flex items-start gap-2 text-[14px] text-[#4E4AC7]"
+                      >
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#5650FF]" />
+                        {text}
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </div>
@@ -301,7 +451,9 @@ const PracticeScript = () => {
             
                   <div className="relative h-24 z-0 flex w-full items-center rounded-[32px] rounded-br-[0px] border border-[#5650FF] bg-white px-20 shadow-sm">
                     <div className="relative z-10 whitespace-pre-line text-[15px] fontRegular pl-2 leading-relaxed text-[#4E4AC7]">
-                      처음엔 천천히, <br/> 또박또박 읽는 것에 집중해보세요.
+                      {liveFeedback.length > 0
+                        ? liveFeedback.join('\n')
+                        : '처음엔 천천히,\n또박또박 읽는 것에 집중해보세요.'}
                     </div>
                   </div>
                 </div>

@@ -2,8 +2,10 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Nav from '@/components/Nav/Nav'
 import PracticeLayout from '@/components/Practice/PracticeLayout'
+import { submitBreathing } from '@/api/practice'
+import { getPracticeSessionId } from '@/utils/practiceSession'
 
-const PHASE_DURATION = 3 
+const PHASE_DURATION = 3
 const TOTAL_CYCLES = 3
 
 type Status = 'idle' | 'inhale' | 'exhale' | 'done'
@@ -49,6 +51,22 @@ const BreathingPractice = () => {
 
   const isRunning = status === 'inhale' || status === 'exhale'
 
+  // 2단계: 호흡 조절. 애니메이션을 끝까지 봤는지(completed)만 기록한다.
+  const handleNext = async () => {
+    const sessionId = getPracticeSessionId()
+    if (sessionId) {
+      try {
+        await submitBreathing(sessionId, status === 'done')
+      } catch (error) {
+        console.error('호흡 조절(2단계) 저장 실패:', error)
+      }
+    } else {
+      console.error('연습 세션이 없어 2단계를 저장하지 못했습니다.')
+    }
+
+    navigate('/practice/select')
+  }
+
   return (
     <div className="h-screen w-full overflow-hidden bg-[#FAFBFC] pt-[64px]">
       <Nav />
@@ -57,7 +75,7 @@ const BreathingPractice = () => {
         canGoPrev={!isRunning}
         canGoNext={!isRunning}
         onPrev={() => navigate('/practice/start')}
-        onNext={() => navigate('/practice/select')}
+        onNext={handleNext}
       >
         {/* 타이틀 */}
         <div className="mb-6 flex items-start justify-between">
