@@ -2,9 +2,18 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Nav from '@/components/Nav/Nav'
 import PracticeLayout from '@/components/Practice/PracticeLayout'
-import { clearStoredSessionId } from '@/api/practice'
+import { submitMode } from '@/api/practice'
+import type { PracticeMode } from '@/api/practice'
+import { getPracticeSessionId, setPracticeMode, setSubStepQueue } from '@/utils/practiceSession'
+import { selectionClass } from '@/components/Practice/selectionStyles'
 
 type PracticeType = 'script' | 'impromptu'
+
+/** 화면 선택지 -> 서버 mode enum */
+const MODE_BY_TYPE: Record<PracticeType, PracticeMode> = {
+  script: 'SCRIPT_BASED',
+  impromptu: 'IMPROMPTU',
+}
 
 const PRACTICES = [
   {
@@ -27,16 +36,28 @@ const PracticeSelect = () => {
   const navigate = useNavigate()
   const [selected, setSelected] = useState<PracticeType | null>(null)
 
-  const handleNext = () => {
-    if (selected === 'script') {
-      localStorage.setItem('practiceType', 'script')
-      navigate('/practice/script')
-    } else if (selected === 'impromptu') {
-      localStorage.setItem('practiceType', 'impromptu')
-      // 새 연습 회차이므로 이전 세션을 버리고 첫 하위단계에서 새로 발급받는다.
-      clearStoredSessionId()
-      navigate('/practice/impromptu')
+  // 3단계: 연습 모드 선택.
+  // 응답의 subStepQueue가 4단계에서 WebSocket으로 진행할 하위단계 순서다.
+  const handleNext = async () => {
+    if (!selected) return
+
+    const mode = MODE_BY_TYPE[selected]
+    const sessionId = getPracticeSessionId()
+
+    if (sessionId) {
+      try {
+        const response = await submitMode(sessionId, mode)
+        setSubStepQueue(response.subStepQueue ?? [])
+      } catch (error) {
+        console.error('연습 모드(3단계) 저장 실패:', error)
+      }
+    } else {
+      console.error('연습 세션이 없어 3단계를 저장하지 못했습니다.')
     }
+
+    localStorage.setItem('practiceType', selected)
+    setPracticeMode(mode)
+    navigate(selected === 'script' ? '/practice/script' : '/practice/impromptu')
   }
 
   return (
@@ -72,9 +93,9 @@ const PracticeSelect = () => {
               <button
                 key={practice.id}
                 onClick={() => setSelected(practice.id)}
-                className={`flex flex-col items-start rounded-2xl p-7 text-left drop-shadow-[0_2px_4px_rgba(0,0,0,0.05)] transition-all ${
-                  isActive ? 'bg-[#e8e7ff] ring-2 ring-[#5650FF]' : 'bg-white hover:ring-1 hover:ring-[#5650FF]/40'
-                }`}
+                className={`flex flex-col items-start rounded-2xl p-7 text-left drop-shadow-[0_2px_4px_rgba(0,0,0,0.05)] ${selectionClass(
+                  isActive ? 'selected' : 'idle'
+                )}`}
               >
                 {/* 라디오 */}
                 <span

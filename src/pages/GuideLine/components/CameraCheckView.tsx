@@ -23,9 +23,16 @@ const CameraCheckView = ({ onComplete }: { onComplete: () => void }) => {
 
   // MediaPipe 모델 및 카메라 초기화
   useEffect(() => {
+    const stopStream = () => {
+      const stream = videoRef.current?.srcObject as MediaStream | null
+      stream?.getTracks().forEach((track) => track.stop())
+      if (videoRef.current) videoRef.current.srcObject = null
+    }
+
     const init = async () => {
       try {
         if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
+        stopStream()
 
         // MediaPipe 모델은 최초 1회만 로드
         if (!faceLandmarkerRef.current) {
@@ -44,7 +51,7 @@ const CameraCheckView = ({ onComplete }: { onComplete: () => void }) => {
         }
 
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 1280, height: 720 },
+          video: { width: { ideal: 1280 }, height: { ideal: 720 } },
         })
 
         if (!videoRef.current) return
@@ -75,19 +82,28 @@ const CameraCheckView = ({ onComplete }: { onComplete: () => void }) => {
               init()
             } else {
               retryCountRef.current = 0
-              setFeedback('카메라를 연결할 수 없습니다.')
+              setFeedback('카메라를 연결할 수 없습니다. 페이지를 새로고침합니다...')
+              setTimeout(() => window.location.reload(), 1500)
             }
           }, RETRY_DELAY_MS)
         }
       } catch (error) {
+        const err = error as DOMException
+        const reason = err?.name
+          ? `[${err.name}] ${err.message}`
+          : String(error)
+        console.error(`카메라 연결 실패 (시도 ${retryCountRef.current + 1}/${MAX_RETRIES + 1}): ${reason}`)
+
         if (retryCountRef.current < MAX_RETRIES) {
           retryCountRef.current += 1
           console.warn(`카메라 접근 재시도 (${retryCountRef.current}/${MAX_RETRIES})`)
           setFeedback('카메라를 다시 연결하는 중...')
           retryTimerRef.current = setTimeout(init, RETRY_DELAY_MS)
         } else {
+          console.error('카메라 최종 연결 실패 — 페이지 새로고침')
           retryCountRef.current = 0
-          setFeedback('카메라를 연결할 수 없습니다.')
+          setFeedback('카메라를 연결할 수 없습니다. 페이지를 새로고침합니다...')
+          setTimeout(() => window.location.reload(), 1500)
         }
       }
     }

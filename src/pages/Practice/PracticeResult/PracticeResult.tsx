@@ -1,9 +1,47 @@
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Nav from '@/components/Nav/Nav'
 import { IMAGES } from '@/utils/images'
+import { completePracticeSession, SUB_STEP_LABEL } from '@/api/practice'
+import type { PracticeSubStep } from '@/api/practice'
+import {
+  clearPracticeSession,
+  getPracticeSessionId,
+  getSubStepQueue,
+} from '@/utils/practiceSession'
 
 const PracticeResult = () => {
   const navigate = useNavigate()
+
+  // 서버가 확정한 완료 하위단계. 실패 시 3단계에서 받아둔 큐로 대체한다.
+  const [completedSubSteps, setCompletedSubSteps] = useState<PracticeSubStep[]>(() =>
+    getSubStepQueue()
+  )
+  const hasCompletedRef = useRef(false)
+
+  // 7단계: 완료 처리. Redis 세션을 MySQL로 이관하고 스트릭을 갱신한다.
+  // 화면 진입 시 1회만 호출하고, 끝나면 로컬에 남은 세션 정보를 정리한다.
+  useEffect(() => {
+    if (hasCompletedRef.current) return
+    hasCompletedRef.current = true
+
+    const sessionId = getPracticeSessionId()
+    if (!sessionId) {
+      console.error('연습 세션이 없어 7단계(완료 처리)를 호출하지 못했습니다.')
+      return
+    }
+
+    completePracticeSession(sessionId)
+      .then((response) => {
+        setCompletedSubSteps(response.completedSubSteps ?? [])
+      })
+      .catch((error) => {
+        console.error('연습 완료(7단계) 처리 실패:', error)
+      })
+      .finally(() => {
+        clearPracticeSession()
+      })
+  }, [])
 
   return (
     <div className="h-screen w-full bg-[#FAFBFC] pt-[130px]">
@@ -25,12 +63,20 @@ const PracticeResult = () => {
                     선택한 훈련
                   </span>
                   <ul className="flex flex-col gap-2">
-                    <li className="fontRegular flex items-center gap-2 text-[14px] text-[#3B3B3B]">
-                      <span className="text-[#5650FF]">•</span> 스크립트 읽기 연습
-                    </li>
-                    <li className="fontRegular flex items-center gap-2 text-[14px] text-[#3B3B3B]">
-                      <span className="text-[#5650FF]">•</span> 시선 고정 훈련
-                    </li>
+                    {completedSubSteps.length > 0 ? (
+                      completedSubSteps.map((subStep) => (
+                        <li
+                          key={subStep}
+                          className="fontRegular flex items-center gap-2 text-[14px] text-[#3B3B3B]"
+                        >
+                          <span className="text-[#5650FF]">•</span> {SUB_STEP_LABEL[subStep]}
+                        </li>
+                      ))
+                    ) : (
+                      <li className="fontRegular flex items-center gap-2 text-[14px] text-[#3B3B3B]">
+                        <span className="text-[#5650FF]">•</span> 진행한 훈련이 없습니다.
+                      </li>
+                    )}
                   </ul>
                 </div>
               </div>

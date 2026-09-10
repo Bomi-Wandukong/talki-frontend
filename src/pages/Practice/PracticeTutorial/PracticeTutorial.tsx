@@ -1,11 +1,28 @@
+import { useState } from 'react'
 import Nav from '@/components/Nav/Nav'
 import { IMAGES } from '@/utils/images'
 import { useNavigate } from 'react-router-dom'
+import { startPracticeSession } from '@/api/practice'
+import { clearPracticeSession, setPracticeSessionId } from '@/utils/practiceSession'
 
 const PracticeTutorial = () => {
   const navigate = useNavigate()
-  const handleStart = () => {
-    navigate('/practice/start')
+  const [isStarting, setIsStarting] = useState(false)
+
+  // 0단계: 훈련 시작 — 세션을 새로 만들고 sessionId를 저장한 뒤 1단계로 이동한다.
+  const handleStart = async () => {
+    if (isStarting) return
+    setIsStarting(true)
+    clearPracticeSession()
+    try {
+      const { sessionId } = await startPracticeSession()
+      setPracticeSessionId(sessionId)
+    } catch (error) {
+      console.error('연습 세션 생성 실패:', error)
+    } finally {
+      setIsStarting(false)
+      navigate('/practice/start')
+    }
   }
   return (
     <div className="min-h-screen bg-[#F7F7F8] pb-20 pt-[100px] w-full">
@@ -177,7 +194,8 @@ const PracticeTutorial = () => {
             <p className="mb-7 text-[14px] text-[#727272]">본 연습은 사회불안 치료에서 사용되는 인지행동치료(CBT) 프로토콜을 기반으로 설계되었으며, 자동사고 인식·인지 재구조화·행동 노출 등의 단계적 훈련을 통해 불안을 다루는 연습을 제공합니다.</p>
             <button
               onClick={handleStart}
-              className="text-md fontMedium rounded-xl bg-[#5650FF] px-20 py-4 text-white transition-all hover:bg-[#4540cc] active:scale-95"
+              disabled={isStarting}
+              className="text-md fontMedium rounded-xl bg-[#5650FF] px-20 py-4 text-white transition-all hover:bg-[#4540cc] active:scale-95 disabled:opacity-60"
             >
               <span className="mr-2"> ▶ </span>  연습 시작하기
             </button>

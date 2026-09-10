@@ -3,19 +3,44 @@ import { useNavigate } from 'react-router-dom'
 import Nav from '@/components/Nav/Nav'
 import PracticeLayout from '@/components/Practice/PracticeLayout'
 import { IMAGES } from '@/utils/images'
-
-const PRESET_OPTIONS = [
-  '"완벽하지 않아도 괜찮아. 중요한 건 시도하는 거야."',
-  '"실수는 배움의 기회야. 다음엔 더 잘할 수 있어."',
-  '"지금 이 순간 최선을 다하는 거면 충분해."',
-]
+import {
+  submitAlternativeThought,
+  ALTERNATIVE_THOUGHT_LABEL,
+  ALTERNATIVE_THOUGHT_OPTIONS,
+} from '@/api/practice'
+import type { AlternativeThoughtOption } from '@/api/practice'
+import { getPracticeSessionId } from '@/utils/practiceSession'
+import { selectionClass } from '@/components/Practice/selectionStyles'
 
 const PracticeMind = () => {
   const navigate = useNavigate()
-  const [selected, setSelected] = useState<string | null>(null)
+  // 화면 문구 대신 서버 enum을 그대로 상태로 들고 있는다.
+  const [selected, setSelected] = useState<AlternativeThoughtOption | null>(null)
   const [customText, setCustomText] = useState('')
-  const isCustom = selected === 'custom'
+  const isCustom = selected === 'CUSTOM'
   const canGoNext = !!selected && (!isCustom || customText.trim().length > 0)
+
+  // 6단계: 대체 사고 선택.
+  // 선택지가 enum과 1:1이라 변환 없이 그대로 보낸다. CUSTOM일 때만 입력 문장을 함께 담는다.
+  const handleNext = async () => {
+    if (!canGoNext) return
+
+    const sessionId = getPracticeSessionId()
+    if (sessionId) {
+      try {
+        await submitAlternativeThought(sessionId, {
+          selectedThought: selected!,
+          customThought: isCustom ? customText.trim() : null,
+        })
+      } catch (error) {
+        console.error('대체 사고(6단계) 저장 실패:', error)
+      }
+    } else {
+      console.error('연습 세션이 없어 6단계를 저장하지 못했습니다.')
+    }
+
+    navigate('/practice/complete')
+  }
 
   return (
     <div>
@@ -26,7 +51,7 @@ const PracticeMind = () => {
           canGoPrev={true}
           canGoNext={canGoNext}
           onPrev={() => navigate('/practice/feelresult')}
-          onNext={() => navigate('/practice/complete')}
+          onNext={handleNext}
         >
           {/* 타이틀 */}
           <div className="mb-6 flex w-full items-start justify-between">
@@ -47,34 +72,36 @@ const PracticeMind = () => {
 
           {/* 선택지 */}
           <div className="flex flex-col gap-3">
-            {PRESET_OPTIONS.map((option) => (
+            {ALTERNATIVE_THOUGHT_OPTIONS.map((option) => (
               <button
                 key={option}
                 onClick={() => setSelected(option)}
-                className={`flex w-full items-center gap-4 rounded-2xl px-6 py-5 text-left shadow-sm transition-all ${
-                  selected === option ? 'bg-[#EDECFF] ring-2 ring-[#5650FF]' : 'bg-white ring-1 ring-gray-100'
-                }`}
+                className={`flex w-full items-center gap-4 rounded-2xl px-6 py-5 text-left shadow-sm ${selectionClass(
+                  selected === option ? 'selected' : 'idle'
+                )}`}
               >
                 <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                  selected === option ? 'border-[#5650FF]' : 'border-gray-300'
+                  selected === option ? 'border-[#5650FF]' : 'border-[#D0D0D0]'
                 }`}>
                   {selected === option && (
                     <div className="h-2.5 w-2.5 rounded-full bg-[#5650FF]" />
                   )}
                 </div>
-                <span className="fontRegular text-[15px] text-[#3B3B3B]">{option}</span>
+                <span className="fontRegular text-[15px] text-[#3B3B3B]">
+                  {ALTERNATIVE_THOUGHT_LABEL[option]}
+                </span>
               </button>
             ))}
 
             {/* 직접 입력 */}
             <button
-              onClick={() => setSelected('custom')}
-              className={`flex w-full items-center gap-4 rounded-2xl px-6 py-5 text-left shadow-sm transition-all ${
-                isCustom ? 'bg-[#EDECFF] ring-2 ring-[#5650FF]' : 'bg-white ring-1 ring-gray-100'
-              }`}
+              onClick={() => setSelected('CUSTOM')}
+              className={`flex w-full items-center gap-4 rounded-2xl px-6 py-5 text-left shadow-sm ${selectionClass(
+                isCustom ? 'selected' : 'idle'
+              )}`}
             >
               <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                isCustom ? 'border-[#5650FF]' : 'border-gray-300'
+                isCustom ? 'border-[#5650FF]' : 'border-[#D0D0D0]'
               }`}>
                 {isCustom && <div className="h-2.5 w-2.5 rounded-full bg-[#5650FF]" />}
               </div>

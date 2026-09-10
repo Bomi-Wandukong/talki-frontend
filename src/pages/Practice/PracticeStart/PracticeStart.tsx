@@ -4,24 +4,20 @@ import Nav from '@/components/Nav/Nav'
 import PracticeLayout from '@/components/Practice/PracticeLayout'
 import CoachBubble from '@/components/Practice/CoachBubble'
 import PracticeGuideModal, { HIDE_KEY } from './PracticeGuideModal'
-
-const THOUGHTS = [
-  '사람들이 내가 긴장한 것을 알아챌 것이다.',
-  '말을 하다가 실수할 것 같다.',
-  '사람들이 나를 이상하게 생각할 것이다.',
-  '내가 무능해 보일 것이다.',
-  '말을 하다가 머리가 하얘질 것 같다.',
-  '사람들이 나를 평가하고 있을 것이다.',
-]
+import { submitThoughtRecognition, THOUGHT_ENUM_TO_LABEL, THOUGHT_OPTIONS } from '@/api/practice'
+import type { NegativeThought } from '@/api/practice'
+import { getPracticeSessionId } from '@/utils/practiceSession'
+import { selectionClass } from '@/components/Practice/selectionStyles'
 
 const PracticeStart = () => {
   const navigate = useNavigate()
   const [showGuide, setShowGuide] = useState(() => localStorage.getItem(HIDE_KEY) !== 'true')
-  const [selected, setSelected] = useState<string | null>(null)
+  // 화면 문구 대신 서버 enum을 그대로 상태로 들고 있는다.
+  const [selected, setSelected] = useState<NegativeThought | null>(null)
   const [customText, setCustomText] = useState('')
   const [isCustom, setIsCustom] = useState(false)
 
-  const handleSelect = (thought: string) => {
+  const handleSelect = (thought: NegativeThought) => {
     setSelected(thought)
     setIsCustom(false)
   }
@@ -31,9 +27,27 @@ const PracticeStart = () => {
     setIsCustom(true)
   }
 
-  const handleNext = () => {
+  // 1단계: 자동사고 인식.
+  // 화면은 단일 선택이지만 API는 배열을 받으므로 선택 1개를 배열로 감싸서 보낸다.
+  // 직접 입력을 고른 경우 enum은 OTHER, 입력한 문장은 customThought로 보낸다.
+  const handleNext = async () => {
     const value = isCustom ? customText : selected
     if (!value) return
+
+    const sessionId = getPracticeSessionId()
+    if (sessionId) {
+      try {
+        await submitThoughtRecognition(sessionId, {
+          selectedThoughts: isCustom ? ['OTHER'] : [selected!],
+          customThought: isCustom ? customText : null,
+        })
+      } catch (error) {
+        console.error('자동사고 인식(1단계) 저장 실패:', error)
+      }
+    } else {
+      console.error('연습 세션이 없어 1단계를 저장하지 못했습니다.')
+    }
+
     navigate('/practice/breathing')
   }
 
@@ -77,19 +91,20 @@ const PracticeStart = () => {
           </p>
         </div>
 
-        {/* 선택지 그리드 */}
-        <div className="mb-3 grid grid-cols-2 gap-3">
-          {THOUGHTS.map((thought) => {
+        {/*
+          선택지 그리드. "직접 입력하기"까지 같은 그리드에 넣어야 6칸이 3행으로 채워져
+          왼쪽 3개 / 오른쪽 3개로 나뉜다. 따로 두면 직접 입력이 새 행 왼쪽에 붙어 4:2가 된다.
+        */}
+        <div className="mb-6 grid grid-cols-2 gap-3">
+          {THOUGHT_OPTIONS.map((thought) => {
             const isActive = selected === thought
             return (
               <button
                 key={thought}
                 onClick={() => handleSelect(thought)}
-                className={`flex items-center gap-3 rounded-2xl px-5 py-5 text-left text-[15px] text-[#3B3B3B] drop-shadow-[0_2px_4px_rgba(0,0,0,0.05)] transition-all ${
-                  isActive
-                    ? 'bg-[#e7e7ff] ring-2 ring-[#5650FF]'
-                    : 'bg-white hover:ring-1 hover:ring-[#5650FF]/40'
-                }`}
+                className={`flex items-center gap-3 rounded-2xl px-5 py-5 text-left text-[15px] text-[#3B3B3B] drop-shadow-[0_2px_4px_rgba(0,0,0,0.05)] ${selectionClass(
+                  isActive ? 'selected' : 'idle'
+                )}`}
               >
                 <span
                   className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 ${
@@ -98,21 +113,17 @@ const PracticeStart = () => {
                 >
                   {isActive && <span className="h-2.5 w-2.5 rounded-full bg-[#5650FF]" />}
                 </span>
-                {thought}
+                {THOUGHT_ENUM_TO_LABEL[thought]}
               </button>
             )
           })}
-        </div>
 
-        {/* 직접 입력하기 */}
-        <div className="mb-6 grid grid-cols-2 gap-3">
+          {/* 직접 입력하기 */}
           <button
             onClick={handleCustomSelect}
-            className={`flex w-full items-center gap-3 rounded-2xl bg-white px-5 py-5 text-left text-[15px] text-[#3B3B3B] drop-shadow-[0_2px_4px_rgba(0,0,0,0.05)] transition-all ${
-              isCustom
-                ? 'bg-[#ECEBFF] ring-2 ring-[#5650FF]'
-                : 'hover:ring-1 hover:ring-[#5650FF]/40'
-            }`}
+            className={`flex w-full items-center gap-3 rounded-2xl px-5 py-5 text-left text-[15px] text-[#3B3B3B] drop-shadow-[0_2px_4px_rgba(0,0,0,0.05)] ${selectionClass(
+              isCustom ? 'selected' : 'idle'
+            )}`}
           >
             <span
               className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 ${

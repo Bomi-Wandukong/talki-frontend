@@ -3,13 +3,50 @@ import { useNavigate } from 'react-router-dom'
 import Nav from '@/components/Nav/Nav'
 import PracticeLayout from '@/components/Practice/PracticeLayout'
 import CoachBubble from '@/components/Practice/CoachBubble'
+import { submitBehavioralExperiment, FEEL_ID_TO_ENUM } from '@/api/practice'
+import { getPracticeSessionId } from '@/utils/practiceSession'
+import { selectionClass } from '@/components/Practice/selectionStyles'
 
+/**
+ * 선택지마다 다른 피드백을 보여준다.
+ * description은 상황 설명, emphasis는 강조해서 남길 문장이다.
+ */
 const options = [
-  { id: 'much-better', emoji: '😊', label: '예상보다 훨씬 더 나았어요.' },
-  { id: 'little-better', emoji: '🙂', label: '예상보다 조금 나았어요.' },
-  { id: 'similar', emoji: '😐', label: '예상한 것과 비슷했어요.' },
-  { id: 'little-harder', emoji: '😐', label: '예상보다 조금 어려웠어요.' },
-  { id: 'much-harder', emoji: '😰', label: '예상보다 훨씬 어려웠어요.' },
+  {
+    id: 'much-better',
+    emoji: '😊',
+    label: '예상보다 훨씬 더 나았어요.',
+    description: '예상보다 나은 결과는 불안한 예측이 항상 맞지 않다는 증거입니다.',
+    emphasis: '실제로 해보는 것이 중요하다는 것을 기억하세요.',
+  },
+  {
+    id: 'little-better',
+    emoji: '🙂',
+    label: '예상보다 조금 나았어요.',
+    description: '작은 차이라도 예상보다 나았다면, 그만큼 불안이 상황을 부풀려 보게 했다는 뜻입니다.',
+    emphasis: '이런 경험이 쌓이면 예측이 점점 현실에 가까워집니다.',
+  },
+  {
+    id: 'similar',
+    emoji: '😐',
+    label: '예상한 것과 비슷했어요.',
+    description: '예상과 비슷했다는 것은 상황을 비교적 현실적으로 보고 있다는 뜻입니다.',
+    emphasis: '예상할 수 있는 일이라면, 준비할 수도 있는 일입니다.',
+  },
+  {
+    id: 'little-harder',
+    emoji: '😐',
+    label: '예상보다 조금 어려웠어요.',
+    description: '어렵게 느껴졌더라도 중간에 그만두지 않고 끝까지 해냈습니다.',
+    emphasis: '어려웠던 지점을 알게 된 것도 연습의 결과입니다.',
+  },
+  {
+    id: 'much-harder',
+    emoji: '😰',
+    label: '예상보다 훨씬 어려웠어요.',
+    description: '많이 힘들었다면, 그건 지금 이 연습이 필요한 상황이라는 뜻이기도 합니다.',
+    emphasis: '한 번에 나아지지 않아도 괜찮습니다. 반복이 변화를 만듭니다.',
+  },
 ]
 
 const PREV_ROUTE: Record<string, string> = {
@@ -33,6 +70,24 @@ const PracticeFeel = () => {
 
   const canGoNext = !!selected
 
+  // 5단계: 행동실험 결과(예상 대비 실제)를 단일 선택으로 저장한다.
+  const handleNext = async () => {
+    if (!selected) return
+
+    const sessionId = getPracticeSessionId()
+    if (sessionId) {
+      try {
+        await submitBehavioralExperiment(sessionId, FEEL_ID_TO_ENUM[selected])
+      } catch (error) {
+        console.error('행동실험(5단계) 저장 실패:', error)
+      }
+    } else {
+      console.error('연습 세션이 없어 5단계를 저장하지 못했습니다.')
+    }
+
+    navigate('/practice/mind')
+  }
+
   return (
     <div className="h-screen w-full overflow-hidden bg-[#FAFBFC] pt-[64px]">
       <Nav />
@@ -41,7 +96,7 @@ const PracticeFeel = () => {
         canGoPrev={true}
         canGoNext={canGoNext}
         onPrev={() => navigate(prevRoute)}
-        onNext={() => navigate('/practice/mind')}
+        onNext={handleNext}
         coachBubble={
           <CoachBubble>
             <div>
@@ -89,18 +144,14 @@ const PracticeFeel = () => {
                 {/* 카드 */}
                 <div
                   onClick={() => handleSelect(option.id)}
-                  className={`cursor-pointer rounded-xl border p-4 transition-all ${
-                    isSelected
-                      ? 'border-[#5650FF] bg-[#EEF0FF]'
-                      : isDisabled
-                        ? 'cursor-default border-[#E5E5E5] bg-[#F5F5F5] opacity-50'
-                        : 'border-[#E5E5E5] bg-white hover:border-[#5650FF]'
-                  }`}
+                  className={`rounded-xl p-4 ${isDisabled ? 'cursor-default' : 'cursor-pointer'} ${selectionClass(
+                    isSelected ? 'selected' : isDisabled ? 'disabled' : 'idle'
+                  )}`}
                 >
                   <div className="flex items-center gap-3">
                     <div
                       className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
-                        isSelected ? 'border-[#5650FF]' : 'border-[#CCCCCC]'
+                        isSelected ? 'border-[#5650FF]' : 'border-[#D0D0D0]'
                       }`}
                     >
                       {isSelected && <div className="h-2.5 w-2.5 rounded-full bg-[#5650FF]" />}
@@ -120,8 +171,8 @@ const PracticeFeel = () => {
                   }`}
                 >
                   <div className="rounded-b-xl bg-white p-4 text-[13px] leading-relaxed text-[#5D5D5D]">
-                    예상보다 나은 결과는 불안한 예측이 항상 맞지 않다는 증거입니다.{' '}
-                    <span className="fontSB">실제로 해보는 것이 중요하다는 것을 기억하세요.</span>
+                    {option.description}{' '}
+                    <span className="fontSB">{option.emphasis}</span>
                   </div>
                 </div>
               </div>
